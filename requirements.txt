@@ -1,0 +1,12 @@
+pre-commit
+elasticsearch-dsl
+wandb
+openai
+anthropic
+streamlit
+matplotlib
+ipykernel
+datasets
+boto3
+omegaconf
+hydra

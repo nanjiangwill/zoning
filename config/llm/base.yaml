@@ -1,0 +1,6 @@
+# @package _global_
+llm:
+  temperature: 0
+  intermediate_result_path:
+  use_cache: False
+  cache_path: null
