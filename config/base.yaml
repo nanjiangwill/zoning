@@ -1,10 +1,33 @@
 defaults:
   - _self_
-  - extract: base
-  - index: base
-  - search: base
-  - llm: base
-  - verification: base
+
+extract:
+  name: textract
+  input_document_s3_bucket:
+  feature_types: ["TABLES"]  # allowed ["TABLES", "FORMS", "QUERIES", "SIGNATURES", "LAYOUT"]
+  output_dir: data
+  target_state: texas
+  hf_dataset:
+    name: ${extract.name}-${extract.target_state}
+    publish_dataset: false
+    private: true
+  embedding:
+    embedding_model: text-embedding-ada-002
+
+
+index:
+  method: keyword
+  es_endpoint: http://localhost:9200
+  output_dir: data
+  target_state: texas
+  index_page_range: 10
+
+
+llm:
+  _name_: gpt4
+  model_name: gpt4-
+
+
 
 test_data_split_seed: 13
 test_data_split_percent: 0.3
