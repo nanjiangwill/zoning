@@ -1,3 +1,6 @@
 .env
 data/*/*_dataset
 data/*/pdfs
+
+# this is hydra output
+outputs
