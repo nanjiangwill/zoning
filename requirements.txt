@@ -9,4 +9,5 @@ ipykernel
 datasets
 boto3
 omegaconf
-hydra
+hydra-core
+jsonlines

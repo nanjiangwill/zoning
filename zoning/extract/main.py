@@ -1,17 +1,18 @@
 import hydra
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 from extractor import *
 
 
-@hydra.main(version_base=None, config_path="config/extract", config_name="base")
+@hydra.main(version_base=None, config_path="../../config/extract", config_name="base")
 def main(config: DictConfig):
+    OmegaConf.resolve(config)
     match config.extract.name:
         case "textract":
             extractor = TextractExtractor(config)
         case _:
             raise ValueError(f"Extractor {config.extract.name} not implemented")
 
-    extractor.extract()
+    # extractor.extract()
     extractor.post_extract()
 
 

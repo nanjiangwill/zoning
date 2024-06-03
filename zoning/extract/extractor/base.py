@@ -6,8 +6,7 @@ from typing import Dict, List, Set, Tuple, cast
 class Extractor:
     def __init__(self, extractor_config):
         self.config = extractor_config
-        self.name = extractor_config.name
-        self.output_path = extractor_config.output_path
+        self.name = extractor_config.extract.name
 
     def extract(self, pdf_path):
         pass

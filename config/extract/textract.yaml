@@ -12,4 +12,3 @@ extract:
     private: true
   embedding:
     embedding_model: text-embedding-ada-002
-

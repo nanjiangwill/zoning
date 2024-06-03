@@ -1,1 +1,1 @@
-from textract import TextractExtractor
+from .textract import TextractExtractor
