@@ -1,4 +1,0 @@
-# @package _global_
-extract:
-  use_cache: true
-  cache_dir: null

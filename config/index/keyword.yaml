@@ -1,8 +1,0 @@
-# @package _global_
-index:
-#   repro: false
-  method: keyword
-  es_endpoint: http://localhost:9200
-  output_dir: data
-  target_state: texas
-  index_page_range: 10

@@ -1,4 +1,0 @@
-# @package _global_
-llm:
-  _name_: gpt4
-  model_name: gpt4-

@@ -1,5 +1,0 @@
-# @package _global_
-index:
-#   repro: false
-  method: embedding
-  embedding_model: text-embedding-ada-002
