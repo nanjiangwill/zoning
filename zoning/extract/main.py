@@ -3,7 +3,7 @@ from omegaconf import DictConfig, OmegaConf
 from extractor import *
 
 
-@hydra.main(version_base=None, config_path="../../config/extract", config_name="base")
+@hydra.main(version_base=None, config_path="../../config", config_name="base")
 def main(config: DictConfig):
     OmegaConf.resolve(config)
     match config.extract.name:
