@@ -4,7 +4,7 @@ extract:
   name: textract
   input_document_s3_bucket:
   feature_types: ["TABLES"]  # allowed ["TABLES", "FORMS", "QUERIES", "SIGNATURES", "LAYOUT"]
-  output_dir: data/
+  output_dir: data
   target_state: texas
   hf_dataset:
     name: ${extract.name}-${extract.target_state}

@@ -12,7 +12,7 @@ def main(config: DictConfig):
         case _:
             raise ValueError(f"Extractor {config.extract.name} not implemented")
 
-    # extractor.extract()
+    extractor.extract()
     extractor.post_extract()
 
 

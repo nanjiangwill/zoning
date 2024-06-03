@@ -1,6 +1,7 @@
 defaults:
   - _self_
   - extract: base
+  - index: base
   - search: base
   - llm: base
   - verification: base

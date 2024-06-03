@@ -205,7 +205,7 @@ class TextractExtractor(Extractor):
             path
             for path in process_map(self.process_town, state_all_towns_names)
             if path is not None
-        ][0]
+        ]
 
         page_dataset = load_dataset("json", data_files=state_page_data_files)
 
