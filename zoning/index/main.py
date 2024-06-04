@@ -19,9 +19,7 @@ def main(config: DictConfig):
             raise ValueError(f"Extractor {config.extract.name} not implemented")
 
     # TODO, merge output_dir and target_state to global variable
-    dataset_path = os.path.join(
-        config.index.output_dir, config.index.target_state, "hf_dataset"
-    )
+    dataset_path = os.path.join(config.output_dir, config.target_state, "hf_dataset")
     dataset = load_from_disk(dataset_path)
     dataset = cast(DatasetDict, dataset)
 

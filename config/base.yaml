@@ -1,12 +1,13 @@
 defaults:
   - _self_
 
+output_dir: data
+target_state: texas
+
 extract:
   name: textract
   input_document_s3_bucket:
   feature_types: ["TABLES"]  # allowed ["TABLES", "FORMS", "QUERIES", "SIGNATURES", "LAYOUT"]
-  output_dir: data
-  target_state: texas
   hf_dataset:
     name: ${extract.name}-${extract.target_state}
     publish_dataset: false
@@ -16,10 +17,8 @@ extract:
 
 
 index:
-  method: keyword
+  method: keyword # allowed keyword/embedding
   es_endpoint: http://localhost:9200
-  output_dir: data
-  target_state: texas
   index_page_range: 10
 
 

@@ -73,8 +73,8 @@ class TextractExtractor(Extractor):
             elif status == "SUCCEEDED":
                 result = list(self.get_job_results(job_id))
                 target_path = os.path.join(
-                    self.config.extract.output_dir,
-                    self.config.extract.target_state,
+                    self.config.output_dir,
+                    self.config.target_state,
                     "extract_dataset",
                     os.path.basename(town_pdf_path.replace(".pdf", ".json")),
                 )
@@ -90,8 +90,8 @@ class TextractExtractor(Extractor):
         """
 
         filename = os.path.join(
-            self.config.extract.output_dir,
-            self.config.extract.target_state,
+            self.config.output_dir,
+            self.config.target_state,
             "extract_dataset",
             f"{town}-zoning-code.json",
         )
@@ -123,7 +123,7 @@ class TextractExtractor(Extractor):
                 if len(entities.ents) > 0:
                     rows.append(
                         {
-                            "Town": f"{self.config.extract.target_state}-{town}",
+                            "Town": f"{self.config.target_state}-{town}",
                             "Page": w["Page"] - 1,
                             "Text": str(entities),
                         }
@@ -137,15 +137,15 @@ class TextractExtractor(Extractor):
         if len(entities.ents) > 0:
             rows.append(
                 {
-                    "Town": f"{self.config.extract.target_state}-{town}",
+                    "Town": f"{self.config.target_state}-{town}",
                     "Page": w["Page"],
                     "Text": str(entities),
                 }
             )
 
         page_output_path = os.path.join(
-            self.config.extract.output_dir,
-            self.config.extract.target_state,
+            self.config.output_dir,
+            self.config.target_state,
             "extract_page_dataset",
             f"{town}-zoning-code.jsonl",
         )
@@ -187,14 +187,12 @@ class TextractExtractor(Extractor):
         return Dataset.from_list(rows)
 
     def post_extract(self):
-        if self.config.extract.target_state == "all":
+        if self.config.target_state == "all":
             raise NotImplementedError(
                 "Post-extraction for all states not yet implemented."
             )
 
-        state_data_path = os.path.join(
-            self.config.extract.output_dir, self.config.extract.target_state
-        )
+        state_data_path = os.path.join(self.config.output_dir, self.config.target_state)
         state_all_towns_names_path = os.path.join(
             state_data_path, "all_towns_names.json"
         )
@@ -210,8 +208,8 @@ class TextractExtractor(Extractor):
         page_dataset = load_dataset("json", data_files=state_page_data_files)
 
         hf_dataset_path = os.path.join(
-            self.config.extract.output_dir,
-            self.config.extract.target_state,
+            self.config.output_dir,
+            self.config.target_state,
             "hf_dataset",
         )
         page_dataset.save_to_disk(hf_dataset_path)
