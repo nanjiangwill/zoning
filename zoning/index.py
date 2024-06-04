@@ -2,12 +2,12 @@ import os
 import hydra
 from omegaconf import DictConfig, OmegaConf
 from datasets import load_from_disk, DatasetDict
-from indexer import *
+from .index import *
 from typing import cast
 from elasticsearch import Elasticsearch
 
 
-@hydra.main(version_base=None, config_path="../../config", config_name="base")
+@hydra.main(version_base=None, config_path="../config", config_name="base")
 def main(config: DictConfig):
     OmegaConf.resolve(config)
     match config.index.method:

@@ -1,9 +1,9 @@
 import hydra
 from omegaconf import DictConfig, OmegaConf
-from extractor import *
+from .extract import *
 
 
-@hydra.main(version_base=None, config_path="../../config", config_name="base")
+@hydra.main(version_base=None, config_path="../config", config_name="base")
 def main(config: DictConfig):
     OmegaConf.resolve(config)
     match config.extract.name:
