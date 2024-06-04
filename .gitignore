@@ -4,3 +4,5 @@ data/*/pdfs
 
 # this is hydra output
 outputs
+
+zoning/*/__pycache__
