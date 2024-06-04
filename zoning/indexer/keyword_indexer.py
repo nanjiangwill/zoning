@@ -1,4 +1,4 @@
-from .base import *
+from .base_indexer import Indexer
 from omegaconf import DictConfig
 from datasets import load_from_disk, DatasetDict, Dataset
 from tqdm.contrib.concurrent import thread_map

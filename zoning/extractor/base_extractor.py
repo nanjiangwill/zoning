@@ -8,10 +8,10 @@ class Extractor:
         self.config = extractor_config
         self.name = extractor_config.extract.name
 
-    def extract(self, pdf_path):
+    def extract(self, state_all_towns_names):
         pass
 
-    def post_extract(self):
+    def post_extract(self, state_all_towns_names):
         pass
 
 

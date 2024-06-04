@@ -1,10 +1,23 @@
 # zoning
 
 
+## Download PDFs and store in S3
+
+download all zoning PDFs and store in S3 in the format
+`zoning/<target_state>/zoning-<town_name>.pdf`
+
+
 ## Data Extraction
 
 For each state, create a new dir in data
 `mkdir -p <state_name>`
+
+### Running OCR
+WIP
+```
+cp .env.example .env
+fill
+```
 
 After running OCR/extraction, it will generate data inside `data/<state_name>/extract_dataset` and gather information from same page to be one data sample, which is stored in `data/<state_name>/extract_page_dataset`. `data/<state_name>/hf_dataset` is same to `data/<state_name>/extract_page_dataset` and can be read by `load_datasets` directly
 
@@ -34,4 +47,4 @@ WIP
 
 ## LLM
 
-##
+## Error Analysis

@@ -10,7 +10,7 @@ extract:
   input_document_s3_bucket:
   feature_types: ["TABLES"]  # allowed ["TABLES", "FORMS", "QUERIES", "SIGNATURES", "LAYOUT"]
   hf_dataset:
-    name: ${extract.name}-${extract.target_state}
+    name: ${extract.name}-${target_state}
     publish_dataset: false
     private: true
   embedding:

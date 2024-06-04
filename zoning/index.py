@@ -2,7 +2,7 @@ import os
 import hydra
 from omegaconf import DictConfig, OmegaConf
 from datasets import load_from_disk, DatasetDict
-from .index import *
+from indexer import KeywordIndexer, EmbeddingIndexer
 from typing import cast
 from elasticsearch import Elasticsearch
 
@@ -14,12 +14,14 @@ def main(config: DictConfig):
         case "keyword":
             indexer = KeywordIndexer(config)
         case "embdeding":
-            indexer = EmbeddingIndexer(config)
+            raise NotImplementedError
         case _:
             raise ValueError(f"Extractor {config.extract.name} not implemented")
 
     # TODO, merge output_dir and target_state to global variable
-    dataset_path = os.path.join(config.output_dir, config.target_state, "hf_dataset")
+    dataset_path = os.path.join(
+        config.data_output_dir, config.target_state, "hf_dataset"
+    )
     dataset = load_from_disk(dataset_path)
     dataset = cast(DatasetDict, dataset)
 
