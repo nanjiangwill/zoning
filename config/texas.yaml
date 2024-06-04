@@ -1,8 +1,9 @@
 defaults:
   - _self_
 
-output_dir: data
+data_output_dir: data
 target_state: texas
+result_output_dir: resultsgs
 
 extract:
   name: textract
