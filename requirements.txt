@@ -1,0 +1,15 @@
+anthropic
+boto3
+datasets
+elasticsearch-dsl
+hydra-core
+ipykernel
+jsonlines
+matplotlib
+omegaconf
+openai
+polars
+pre-commit
+streamlit
+typer
+wandb

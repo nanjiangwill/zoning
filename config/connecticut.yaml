@@ -1,0 +1,46 @@
+defaults:
+  - _self_
+
+data_output_dir: data
+target_state: connecticut
+result_output_dir: results
+thesaurus_file: zoning/thesaurus.json
+ground_truth_file: data/${target_state}/ground_truth.csv
+town_district_file: data/${target_state}/town_district.csv
+
+extract:
+  name: textract
+  input_document_s3_bucket:
+  feature_types: ["TABLES"]  # allowed ["TABLES", "FORMS", "QUERIES", "SIGNATURES", "LAYOUT"]
+  hf_dataset:
+    name: ${extract.name}-${target_state}
+    publish_dataset: false
+    private: true
+  embedding:
+    embedding_model: text-embedding-ada-002
+
+
+index:
+  method: keyword # allowed keyword/embedding
+  es_endpoint: http://localhost:9200
+  index_page_range: 10
+
+search:
+  method: ${index.method}
+  num_results: 5
+  is_district_fuzzy: false
+  is_term_fuzzy: false
+
+llm:
+  method: zero-shot
+  model_name: gpt-4-1106-preview
+  max_tokens: 256
+  formatted_response: false
+
+
+
+test_data_split_seed: 13
+test_data_split_percent: 0.3
+
+eval:
+  terms: ["min_lot_size"]

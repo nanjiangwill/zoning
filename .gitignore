@@ -1,0 +1,9 @@
+.env
+data/*/*_dataset
+data/*/pdfs
+
+# this is hydra output
+outputs
+
+zoning/*/__pycache__
+zoning/__pycache__
