@@ -25,10 +25,10 @@ def main(config: DictConfig):
     dataset = load_from_disk(dataset_path)
     dataset = cast(DatasetDict, dataset)
 
-    es = Elasticsearch(config.index.es_endpoint)
+    es_client = Elasticsearch(config.index.es_endpoint)
 
     # TODO, currently we do not split the dataset, we index the whole dataset, but load_dataset need to specify train/test, so we store everything in train
-    indexer.index(es, dataset=dataset["train"])
+    indexer.index(es_client, dataset=dataset["train"])
     # indexer.index(dataset=dataset['train'])
 
 

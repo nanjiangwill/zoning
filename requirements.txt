@@ -11,3 +11,5 @@ boto3
 omegaconf
 hydra-core
 jsonlines
+polars
+typer

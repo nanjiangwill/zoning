@@ -2,8 +2,11 @@ defaults:
   - _self_
 
 data_output_dir: data
-target_state: texas
-result_output_dir: resultsgs
+target_state: connecticut
+result_output_dir: results
+thesaurus_file: zoning/thesaurus.json
+ground_truth_file: data/${target_state}/ground_truth.csv
+town_district_file: data/${target_state}/town_district.csv
 
 extract:
   name: textract
@@ -22,10 +25,17 @@ index:
   es_endpoint: http://localhost:9200
   index_page_range: 10
 
+search:
+  method: ${index.method}
+  num_results: 5
+  is_district_fuzzy: false
+  is_term_fuzzy: false
 
 llm:
-  _name_: gpt4
-  model_name: gpt4-
+  method: zero-shot
+  model_name: gpt-4-1106-preview
+  max_tokens: 256
+  formatted_response: false
 
 
 
@@ -33,4 +43,4 @@ test_data_split_seed: 13
 test_data_split_percent: 0.3
 
 eval:
-  fields: []
+  terms: ["min_lot_size"]

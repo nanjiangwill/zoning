@@ -1,10 +1,10 @@
+from omegaconf import DictConfig
+from ..utils import District
+
+
 class Searcher:
-    def __init__(self, method, **kwargs):
-        self.method = method
-        self.kwargs = kwargs
+    def __init__(self, config: DictConfig):
+        self.config = config
 
-    def __call__(self, queryset, *args, **kwargs):
-        return self.method(queryset, *args, **kwargs, **self.kwargs)
-
-    def __repr__(self):
-        return f"<Searcher {self.method.__name__} {self.kwargs}>"
+    def search(self, town: str, district: District, term: str):
+        pass

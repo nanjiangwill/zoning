@@ -6,12 +6,11 @@ import json
 import os
 import pandas as pd
 import pyarrow as pa
-from tqdm.contrib.concurrent import process_map
+from tqdm.contrib.concurrent import process_map, thread_map
 from datasets import load_dataset, Dataset, DatasetDict
 import tqdm
 import numpy as np
 import jsonlines
-from tqdm.contrib.concurrent import thread_map
 
 
 class TextractExtractor(Extractor):
@@ -97,6 +96,14 @@ class TextractExtractor(Extractor):
         Returns: TODO
         """
 
+        page_output_dir = os.path.join(
+            self.config.data_output_dir,
+            self.config.target_state,
+            "extract_page_dataset",
+        )
+
+        os.makedirs(page_output_dir, exist_ok=True)
+
         filename = os.path.join(
             self.config.data_output_dir,
             self.config.target_state,
@@ -152,9 +159,7 @@ class TextractExtractor(Extractor):
             )
 
         page_output_path = os.path.join(
-            self.config.data_output_dir,
-            self.config.target_state,
-            "extract_page_dataset",
+            page_output_dir,
             f"{town}-zoning-code.jsonl",
         )
         with jsonlines.open(page_output_path, "w") as f:
