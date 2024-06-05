@@ -33,13 +33,13 @@ Create a new dir in data `mkdir -p data/<state_name>/pdfs` and move all related
 Option 1: Not redo textract OCR
 
 - Ask for extracted json files and store them in `data/<state_name>/extract_dataset`
-- comment line `self.extractor = boto3.client("textract")` in `zoning/extractor/textract.py`
-- comment line `extractor.extract(state_all_towns_names)` in `zoning/extract.py`
 - Run `python zoning/extract.py --config-name <state_name>`
+ with `extraction.run_ocr: false`
 
 Option 2: Redo textract OCR
 
 - Run `python zoning/extract.py --config-name <state_name>`
+ with `extraction.run_ocr: true`
 - It will generate data inside `data/<state_name>/extract_dataset`
 
 After running OCR/extraction, it will gather information from same page and make

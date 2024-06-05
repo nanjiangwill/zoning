@@ -14,7 +14,7 @@ def main(config: DictConfig):
     match config.index.method:
         case "keyword":
             indexer = KeywordIndexer(config)
-        case "embdeding":
+        case "embedding":
             raise NotImplementedError  # indexer = EmbeddingIndexer(config)
         case _:
             raise ValueError(f"Extractor {config.extract.name} not implemented")

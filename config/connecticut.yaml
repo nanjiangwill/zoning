@@ -7,17 +7,21 @@ result_output_dir: results
 thesaurus_file: zoning/thesaurus.json
 ground_truth_file: data/${target_state}/ground_truth.csv
 town_district_file: data/${target_state}/town_district.csv
+pdf_dir: ${data_output_dir}/${target_state}/pdfs
+ocr_result_dir: ${data_output_dir}/${target_state}/extract_dataset
+dataset_dir: ${data_output_dir}/${target_state}/extract_page_dataset
 
 extract:
   name: textract
+  run_ocr: false
   input_document_s3_bucket:
+  pdf_name_prefix_in_s3_bucket: zoning/${target_state}/
+  ocr_target_names_file: ${data_output_dir}/${target_state}/all_towns_names.json
   feature_types: ["TABLES"]  # allowed ["TABLES", "FORMS", "QUERIES", "SIGNATURES", "LAYOUT"]
   hf_dataset:
     name: ${extract.name}-${target_state}
     publish_dataset: false
     private: true
-  embedding:
-    embedding_model: text-embedding-ada-002
 
 
 index:

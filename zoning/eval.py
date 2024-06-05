@@ -24,7 +24,7 @@ from .utils import (
 
 async def eval_terms_per_district(
     district_ground_truth, terms, searcher, llm
-) -> AsyncGenerator[EvaluationMetrics, None, None]:
+) -> AsyncGenerator[EvaluationMetrics, None]:
     town = district_ground_truth["town"]
     district = District(
         full_name=district_ground_truth["district"],
