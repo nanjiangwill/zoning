@@ -1,12 +1,11 @@
 import json
-import os
-import warnings
-from omegaconf import DictConfig
+
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Q, Search
-
+from omegaconf import DictConfig
 from search.base_searcher import Searcher
-from ..utils import expand_term, District, PageSearchOutput
+
+from ..utils import District, PageSearchOutput, expand_term
 
 # from ...utils import logger
 

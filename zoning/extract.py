@@ -1,8 +1,9 @@
-import hydra
-from omegaconf import DictConfig, OmegaConf
-from extractor import *
-import os
 import json
+import os
+
+import hydra
+from extractor import TextractExtractor
+from omegaconf import DictConfig, OmegaConf
 
 
 @hydra.main(version_base=None, config_path="../config", config_name="base")

@@ -1,13 +1,15 @@
-from omegaconf import DictConfig
-from ..utils import District, get_thesaurus, ExtractionOutput
 import json
+
 from jinja2 import Environment, FileSystemLoader
-from openai import AsyncOpenAI
+from omegaconf import DictConfig
+from openai import AsyncOpenAI, OpenAI
 from pydantic import ValidationError
+
+from ..utils import District, ExtractionOutput, get_thesaurus
 
 
 class LLM:
-    def __init__(self, config):
+    def __init__(self, config: DictConfig):
         self.config = config
         self.prompt_env = Environment(loader=FileSystemLoader("zoning/llm/templates"))
         extraction_chat_completion_tmpl = self.prompt_env.get_template(
@@ -17,9 +19,9 @@ class LLM:
             "extraction_completion.pmpt.tpl"
         )
 
-        extract_chat_completion_tmpl = self.prompt_env.get_template(
-            "extract_chat_completion.pmpt.tpl"
-        )
+        # extract_chat_completion_tmpl = self.prompt_env.get_template(
+        #     "extract_chat_completion.pmpt.tpl"
+        # )
 
         self.TEMPLATE_MAPPING = {
             "text-davinci-003": extraction_completion_tmpl,
@@ -28,9 +30,9 @@ class LLM:
             "gpt-4-1106-preview": extraction_chat_completion_tmpl,
             "gpt-4-turbo": extraction_chat_completion_tmpl,
         }
-        ## Only support OPENAI for now
+        # Only support OPENAI for now
         self.aclient = AsyncOpenAI()
-        self.client = Oen
+        self.client = OpenAI()
 
     def get_prompt(self, town: str, district: District, term: str, page_text: str):
         synonyms = ", ".join(get_thesaurus(self.config.thesaurus_file).get(term, []))

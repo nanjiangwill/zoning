@@ -1,7 +1,7 @@
-from .base_llm import LLM
 from asyncio import gather
 
-from ..utils import flatten, page_coverage, PageSearchOutput, District, LookupOutput
+from ..utils import LookupOutput, flatten, page_coverage
+from .base_llm import LLM
 
 
 class VanillaLLM(LLM):

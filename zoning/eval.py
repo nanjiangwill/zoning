@@ -1,28 +1,18 @@
-from functools import partial
-import os
-import hydra
-from hydra import compose, initialize
-from omegaconf import DictConfig, OmegaConf
-from .utils import (
-    District,
-    normalize_town,
-    get_town_district_mapping,
-    page_coverage,
-    flatten,
-    AsyncTyper,
-    semantic_comparison,
-)
-from search import KeywordSearcher
-from llm import VanillaLLM
-import pandas as pd
-import polars as pl
-from tqdm.contrib.concurrent import process_map
-import asyncio
-from asyncio import run as aiorun
 import copy
-import typer
-from typer import Typer
 import json
+import os
+from asyncio import run as aiorun
+
+import polars as pl
+import typer
+from hydra import compose, initialize
+from llm import VanillaLLM
+from omegaconf import OmegaConf
+from search import KeywordSearcher
+from tqdm.contrib.concurrent import process_map
+from typer import Typer
+
+from .utils import District, flatten, page_coverage, semantic_comparison
 
 
 async def eval_terms_per_district(district_ground_truth, terms, searcher, llm):
@@ -39,23 +29,23 @@ async def eval_terms_per_district(district_ground_truth, terms, searcher, llm):
         else:
             gt_page = set(map(int, str(gt_page).split(",")))
 
+        pages = searcher.search(town, district, term)
+
+        # TODO, need a better way to reset the generator
+        tmp_pages = copy.deepcopy(pages)
+        expanded_pages = flatten(page_coverage(tmp_pages))
+
         # true answer
         expected = district_ground_truth[f"{term}_gt"]
         expected_extended = district_ground_truth[f"{term}_gt_orig"]
         is_correct_page_searched = any(gt_page & set(expanded_pages))
-        this_correct_page_searched = any(gt_page & set(extracted_pages_expanded))
         is_empty = True
-
-        pages = searcher.search(town, district, term)
-
-        ## TODO, need a better way to reset the generator
-        tmp_pages = copy.deepcopy(pages)
-        expanded_pages = flatten(page_coverage(tmp_pages))
 
         llm_output = llm.query(town, district, term, pages)
         async for result in llm_output:
             extracted_pages = {r.page_number for r in result.search_pages}
             extracted_pages_expanded = set(result.search_pages_expanded)
+            this_correct_page_searched = any(gt_page & set(extracted_pages_expanded))
             base_output = {
                 "town": town,
                 "district": district.full_name,
@@ -279,6 +269,8 @@ def main(config_name: str = typer.Argument("connecticut")):
         )
 
         results = []
+
+        # Change the following to use process_map
         for row in ground_truth.iter_rows(named=True):
             async for result in eval_terms_per_district(row, eval_terms, searcher, llm):
                 results.append(result)

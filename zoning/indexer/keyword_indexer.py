@@ -1,8 +1,9 @@
-from .base_indexer import Indexer
-from omegaconf import DictConfig
-from datasets import load_from_disk, DatasetDict, Dataset
-from tqdm.contrib.concurrent import thread_map
+from datasets import Dataset
 from elasticsearch import Elasticsearch
+from omegaconf import DictConfig
+from tqdm.contrib.concurrent import thread_map
+
+from .base_indexer import Indexer
 
 
 class KeywordIndexer(Indexer):

@@ -1,15 +1,49 @@
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.3.0
+    rev: 'v4.6.0'
     hooks:
     -   id: check-yaml
     -   id: end-of-file-fixer
     -   id: trailing-whitespace
+    -   id: check-added-large-files
+    -   id: check-json
+    # -   id: pretty-format-json
+    -   id: check-merge-conflict
+    -   id: detect-private-key
+    -   id: requirements-txt-fixer
 -   repo: https://github.com/psf/black
-    rev: 22.10.0
+    rev: '24.4.2'
     hooks:
     -   id: black
+    -   id: black-jupyter
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: ''  # Use the sha / tag you want to point at
+    rev: 'v1.10.0'  # Use the sha / tag you want to point at
     hooks:
     -   id: mypy
+-   repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: 'v0.41.0'
+    hooks:
+    -   id: markdownlint
+    -   id: markdownlint-fix
+-   repo: https://github.com/PyCQA/isort
+    rev: '5.13.2'
+    hooks:
+    -   id: isort
+        args: ["--profile", "black"]
+-   repo: https://github.com/PyCQA/docformatter
+    rev: 'v1.7.5'
+    hooks:
+    -   id: docformatter
+-   repo: https://github.com/lovesegfault/beautysh
+    rev: 'v6.2.1'
+    hooks:
+    -   id: beautysh
+-   repo: https://github.com/PyCQA/flake8
+    rev: '7.0.0'
+    hooks:
+    -   id: flake8
+        args: ['--ignore=E501,W503', "--per-file-ignores='__init__.py:F401"] # ignore length limit = 82
+        # args: [
+        #     "--count",
+        #     "--select", "E101,E11,E111,E112,E113,E121,E122,E123,E124,E125,E126,E127,E128,E129,E131,E133,E20,E211,E225,E231,E241,E242,E251,E252,E26,E265,E266,E27,E301,E302,E303,E304,E305,E306,E401,E402,E502,E701,E711,E712,E713,E714,E722,E731,E901,E902,F401,F822,F823,F841,W191,W291,W292,W293,W391,W601,W602,W603,W604,W605,W690",
+        #   ]

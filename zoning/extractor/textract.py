@@ -1,16 +1,15 @@
-from .base_extractor import Extractor, Entities, Entity
-from omegaconf import DictConfig
-import boto3
-import time
 import json
 import os
-import pandas as pd
-import pyarrow as pa
-from tqdm.contrib.concurrent import process_map, thread_map
-from datasets import load_dataset, Dataset, DatasetDict
-import tqdm
-import numpy as np
+import time
+
+import boto3
 import jsonlines
+import tqdm
+from datasets import Dataset, load_dataset
+from omegaconf import DictConfig
+from tqdm.contrib.concurrent import process_map, thread_map
+
+from .base_extractor import Entities, Entity, Extractor
 
 
 class TextractExtractor(Extractor):
@@ -19,10 +18,8 @@ class TextractExtractor(Extractor):
         self.extractor = boto3.client("textract")
 
     def start_job(self, town_pdf_path: str) -> str:
-        """
-        Runs Textract's StartDocumentAnalysis action and
-        specifies an s3 bucket to dump output
-        """
+        """Runs Textract's StartDocumentAnalysis action and specifies an s3
+        bucket to dump output."""
         response = self.extractor.start_document_analysis(
             DocumentLocation={
                 "S3Object": {
@@ -36,9 +33,7 @@ class TextractExtractor(Extractor):
         return response["JobId"]
 
     def get_job_status(self, job_id: str):
-        """'
-        Checks whether document analysis still in progress
-        """
+        """' Checks whether document analysis still in progress."""
         status: str = "IN_PROGRESS"
         while status == "IN_PROGRESS":
             time.sleep(5)
@@ -47,10 +42,9 @@ class TextractExtractor(Extractor):
             yield status, response.get("StatusMessage", None)
 
     def get_job_results(self, job_id: str):
-        """
-        If document analysis complete, runs Textract's GetDocumentAnalysis action
-        and pulls JSON results to be stored in s3 bucket designated above
-        """
+        """If document analysis complete, runs Textract's GetDocumentAnalysis
+        action and pulls JSON results to be stored in s3 bucket designated
+        above."""
         response = self.extractor.get_document_analysis(JobId=job_id)
         nextToken = response.get("NextToken", None)
         yield response
@@ -129,9 +123,11 @@ class TextractExtractor(Extractor):
                     w.get("Text", ""),
                     w["BlockType"],
                     self.collect_relations(w),
-                    (w["RowIndex"], w["ColumnIndex"])
-                    if "RowIndex" in w and "ColumnIndex" in w
-                    else (-1, -1),
+                    (
+                        (w["RowIndex"], w["ColumnIndex"])
+                        if "RowIndex" in w and "ColumnIndex" in w
+                        else (-1, -1)
+                    ),
                 )
                 entities.add(e)
             elif w["BlockType"] == "PAGE":

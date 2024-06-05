@@ -1,10 +1,11 @@
 import os
-import hydra
-from omegaconf import DictConfig, OmegaConf
-from datasets import load_from_disk, DatasetDict
-from indexer import KeywordIndexer, EmbeddingIndexer
 from typing import cast
+
+import hydra
+from datasets import DatasetDict, load_from_disk
 from elasticsearch import Elasticsearch
+from indexer import KeywordIndexer
+from omegaconf import DictConfig, OmegaConf
 
 
 @hydra.main(version_base=None, config_path="../config", config_name="base")
@@ -14,7 +15,7 @@ def main(config: DictConfig):
         case "keyword":
             indexer = KeywordIndexer(config)
         case "embdeding":
-            raise NotImplementedError
+            raise NotImplementedError  # indexer = EmbeddingIndexer(config)
         case _:
             raise ValueError(f"Extractor {config.extract.name} not implemented")
 

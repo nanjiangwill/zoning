@@ -1,15 +1,16 @@
-import json
-from pydantic import BaseModel
-import re
-import pandas as pd
-from typing import Iterable, TypeVar
 import asyncio
 import inspect
-from functools import wraps, partial
-from openai import OpenAI, APIError, RateLimitError, APIConnectionError, Timeout
-from typer import Typer
-from tenacity import retry, retry_if_exception_type, wait_random_exponential
+import json
+import re
+from functools import partial, wraps
+from typing import Iterable, TypeVar
+
+import pandas as pd
 from jinja2 import Environment, FileSystemLoader
+from openai import APIConnectionError, APIError, OpenAI, RateLimitError, Timeout
+from pydantic import BaseModel
+from tenacity import retry, retry_if_exception_type, wait_random_exponential
+from typer import Typer
 
 T = TypeVar("T")
 
@@ -52,10 +53,8 @@ class LookupOutput(BaseModel):
     output: ExtractionOutput | ExtractionOutput2 | None
     search_pages: list[PageSearchOutput]
     search_pages_expanded: list[int]
-    """
-    The set of pages, in descending order or relevance, used to produce the
-    result.
-    """
+    """The set of pages, in descending order or relevance, used to produce the
+    result."""
 
     def __str__(self):
         return f"LookupOutput(output={self.output}, search_pages=[...], search_pages_expanded={self.search_pages_expanded})"
@@ -161,8 +160,8 @@ def page_coverage(search_result: list[PageSearchOutput]) -> list[list[int]]:
     return pages_covered
 
 
-def flatten(l: Iterable[Iterable[T]]) -> list[T]:
-    return [item for sublist in l for item in sublist]
+def flatten(t: Iterable[Iterable[T]]) -> list[T]:
+    return [item for sublist in t for item in sublist]
 
 
 # cache = dc.Cache(get_project_root() / ".diskcache")

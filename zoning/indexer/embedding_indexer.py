@@ -1,7 +1,8 @@
-from .base_indexer import Indexer
-from omegaconf import DictConfig
 from datasets import Dataset
 from elasticsearch import Elasticsearch
+from omegaconf import DictConfig
+
+from .base_indexer import Indexer
 
 
 class EmbeddingIndexer(Indexer):

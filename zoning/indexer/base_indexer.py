@@ -1,6 +1,7 @@
+from dataclasses import dataclass
+
 from datasets import Dataset
 from elasticsearch import Elasticsearch
-from dataclasses import dataclass
 
 
 @dataclass
