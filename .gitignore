@@ -6,3 +6,4 @@ data/*/pdfs
 outputs
 
 zoning/*/__pycache__
+zoning/__pycache__
