@@ -3,7 +3,7 @@ import inspect
 import json
 import re
 from functools import partial, wraps
-from typing import Iterable, TypeVar
+from typing import Any, Iterable, TypeVar
 
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader
@@ -63,6 +63,27 @@ class LookupOutput(BaseModel):
         return json.loads(self.model_dump_json())
 
 
+class EvaluationMetrics(BaseModel):
+    town: str
+    district: str
+    term: str
+    gt_page: list[int]
+    correct_page_searched: bool
+    this_correct_page_searched: bool
+    expanded_pages: list[int] | None
+    extracted_pages: list[int] | None
+    extracted_pages_expanded: list[int] | None
+    expected: int | float
+    expected_extended: Any
+    pages: list[int] | None
+    rationale: str | None
+    extracted_text: str | None
+    actual: str | None
+    confirmed_flag: None
+    confirmed_raw: None
+    actual_before_confirmation: None
+
+
 # Copied from https://github.com/tiangolo/typer/issues/88
 class AsyncTyper(Typer):
     @staticmethod
@@ -87,7 +108,7 @@ class AsyncTyper(Typer):
         return partial(self.maybe_run_async, decorator)
 
 
-def normalize_town(x):
+def normalize_town(x) -> str:
     x = x.lower().strip()
     x = re.sub(r"\s*-\s*", "-", x)
     x = re.sub(r"\s*/\s*", "-", x)
@@ -95,13 +116,13 @@ def normalize_town(x):
     return x
 
 
-def get_thesaurus(thesarus_file):
+def get_thesaurus(thesarus_file) -> dict:
     with open(thesarus_file, "r", encoding="utf-8") as f:
         thesaurus = json.load(f)
     return thesaurus
 
 
-def expand_term(thesarus_file: str, term: str):
+def expand_term(thesarus_file: str, term: str) -> Iterable[str]:
     # term = term.replace("_", " ").strip()
     # logger.info(f"Term: {term}")  # Initial logging of the term
     thesarus = get_thesaurus(thesarus_file)
@@ -133,9 +154,9 @@ def expand_term(thesarus_file: str, term: str):
     # logger.info(f"Expanded {term} to {expanded_count} variations.")  # Log the total number of variations
 
 
-def get_town_district_mapping(file):
+def get_town_district_mapping(file) -> dict[str, list[District]]:
     data = pd.read_csv(file)
-    map = {
+    map: dict[str, list[District]] = {
         normalize_town(jurisdiction): [] for jurisdiction in set(data["Jurisdiction"])
     }
     for i, row in data.iterrows():

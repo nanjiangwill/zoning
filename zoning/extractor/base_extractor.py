@@ -1,17 +1,19 @@
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Dict, List, Set, Tuple
 
 
-@dataclass
-class Extractor:
+class Extractor(ABC):
     def __init__(self, extractor_config):
         self.config = extractor_config
         self.name = extractor_config.extract.name
 
-    def extract(self, state_all_towns_names):
+    @abstractmethod
+    def extract(self, state_all_towns_names) -> None:
         pass
 
-    def post_extract(self, state_all_towns_names):
+    @abstractmethod
+    def post_extract(self, state_all_towns_names) -> None:
         pass
 
 

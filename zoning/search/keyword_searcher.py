@@ -1,4 +1,5 @@
 import json
+from typing import Generator
 
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Q, Search
@@ -18,8 +19,9 @@ class KeywordSearcher(Searcher):
         self.is_district_fuzzy = self.config.search.is_district_fuzzy
         self.is_term_fuzzy = self.config.search.is_term_fuzzy
 
-    def search(self, town: str, district: District, term: str):
-        print("Finally in")
+    def search(
+        self, town: str, district: District, term: str
+    ) -> Generator[PageSearchOutput, None, None]:
         # Search in town
         s = Search(using=self.es_client, index=f"{self.config.target_state}-{town}")
         # Boost factor: Increasing the boost value will make documents matching this query to be ranked higher

@@ -1,6 +1,7 @@
 import json
 import os
 import time
+from typing import Generator, Tuple
 
 import boto3
 import jsonlines
@@ -32,7 +33,7 @@ class TextractExtractor(Extractor):
 
         return response["JobId"]
 
-    def get_job_status(self, job_id: str):
+    def get_job_status(self, job_id: str) -> Generator[Tuple[str, str], None, None]:
         """' Checks whether document analysis still in progress."""
         status: str = "IN_PROGRESS"
         while status == "IN_PROGRESS":
@@ -41,7 +42,7 @@ class TextractExtractor(Extractor):
             status = response["JobStatus"]
             yield status, response.get("StatusMessage", None)
 
-    def get_job_results(self, job_id: str):
+    def get_job_results(self, job_id: str) -> Generator[dict, None, None]:
         """If document analysis complete, runs Textract's GetDocumentAnalysis
         action and pulls JSON results to be stored in s3 bucket designated
         above."""
@@ -56,7 +57,7 @@ class TextractExtractor(Extractor):
             nextToken = response.get("NextToken", None)
             yield response
 
-    def _extract(self, town_pdf_path: str):
+    def _extract(self, town_pdf_path: str) -> None:
         job_id = self.start_job(town_pdf_path)
         for s in self.get_job_status(job_id):
             status, status_message = s
@@ -76,14 +77,14 @@ class TextractExtractor(Extractor):
                     json.dump(result, f)
                 print(f"Job {job_id} on file {town_pdf_path} SUCCEEDED.")
 
-    def extract(self, state_all_towns_names: list[str]):
+    def extract(self, state_all_towns_names: list[str]) -> None:
         state_all_towns_zoning_files = [
             f"zoning/{self.config.target_state}/zoning-{town}.pdf"
             for town in state_all_towns_names
         ]
         thread_map(self._extract, state_all_towns_zoning_files)
 
-    def process_town(self, town: str):
+    def process_town(self, town: str) -> str | None:
         """
         Inputs:
             town (string): name of town whose text data to import
@@ -163,7 +164,7 @@ class TextractExtractor(Extractor):
 
         return page_output_path
 
-    def collect_relations(self, w):
+    def collect_relations(self, w) -> list[str]:
         rels = w["Relationships"] if "Relationships" in w else []
         ids = []
         for r in rels if rels else []:
@@ -171,7 +172,7 @@ class TextractExtractor(Extractor):
                 ids.append(id)
         return ids
 
-    def linearize(self, dataset: Dataset):
+    def linearize(self, dataset: Dataset) -> Dataset:
         entities = Entities([], set(), {})
         rows = []
         for w in tqdm(dataset):
@@ -195,7 +196,7 @@ class TextractExtractor(Extractor):
                 continue
         return Dataset.from_list(rows)
 
-    def post_extract(self, state_all_towns_names: list[str]):
+    def post_extract(self, state_all_towns_names: list[str]) -> None:
         if self.config.target_state == "all":
             raise NotImplementedError(
                 "Post-extraction for all states not yet implemented."

@@ -1,13 +1,13 @@
-from dataclasses import dataclass
+from abc import ABC, abstractmethod
 
 from datasets import Dataset
 from elasticsearch import Elasticsearch
 
 
-@dataclass
-class Indexer:
+class Indexer(ABC):
     def __init__(self, indexer_config):
         self.config = indexer_config
 
-    def index(self, es: Elasticsearch, dataset: Dataset):
-        raise NotImplementedError
+    @abstractmethod
+    def index(self, es: Elasticsearch, dataset: Dataset) -> None:
+        pass

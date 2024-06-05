@@ -1,14 +1,16 @@
 import json
+from abc import ABC, abstractmethod
+from typing import AsyncGenerator
 
 from jinja2 import Environment, FileSystemLoader
 from omegaconf import DictConfig
 from openai import AsyncOpenAI, OpenAI
 from pydantic import ValidationError
 
-from ..utils import District, ExtractionOutput, get_thesaurus
+from ..utils import District, ExtractionOutput, LookupOutput, get_thesaurus
 
 
-class LLM:
+class LLM(ABC):
     def __init__(self, config: DictConfig):
         self.config = config
         self.prompt_env = Environment(loader=FileSystemLoader("zoning/llm/templates"))
@@ -34,7 +36,9 @@ class LLM:
         self.aclient = AsyncOpenAI()
         self.client = OpenAI()
 
-    def get_prompt(self, town: str, district: District, term: str, page_text: str):
+    def get_prompt(
+        self, town: str, district: District, term: str, page_text: str
+    ) -> list[dict[str, str]] | str:
         synonyms = ", ".join(get_thesaurus(self.config.thesaurus_file).get(term, []))
         match self.config.llm.model_name:
             case "text-davinci-003":
@@ -152,3 +156,9 @@ class LLM:
             print("Error parsing response from model during extraction:", exc)
             print(f"Response: {output}")
             return None
+
+    @abstractmethod
+    async def query(
+        self, town, district, term, pages
+    ) -> AsyncGenerator[LookupOutput, None]:
+        pass

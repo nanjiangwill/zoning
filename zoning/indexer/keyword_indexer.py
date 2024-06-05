@@ -10,7 +10,9 @@ class KeywordIndexer(Indexer):
     def __init__(self, indexer_config: DictConfig):
         super().__init__(indexer_config)
 
-    def _index_town(self, es_client: Elasticsearch, town: str, dataset: Dataset):
+    def _index_town(
+        self, es_client: Elasticsearch, town: str, dataset: Dataset
+    ) -> None:
         town_dataset = dataset.filter(lambda example: example["Town"] == town)
 
         for page_idx in range(len(town_dataset)):
@@ -34,6 +36,6 @@ class KeywordIndexer(Indexer):
                 request_timeout=30,
             )
 
-    def index(self, es_client: Elasticsearch, dataset: Dataset):
+    def index(self, es_client: Elasticsearch, dataset: Dataset) -> None:
         all_towns = set(dataset["Town"])
         thread_map(lambda town: self._index_town(es_client, town, dataset), all_towns)

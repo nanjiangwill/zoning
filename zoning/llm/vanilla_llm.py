@@ -1,4 +1,5 @@
 from asyncio import gather
+from typing import AsyncGenerator
 
 from ..utils import LookupOutput, flatten, page_coverage
 from .base_llm import LLM
@@ -8,7 +9,9 @@ class VanillaLLM(LLM):
     def __init__(self, config):
         super().__init__(config)
 
-    async def query(self, town, district, term, pages):
+    async def query(
+        self, town, district, term, pages
+    ) -> AsyncGenerator[LookupOutput, None]:
         async def worker(page):
             prompt = self.get_prompt(town, district, term, page.text)
             return (

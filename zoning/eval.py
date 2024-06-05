@@ -2,6 +2,7 @@ import copy
 import json
 import os
 from asyncio import run as aiorun
+from typing import AsyncGenerator, Tuple
 
 import polars as pl
 import typer
@@ -12,10 +13,18 @@ from search import KeywordSearcher
 from tqdm.contrib.concurrent import process_map
 from typer import Typer
 
-from .utils import District, flatten, page_coverage, semantic_comparison
+from .utils import (
+    District,
+    EvaluationMetrics,
+    flatten,
+    page_coverage,
+    semantic_comparison,
+)
 
 
-async def eval_terms_per_district(district_ground_truth, terms, searcher, llm):
+async def eval_terms_per_district(
+    district_ground_truth, terms, searcher, llm
+) -> AsyncGenerator[EvaluationMetrics, None, None]:
     town = district_ground_truth["town"]
     district = District(
         full_name=district_ground_truth["district"],
@@ -101,7 +110,7 @@ async def eval_terms_per_district(district_ground_truth, terms, searcher, llm):
             }
 
 
-def eval_terms_results(results):
+def eval_terms_results(results) -> Tuple[dict, pl.DataFrame, pl.DataFrame]:
     results_df = pl.from_dicts(results, schema_overrides={"expected_extended": pl.Utf8})
     # 1. page search recall
     search_results_df = results_df.groupby(["town", "district"]).agg(
