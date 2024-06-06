@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
-from omegaconf import DictConfig
+
 from class_types import ExtractionTargetCollection
+from omegaconf import DictConfig
+
 
 class Extractor(ABC):
     def __init__(self, extractor_config: DictConfig):

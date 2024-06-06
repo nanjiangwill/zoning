@@ -5,11 +5,12 @@ from typing import Generator, Tuple
 
 import boto3
 import tqdm
+from class_types import Entities, Entity, ExtractionTarget, ExtractionTargetCollection
 from omegaconf import DictConfig
 from tqdm.contrib.concurrent import process_map, thread_map
 
-from class_types import Entities, Entity, ExtractionTargetCollection, ExtractionTarget
 from .base_extractor import Extractor
+
 
 class TextractExtractor(Extractor):
     def __init__(self, extractor_config: DictConfig):
@@ -55,7 +56,7 @@ class TextractExtractor(Extractor):
             )
             nextToken = response.get("NextToken", None)
             yield response
-            
+
     def collect_relations(self, w) -> list[str]:
         rels = w["Relationships"] if "Relationships" in w else []
         ids = []
@@ -66,7 +67,9 @@ class TextractExtractor(Extractor):
 
     def _extract(self, target: ExtractionTarget) -> None:
         if self.config.extract.pdf_name_prefix_in_s3_bucket:
-            s3_bucket_name = self.config.extract.pdf_name_prefix_in_s3_bucket + target.pdf_file
+            s3_bucket_name = (
+                self.config.extract.pdf_name_prefix_in_s3_bucket + target.pdf_file
+            )
         else:
             s3_bucket_name = target.pdf_file
         job_id = self.start_job(s3_bucket_name)
@@ -80,16 +83,11 @@ class TextractExtractor(Extractor):
                 result = list(self.get_job_results(job_id))
                 with open(target.ocr_result_file, "w", encoding="utf-8") as f:
                     json.dump(result, f)
-                print(f"Job {job_id} on file {target.pdf_file} SUCCEEDED. Write to {target.ocr_result_file}")
+                print(
+                    f"Job {job_id} on file {target.pdf_file} SUCCEEDED. Write to {target.ocr_result_file}"
+                )
 
-    def extract(self, extract_target: ExtractionTargetCollection) -> None:
-        if self.config.extract.run_ocr:
-            thread_map(self._extract, extract_target)
-        
-        # OCR result from textract is a list of json objects containing unneeded information, we need to extract the text from it
-        self.process_ocr_results(extract_target)
-    
-    def _process_ocr_result(self, target: ExtractionTarget) -> None:
+    def process_ocr_results(self, target: ExtractionTarget) -> None:
         """
         Inputs:
             town (string): name of town whose text data to import
@@ -146,9 +144,13 @@ class TextractExtractor(Extractor):
 
         with open(target.dataset_file, "w") as f:
             json.dump(rows, f)
-       
-    def process_ocr_results(self, extract_target: ExtractionTargetCollection) -> None:
-        assert len(os.listdir(extract_target.ocr_result_dir)) > 0, "No OCR results found"
-        process_map(self._process_ocr_result, extract_target.targets)
 
-    
+    def extract(self, extract_target: ExtractionTargetCollection) -> None:
+        if self.config.extract.run_ocr:
+            thread_map(self._extract, extract_target)
+
+        assert (
+            len(os.listdir(extract_target.ocr_result_dir)) > 0
+        ), "No OCR results found"
+        # OCR result from textract is a list of json objects containing unneeded information, we need to extract the text from it
+        process_map(self.process_ocr_results, extract_target.targets)
