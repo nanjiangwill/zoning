@@ -1,8 +1,11 @@
-from dataclasses import dataclass
-import os
-from omegaconf import DictConfig
 import json
-from typing import List, Tuple, Set, Dict
+import os
+from dataclasses import dataclass
+from typing import Dict, List, Set, Tuple
+
+from dataclasses_json import dataclass_json
+from omegaconf import DictConfig
+
 
 @dataclass
 class ExtractionEntity:
@@ -64,6 +67,7 @@ class ExtractionResult:
     typ: str
     relationships: List[str]
     position: Tuple[int, int]
+
 
 @dataclass_json
 @dataclass

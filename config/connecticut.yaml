@@ -1,18 +1,20 @@
 defaults:
   - _self_
 
-data_output_dir: data
+experiment_name: es_vanilla_llm
+
 target_state: connecticut
-result_output_dir: results
-thesaurus_file: ${data_output_dir}/thesaurus.json
-ground_truth_file: data/${target_state}/ground_truth.csv
-town_district_file: data/${target_state}/town_district.csv
-target_names_file: ${data_output_dir}/${target_state}/all_towns_names.json
-pdf_dir: ${data_output_dir}/${target_state}/pdfs
-ocr_result_dir: ${data_output_dir}/${target_state}/extract_dataset
-dataset_dir: ${data_output_dir}/${target_state}/extract_page_dataset
+data_output_dir: data/${target_state}
+result_output_dir: results/${target_state}
+ground_truth_file: ${data_output_dir}/ground_truth.csv
+town_district_file: ${data_output_dir}/town_district.csv
+target_names_file: ${data_output_dir}/all_towns_names.json
+pdf_dir: ${data_output_dir}/pdfs
+ocr_result_dir: ${data_output_dir}/extract_dataset
+dataset_dir: ${data_output_dir}/extract_page_dataset
 
 eval_terms: ["min_lot_size"]
+thesaurus_file: data/thesaurus.json
 
 extract:
   name: textract

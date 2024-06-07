@@ -1,5 +1,6 @@
-from omegaconf import DictConfig
 from class_types import IndexEntities
+from omegaconf import DictConfig
+
 from .base_indexer import Indexer
 
 

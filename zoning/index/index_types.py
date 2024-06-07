@@ -1,8 +1,11 @@
+import json
+import os
 from dataclasses import dataclass
 from typing import Dict, Generator
-import os
-import json
+
 from omegaconf import DictConfig
+
+
 @dataclass
 class ElasticSearchIndexData:
     index: str

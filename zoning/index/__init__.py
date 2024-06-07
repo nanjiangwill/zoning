@@ -1,5 +1,5 @@
 from .embedding_indexer import EmbeddingIndexer
-from .keyword_indexer import KeywordIndexer
 from .index_types import IndexEntities
+from .keyword_indexer import KeywordIndexer
 
 __all__ = ["EmbeddingIndexer", "KeywordIndexer", "IndexEntities"]

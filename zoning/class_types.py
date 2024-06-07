@@ -1,3 +1,6 @@
+import copy
+import json
+import os
 from dataclasses import dataclass
 from typing import Optional
 
@@ -120,6 +123,12 @@ class SearchPattern(BaseModel):
     search_eval_term_pattern: SearchEvalTermPattern
     search_place_pattern: SearchPlacePattern
 
+    def get_place(self) -> Place:
+        return self.search_place_pattern.Place
+
+    def get_eval_term(self) -> str:
+        return self.search_eval_term_pattern.name
+
     def get_query(self) -> Q:
         return (
             self.search_eval_term_pattern.get_query()
@@ -168,9 +177,20 @@ class SearchResult(BaseModel):
     def __post_init__(self):
         self.page_range = flatten(page_coverage([self.text]))
 
+    def to_json():
+        # TODO with @dataclass_json
+        pass
+
 
 @dataclass
 class LLMQuery(BaseModel):
+    place: Place
+    eval_term: str
+    context: str
+
+
+@dataclass
+class LLMQueries(BaseModel):
     place: Place
     eval_term: str
     search_results: list[SearchResult]
@@ -179,20 +199,48 @@ class LLMQuery(BaseModel):
 @dataclass_json
 @dataclass
 class LLMInferenceResult(BaseModel):
-    search_result: SearchResult
-
     extracted_text: list[str]  # Check
     rationale: str
     answer: Optional[str | None]
+
+    def to_json():
+        # TODO with @dataclass_json
+        pass
 
 
 @dataclass
 class EvaluationDataResults(BaseModel):
     place: Place
     eval_term: str
-    entire_searched_page_range: list[int]
     search_results: list[SearchResult]
     llm_inference_results: list[LLMInferenceResult]
+    entire_search_results_page_range: list[int]
 
     def __post_init__(self):
-        self.search_results = [r.search_result for r in self.llm_inference_results]
+        self.entire_search_results_page_range = flatten(
+            page_coverage(copy.deepcopy(self.search_results))
+        )
+
+    def save_to(self, result_output_dir: str, experiment_name: str):
+        # we can name experiment
+        term_output_dir = os.path.join(
+            result_output_dir,
+            experiment_name,
+            self.eval_term,
+            "search_and_llm_inference.json",
+        )
+
+        data = []
+        for search_result, llm_inference_result in zip(
+            self.search_results, self.llm_inference_results
+        ):
+            data.append(
+                {
+                    "place": str(self.place),
+                    "eval_term": self.eval_term,
+                    "search_result": search_result.to_json(),
+                    "llm_inference_result": llm_inference_result.to_json(),
+                }
+            )
+        with open(term_output_dir, "w") as f:
+            json.dump(data, f)

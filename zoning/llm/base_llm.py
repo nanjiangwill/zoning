@@ -2,12 +2,12 @@ import json
 from abc import ABC, abstractmethod
 from typing import AsyncGenerator
 
-from class_types import LLMQuery, Place, SearchResult
+from class_types import LLMInferenceResult, LLMQueries, LLMQuery, Place
 from jinja2 import Environment, FileSystemLoader
 from omegaconf import DictConfig
 from openai import AsyncOpenAI, OpenAI
 from pydantic import ValidationError
-from utils import ExtractionOutput, LookupOutput, get_thesaurus
+from utils import get_thesaurus
 
 
 class LLM(ABC):
@@ -94,10 +94,10 @@ class LLM(ABC):
     # @limit_global_concurrency(100)
     async def query_llm(
         self,
-        search_result: SearchResult,
+        llm_query: LLMQuery,
     ) -> str | None:
         input_prompt = self.get_prompt(
-            search_result.place, search_result.eval_term, search_result.text
+            llm_query.place, llm_query.eval_term, llm_query.context
         )
         base_params = {
             "model": self.config.llm.model_name,
@@ -142,7 +142,7 @@ class LLM(ABC):
             print("Error running prompt", exc)
             return None
 
-    def parse_llm_output(self, output: str | None) -> ExtractionOutput | None:
+    def parse_llm_output(self, output: str | None) -> LLMInferenceResult:
         if output is None or output == "null":
             return None
 
@@ -155,7 +155,7 @@ class LLM(ABC):
                 # The model is allowed to return null if it cannot find the answer,
                 # so just pass this onwards.
                 return None
-            return ExtractionOutput(**json_body)
+            return LLMInferenceResult(**json_body)
         except (ValidationError, TypeError, json.JSONDecodeError) as exc:
             print("Error parsing response from model during extraction:", exc)
             print(f"Response: {output}")
@@ -163,7 +163,6 @@ class LLM(ABC):
 
     @abstractmethod
     async def query(
-        self,
-        llm_query: LLMQuery,
-    ) -> AsyncGenerator[LookupOutput, None]:
+        self, llm_queries: LLMQueries
+    ) -> AsyncGenerator[LLMInferenceResult, None]:
         pass
