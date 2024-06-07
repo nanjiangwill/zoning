@@ -5,7 +5,12 @@ from typing import Generator, Tuple
 
 import boto3
 import tqdm
-from class_types import Entities, Entity, ExtractionTarget, ExtractionTargetCollection
+from ocr_types import (
+    ExtractionEntities,
+    ExtractionEntity,
+    ExtractionResult,
+    ExtractionResults,
+)
 from omegaconf import DictConfig
 from tqdm.contrib.concurrent import process_map, thread_map
 
@@ -65,7 +70,7 @@ class TextractExtractor(Extractor):
                 ids.append(id)
         return ids
 
-    def _extract(self, target: ExtractionTarget) -> None:
+    def _extract(self, target: ExtractionEntity) -> None:
         if self.config.extract.pdf_name_prefix_in_s3_bucket:
             s3_bucket_name = (
                 self.config.extract.pdf_name_prefix_in_s3_bucket + target.pdf_file
@@ -87,10 +92,10 @@ class TextractExtractor(Extractor):
                     f"Job {job_id} on file {target.pdf_file} SUCCEEDED. Write to {target.ocr_result_file}"
                 )
 
-    def process_ocr_results(self, target: ExtractionTarget) -> None:
+    def process_ocr_results(self, target: ExtractionEntity) -> None:
         """
         Inputs:
-            town (string): name of town whose text data to import
+            target (ExtractionEntity): TODO
         Returns: TODO
         """
         with open(target.ocr_result_file, "r") as f:
@@ -102,11 +107,11 @@ class TextractExtractor(Extractor):
 
         extract_blocks = [b for d in data for b in d["Blocks"]]
 
-        entities = Entities([], set(), {})
+        entities = ExtractionResults([], set(), {})
         rows = []
         for w in tqdm.tqdm(extract_blocks):
             if w["BlockType"] in ["LINE", "WORD", "CELL", "MERGED_CELL"]:
-                e = Entity(
+                e = ExtractionResult(
                     w["Id"],
                     w.get("Text", ""),
                     w["BlockType"],
@@ -122,12 +127,12 @@ class TextractExtractor(Extractor):
                 if len(entities.ents) > 0:
                     rows.append(
                         {
-                            "Town": f"{target.name}",
+                            self.config.index.index_key: f"{target.name}",
                             "Page": w["Page"] - 1,
                             "Text": str(entities),
                         }
                     )
-                entities = Entities([], set(), {})
+                entities = ExtractionResults([], set(), {})
             elif w["BlockType"] == "TABLE":
                 pass
             else:
@@ -136,7 +141,7 @@ class TextractExtractor(Extractor):
         if len(entities.ents) > 0:
             rows.append(
                 {
-                    "Town": f"{target.name}",
+                    self.config.index.index_key: f"{target.name}",
                     "Page": w["Page"],
                     "Text": str(entities),
                 }
@@ -145,12 +150,13 @@ class TextractExtractor(Extractor):
         with open(target.dataset_file, "w") as f:
             json.dump(rows, f)
 
-    def extract(self, extract_target: ExtractionTargetCollection) -> None:
+    def extract(self, extract_targets: ExtractionEntities) -> None:
         if self.config.extract.run_ocr:
-            thread_map(self._extract, extract_target)
+            thread_map(self._extract, extract_targets)
 
         assert (
-            len(os.listdir(extract_target.ocr_result_dir)) > 0
+            len(os.listdir(extract_targets.ocr_result_dir)) > 0
         ), "No OCR results found"
+
         # OCR result from textract is a list of json objects containing unneeded information, we need to extract the text from it
-        process_map(self.process_ocr_results, extract_target.targets)
+        process_map(self.process_ocr_results, extract_targets.targets)

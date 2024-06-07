@@ -2,8 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Generator
 
 from omegaconf import DictConfig
-
-from ..utils import District, PageSearchOutput
+from utils import District, PageSearchOutput
 
 
 class Searcher(ABC):

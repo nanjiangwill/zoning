@@ -1,15 +1,19 @@
-import os
-from typing import cast
-
 import hydra
-from datasets import DatasetDict, load_from_disk
-from elasticsearch import Elasticsearch
-from indexer import KeywordIndexer
+from index import IndexEntities, KeywordIndexer
 from omegaconf import DictConfig, OmegaConf
 
 
 @hydra.main(version_base=None, config_path="../config", config_name="base")
 def main(config: DictConfig):
+    """Main function to run the index process based on the provided
+    configuration.
+
+    Args:
+        config (DictConfig): Configuration object specified in ../config/<config_name>.yaml
+
+    Index Input File Format:
+        The input should be a list of IndexEntity objects, where each object contains the index data for a page.
+    """
     OmegaConf.resolve(config)
     match config.index.method:
         case "keyword":
@@ -19,18 +23,10 @@ def main(config: DictConfig):
         case _:
             raise ValueError(f"Extractor {config.extract.name} not implemented")
 
-    # TODO, merge output_dir and target_state to global variable
-    dataset_path = os.path.join(
-        config.data_output_dir, config.target_state, "hf_dataset"
-    )
-    dataset = load_from_disk(dataset_path)
-    dataset = cast(DatasetDict, dataset)
-
-    es_client = Elasticsearch(config.index.es_endpoint)
+    index_entities = IndexEntities(config)
 
     # TODO, currently we do not split the dataset, we index the whole dataset, but load_dataset need to specify train/test, so we store everything in train
-    indexer.index(es_client, dataset=dataset["train"])
-    # indexer.index(dataset=dataset['train'])
+    indexer.index(index_entities)
 
 
 if __name__ == "__main__":

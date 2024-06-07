@@ -2,12 +2,12 @@ import json
 from abc import ABC, abstractmethod
 from typing import AsyncGenerator
 
+from class_types import LLMQuery, Place, SearchResult
 from jinja2 import Environment, FileSystemLoader
 from omegaconf import DictConfig
 from openai import AsyncOpenAI, OpenAI
 from pydantic import ValidationError
-
-from ..utils import District, ExtractionOutput, LookupOutput, get_thesaurus
+from utils import ExtractionOutput, LookupOutput, get_thesaurus
 
 
 class LLM(ABC):
@@ -37,17 +37,19 @@ class LLM(ABC):
         self.client = OpenAI()
 
     def get_prompt(
-        self, town: str, district: District, term: str, page_text: str
+        self, place: Place, eval_term: str, searched_text: str
     ) -> list[dict[str, str]] | str:
-        synonyms = ", ".join(get_thesaurus(self.config.thesaurus_file).get(term, []))
+        synonyms = ", ".join(
+            get_thesaurus(self.config.thesaurus_file).get(eval_term, [])
+        )
         match self.config.llm.model_name:
             case "text-davinci-003":
                 return self.TEMPLATE_MAPPING[self.config.llm.model_name].render(
-                    passage=page_text,
-                    term=term,
+                    passage=searched_text,
+                    term=eval_term,
                     synonyms=synonyms,
-                    zone_name=district.full_name,
-                    zone_abbreviation=district.short_name,
+                    zone_name=place.district_full_name,
+                    zone_abbreviation=place.district_short_name,
                 )
             case "gpt-3.5-turbo" | "gpt-4":
                 return [
@@ -56,15 +58,15 @@ class LLM(ABC):
                         "content": self.TEMPLATE_MAPPING[
                             self.config.llm.model_name
                         ].render(
-                            term=term,
+                            term=eval_term,
                             synonyms=synonyms,
-                            zone_name=district.full_name,
-                            zone_abbreviation=district.short_name,
+                            zone_name=place.district_full_name,
+                            zone_abbreviation=place.district_short_name,
                         ),
                     },
                     {
                         "role": "user",
-                        "content": f"Input: \n\n {page_text}\n\n Output:",
+                        "content": f"Input: \n\n {searched_text}\n\n Output:",
                     },
                 ]
             case "gpt-4-1106-preview" | "gpt-4-turbo":
@@ -74,15 +76,15 @@ class LLM(ABC):
                         "content": self.TEMPLATE_MAPPING[
                             self.config.llm.model_name
                         ].render(
-                            term=term,
+                            term=eval_term,
                             synonyms=synonyms,
-                            zone_name=district.full_name,
-                            zone_abbreviation=district.short_name,
+                            zone_name=place.district_full_name,
+                            zone_abbreviation=place.district_short_name,
                         ),
                     },
                     {
                         "role": "user",
-                        "content": f"Input: \n\n {page_text}\n\n Output:",
+                        "content": f"Input: \n\n {searched_text}\n\n Output:",
                     },
                 ]
             case _:
@@ -92,9 +94,11 @@ class LLM(ABC):
     # @limit_global_concurrency(100)
     async def query_llm(
         self,
-        input_prompt: str | list[dict[str, str]],
+        search_result: SearchResult,
     ) -> str | None:
-        # raise NotImplementedError
+        input_prompt = self.get_prompt(
+            search_result.place, search_result.eval_term, search_result.text
+        )
         base_params = {
             "model": self.config.llm.model_name,
             "max_tokens": self.config.llm.max_tokens,
@@ -159,6 +163,7 @@ class LLM(ABC):
 
     @abstractmethod
     async def query(
-        self, town, district, term, pages
+        self,
+        llm_query: LLMQuery,
     ) -> AsyncGenerator[LookupOutput, None]:
         pass

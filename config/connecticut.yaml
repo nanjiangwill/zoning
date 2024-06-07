@@ -4,19 +4,21 @@ defaults:
 data_output_dir: data
 target_state: connecticut
 result_output_dir: results
-thesaurus_file: zoning/thesaurus.json
+thesaurus_file: ${data_output_dir}/thesaurus.json
 ground_truth_file: data/${target_state}/ground_truth.csv
 town_district_file: data/${target_state}/town_district.csv
+target_names_file: ${data_output_dir}/${target_state}/all_towns_names.json
 pdf_dir: ${data_output_dir}/${target_state}/pdfs
 ocr_result_dir: ${data_output_dir}/${target_state}/extract_dataset
 dataset_dir: ${data_output_dir}/${target_state}/extract_page_dataset
+
+eval_terms: ["min_lot_size"]
 
 extract:
   name: textract
   run_ocr: false
   input_document_s3_bucket:
   pdf_name_prefix_in_s3_bucket: zoning/${target_state}/
-  ocr_target_names_file: ${data_output_dir}/${target_state}/all_towns_names.json
   feature_types: ["TABLES"]  # allowed ["TABLES", "FORMS", "QUERIES", "SIGNATURES", "LAYOUT"]
   hf_dataset:
     name: ${extract.name}-${target_state}
@@ -26,17 +28,18 @@ extract:
 
 index:
   method: keyword # allowed keyword/embedding
+  index_key: town
   es_endpoint: http://localhost:9200
-  index_page_range: 10
+  index_ange: 10
 
 search:
   method: ${index.method}
   num_results: 5
   is_district_fuzzy: false
-  is_term_fuzzy: false
+  is_eval_term_fuzzy: false
 
 llm:
-  method: zero-shot
+  method: vanilla
   model_name: gpt-4-1106-preview
   max_tokens: 256
   formatted_response: false
@@ -45,6 +48,3 @@ llm:
 
 test_data_split_seed: 13
 test_data_split_percent: 0.3
-
-eval:
-  terms: ["min_lot_size"]
