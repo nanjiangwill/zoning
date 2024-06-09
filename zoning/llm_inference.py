@@ -68,7 +68,6 @@ def main(config_name: str = typer.Argument("base")):
                 )
                 evaluation_dataset.append(evaluation_data)
 
-            break  # for debug
         # Hack ends here
         # the target is to get evaluation_dataset in correct type
 
@@ -92,7 +91,9 @@ def main(config_name: str = typer.Argument("base")):
             )
             evaluation_results.save_to(config.result_output_dir, config.experiment_name)
 
-        process_map(search_and_llm_inference, evaluation_dataset)
+        # await process_map(search_and_llm_inference, evaluation_dataset)
+        # need to change the following to Pool
+        await search_and_llm_inference(evaluation_dataset[0])
 
     aiorun(_main())
 

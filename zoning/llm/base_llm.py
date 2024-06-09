@@ -91,7 +91,9 @@ class LLM(ABC):
 
     # @cached(cache, lambda *args, **kwargs: json.dumps(args) + json.dumps(kwargs))
     # @limit_global_concurrency(100)
-    async def query_llm(self, llm_query: LLMQuery) -> str | None:
+    async def query_llm(
+        self, llm_query: LLMQuery
+    ) -> list[list[dict[str, str]], str | None]:
         input_prompt = self.get_prompt(
             llm_query.place, llm_query.eval_term, llm_query.context
         )
@@ -108,20 +110,20 @@ class LLM(ABC):
                         **base_params, prompt=input_prompt
                     )
                     top_choice = resp.choices[0]  # type: ignore
-                    return top_choice.text
+                    return input_prompt, top_choice.text
                 case "gpt-3.5-turbo" | "gpt-4" | "gpt-4-turbo-preview" | "gpt-4-turbo":
                     resp = await self.aclient.chat.completions.create(
                         **base_params, messages=input_prompt
                     )
                     top_choice = resp.choices[0]  # type: ignore
-                    return top_choice.message.content
+                    return input_prompt, top_choice.message.content
                 case "gpt-4-1106-preview":
                     if not self.config.llm.formatted_response:
                         resp = await self.aclient.chat.completions.create(
                             **base_params, messages=input_prompt
                         )
                         top_choice = resp.choices[0]  # type: ignore
-                        return top_choice.message.content
+                        return input_prompt, top_choice.message.content
                     else:
                         resp = await self.aclient.chat.completions.create(
                             **base_params,
@@ -129,31 +131,31 @@ class LLM(ABC):
                             response_format={"type": "json_object"},
                         )
                         top_choice = resp.choices[0]  # type: ignore
-                        return top_choice.message.content
+                        return input_prompt, top_choice.message.content
                 case _:
                     raise ValueError(
                         f"Unknown model name: {self.config.llm.model_name}"
                     )
         except Exception as exc:
             print("Error running prompt", exc)
-            return None
+            return input_prompt, None
 
-    def parse_llm_output(self, output: str | None) -> LLMInferenceResult:
-        if output is None or output == "null":
+    def parse_llm_output(self, model_response: str | None) -> dict | None:
+        if model_response is None or model_response == "null":
             return None
         try:
             # TODO: this is something that came with new gpt update. This is a bandaid solution that i'll look into later
-            if output[:7] == "```json":
-                output = output[7:-4]
-            json_body = json.loads(output)
+            if model_response[:7] == "```json":
+                model_response = model_response[7:-4]
+            json_body = json.loads(model_response)
             if json_body is None:
                 # The model is allowed to return null if it cannot find the answer,
                 # so just pass this onwards.
                 return None
-            return LLMInferenceResult(**json_body)
+            return json_body
         except (ValidationError, TypeError, json.JSONDecodeError) as exc:
             print("Error parsing response from model during extraction:", exc)
-            print(f"Response: {output}")
+            print(f"Response: {model_response}")
             return None
 
     @abstractmethod

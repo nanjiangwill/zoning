@@ -194,6 +194,7 @@ class LLMQueries(BaseModel):
 
 
 class LLMInferenceResult(BaseModel):
+    input_prompt: list[dict[str, str]]
     extracted_text: list[str]  # Check
     rationale: str
     answer: Optional[str | None]
