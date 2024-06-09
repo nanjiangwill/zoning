@@ -70,18 +70,18 @@ The initial startup may take some time.
 
 `python zoning/index.py --config-name <state_name>`
 
-## Evaluation
+## Search and LLM Inference
 
-`python zoning/eval.py <state_name>`
+`python zoning/llm_inference.py <state_name>`
 Warning: this is different to `--config-name <state_name>` in previous code
  because `Type`r does not work well with `omegaconf`
 
-You will get result in `result_output_dir/<state_name>`
+You will get search results and LLM inference results in `result_output_dir/<eval_term>/<state_name>`.
 
-- `result_output_dir/<state_name>/metrics.json` for accuracy/F1/etc score
-- `result_output_dir/<state_name>/pr_answers.csv` for samples that got right
- with larger search scope
-- `result_output_dir/<state_name>/wrong_answers.csv` for error analysis
+## Scoring
+
+`python zoning/score.py --config-name <state_name>`
+WIP
 
 ## Visulization / Error Analysis
 

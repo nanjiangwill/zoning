@@ -35,7 +35,7 @@ index:
   method: keyword # allowed keyword/embedding
   index_key: town
   es_endpoint: http://localhost:9200
-  index_ange: 10
+  index_range: 10
 
 search:
   method: ${index.method}

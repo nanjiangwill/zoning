@@ -1,5 +1,4 @@
 import json
-from typing import Generator
 
 from class_types import SearchPattern, SearchResult
 from elasticsearch import Elasticsearch
@@ -16,11 +15,9 @@ class KeywordSearcher(Searcher):
         self.es_client = Elasticsearch(self.config.index.es_endpoint)
         self.num_results = self.config.search.num_results
         self.is_district_fuzzy = self.config.search.is_district_fuzzy
-        self.is_eval_term_fuzzy = (self.config.search.is_eval_term_fuzzy,)
+        self.is_eval_term_fuzzy = self.config.search.is_eval_term_fuzzy
 
-    def search(
-        self, search_pattern: SearchPattern
-    ) -> Generator[SearchResult, None, None]:
+    def search(self, search_pattern: SearchPattern) -> list[SearchResult]:
         # Search in town
         s = Search(using=self.es_client, index=search_pattern.get_index_key())
 
@@ -34,7 +31,7 @@ class KeywordSearcher(Searcher):
         if len(res) == 0:
             print(f"No results found for {search_pattern}")
 
-        yield from (
+        return [
             SearchResult(
                 text=r.Text,
                 page_number=r.Page,
@@ -43,4 +40,4 @@ class KeywordSearcher(Searcher):
                 query=json.dumps(s.query.to_dict()),
             )
             for r in res
-        )
+        ]

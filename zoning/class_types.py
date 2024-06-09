@@ -1,47 +1,42 @@
-import copy
 import json
 import os
-from dataclasses import dataclass
-from typing import Optional
+from typing import Iterable, Optional
 
-from dataclasses_json import dataclass_json
 from elasticsearch_dsl import Q
 from pydantic import BaseModel
 from utils import expand_term, flatten, page_coverage
 
 
-@dataclass
 class Place(BaseModel):
     town: str
     district_full_name: str
     district_short_name: str
 
 
-@dataclass
 class SearchEvalTermPattern(BaseModel):
     name: str
     is_eval_term_fuzzy: bool
     thesaurus_file: str
-    expanded_eval_term: Q
-    expanded_units: Q
+    expanded_eval_term: Iterable[str] = []
+    expanded_units: Iterable[str] = []
 
-    def __post_init__(self):
+    def model_post_init(self, __context):
         self.expanded_eval_term = expand_term(self.thesaurus_file, self.name)
         self.expanded_units = expand_term(self.thesaurus_file, f"{self.name} units")
 
     def get_term_query(self) -> Q:
         exact_term_query = Q(
             "bool",
-            should=list(Q("match_phrase", Text=t) for t in self.expanded_term),
+            should=list(Q("match_phrase", Text=t) for t in self.expanded_eval_term),
             minimum_should_match=1,
         )
         if self.is_eval_term_fuzzy:
             term_query = Q(
                 "bool",
-                should=[Q("match_phrase", Text=t) for t in self.expanded_term]
+                should=[Q("match_phrase", Text=t) for t in self.expanded_eval_term]
                 + [
                     Q("match", Text={"query": t, "fuzziness": "AUTO"})
-                    for t in self.expanded_term
+                    for t in self.expanded_eval_term
                 ],
                 minimum_should_match=1,
             )
@@ -65,7 +60,6 @@ class SearchEvalTermPattern(BaseModel):
         return self.name
 
 
-@dataclass
 class SearchPlacePattern(BaseModel):
     place: Place
     is_district_fuzzy: bool
@@ -118,13 +112,12 @@ class SearchPlacePattern(BaseModel):
         return self.get_district_query()
 
 
-@dataclass
 class SearchPattern(BaseModel):
     search_eval_term_pattern: SearchEvalTermPattern
     search_place_pattern: SearchPlacePattern
 
     def get_place(self) -> Place:
-        return self.search_place_pattern.Place
+        return self.search_place_pattern.place
 
     def get_eval_term(self) -> str:
         return self.search_eval_term_pattern.name
@@ -139,95 +132,96 @@ class SearchPattern(BaseModel):
         return self.search_place_pattern.place.town
 
     def __str__(self) -> str:
-        return f"{self.search_eval_term_pattern.name} in {self.search_place_pattern.place.town} {self.search_place_pattern.place.district_full_name}"
+        return f"{self.search_eval_term_pattern.name} in {self.search_place_pattern.place.town}-{self.search_place_pattern.place.district_full_name}"
 
 
-@dataclass
 class EvaluationData(BaseModel):
     place: Place
     eval_term: str
     is_eval_term_fuzzy: bool
     is_district_fuzzy: bool
     thesaurus_file: str
-    search_pattern: SearchPattern
+    search_pattern: SearchPattern = None
 
-    def __post_init__(self):
+    def model_post_init(self, __context):
         self.search_pattern = SearchPattern(
-            SearchEvalTermPattern(
+            search_eval_term_pattern=SearchEvalTermPattern(
                 name=self.eval_term,
                 is_eval_term_fuzzy=self.is_eval_term_fuzzy,
                 thesaurus_file=self.thesaurus_file,
             ),
-            SearchPlacePattern(
+            search_place_pattern=SearchPlacePattern(
                 place=self.place, is_district_fuzzy=self.is_district_fuzzy
             ),
         )
 
 
-@dataclass_json
-@dataclass
 class SearchResult(BaseModel):
     text: str
     page_number: int
-    page_range: list[int]
+    page_range: list[int] = []
     highlight: list[str]
     score: float
     query: str
 
-    def __post_init__(self):
+    def model_post_init(self, __context):
         self.page_range = flatten(page_coverage([self.text]))
 
-    def to_json():
-        # TODO with @dataclass_json
-        pass
+    # def to_json():
+    #     # TODO with @dataclass_json
+    #     pass
 
 
-@dataclass
 class LLMQuery(BaseModel):
     place: Place
     eval_term: str
     context: str
 
 
-@dataclass
 class LLMQueries(BaseModel):
     place: Place
     eval_term: str
     search_results: list[SearchResult]
+    query_list: list[LLMQuery] = []
+
+    def model_post_init(self, __context):
+        self.query_list = [
+            LLMQuery(
+                place=self.place, eval_term=self.eval_term, context=search_result.text
+            )
+            for search_result in self.search_results
+        ]
 
 
-@dataclass_json
-@dataclass
 class LLMInferenceResult(BaseModel):
     extracted_text: list[str]  # Check
     rationale: str
     answer: Optional[str | None]
 
-    def to_json():
-        # TODO with @dataclass_json
-        pass
 
-
-@dataclass
 class EvaluationDataResults(BaseModel):
     place: Place
     eval_term: str
     search_results: list[SearchResult]
     llm_inference_results: list[LLMInferenceResult]
-    entire_search_results_page_range: list[int]
+    entire_search_results_page_range: list[int] = []
 
-    def __post_init__(self):
-        self.entire_search_results_page_range = flatten(
-            page_coverage(copy.deepcopy(self.search_results))
-        )
+    def model_post_init(self, __context):
+        self.entire_search_results_page_range = [
+            r.page_range for r in self.search_results
+        ]
 
     def save_to(self, result_output_dir: str, experiment_name: str):
         # we can name experiment
+        os.makedirs(
+            os.path.join(result_output_dir, experiment_name, self.eval_term),
+            exist_ok=True,
+        )
         term_output_dir = os.path.join(
             result_output_dir,
             experiment_name,
             self.eval_term,
-            "search_and_llm_inference.json",
+            "result.json",
         )
 
         data = []
@@ -236,10 +230,10 @@ class EvaluationDataResults(BaseModel):
         ):
             data.append(
                 {
-                    "place": str(self.place),
+                    "place": self.place.model_dump_json(),
                     "eval_term": self.eval_term,
-                    "search_result": search_result.to_json(),
-                    "llm_inference_result": llm_inference_result.to_json(),
+                    "search_result": search_result.model_dump_json(),
+                    "llm_inference_result": llm_inference_result.model_dump_json(),
                 }
             )
         with open(term_output_dir, "w") as f:

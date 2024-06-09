@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 
-from class_types import IndexEntities
 from omegaconf import DictConfig
+
+from .index_types import IndexEntities
 
 
 class Indexer(ABC):

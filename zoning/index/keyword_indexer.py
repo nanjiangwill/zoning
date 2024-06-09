@@ -1,9 +1,9 @@
-from class_types import IndexEntities, IndexEntity
 from elasticsearch import Elasticsearch
 from omegaconf import DictConfig
 from tqdm.contrib.concurrent import thread_map
 
 from .base_indexer import Indexer
+from .index_types import IndexEntities, IndexEntity
 
 
 class KeywordIndexer(Indexer):

@@ -40,7 +40,7 @@ def main(config_name: str = typer.Argument("base")):
             case _:
                 raise ValueError(f"LLM method {config.llm.method} is not supported")
 
-        eval_terms = config.eval.terms
+        eval_terms = config.eval_terms
 
         # The folloing is not the correct way to generate evaluation dataset
         # the reason for doing this is because
@@ -58,7 +58,7 @@ def main(config_name: str = typer.Argument("base")):
                 district_full_name=row["district"],
                 district_short_name=row["district_abb"],
             )
-            for eval_term in config.eval_terms:
+            for eval_term in eval_terms:
                 evaluation_data = EvaluationData(
                     place=place,
                     eval_term=eval_term,
@@ -67,23 +67,21 @@ def main(config_name: str = typer.Argument("base")):
                     thesaurus_file=config.thesaurus_file,
                 )
                 evaluation_dataset.append(evaluation_data)
+
+            break  # for debug
         # Hack ends here
         # the target is to get evaluation_dataset in correct type
 
         async def search_and_llm_inference(evaluation_data):
             search_results = searcher.search(evaluation_data.search_pattern)
 
-            llm_inference_results = llm.query(
+            llm_inference_results = await llm.query(
                 LLMQueries(
                     place=evaluation_data.place,
                     eval_term=evaluation_data.eval_term,
                     search_results=search_results,
                 )
             )
-
-            async for _ in llm_inference_results:
-                # llm_inference_results store a list of llm inference result
-                continue
 
             # store the evaluation results
             evaluation_results = EvaluationDataResults(

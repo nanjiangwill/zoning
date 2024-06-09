@@ -7,3 +7,7 @@ outputs
 
 zoning/*/__pycache__
 zoning/__pycache__
+
+archive_eval.py
+
+results/

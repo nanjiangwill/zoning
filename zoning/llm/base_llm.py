@@ -1,6 +1,5 @@
 import json
 from abc import ABC, abstractmethod
-from typing import AsyncGenerator
 
 from class_types import LLMInferenceResult, LLMQueries, LLMQuery, Place
 from jinja2 import Environment, FileSystemLoader
@@ -92,10 +91,7 @@ class LLM(ABC):
 
     # @cached(cache, lambda *args, **kwargs: json.dumps(args) + json.dumps(kwargs))
     # @limit_global_concurrency(100)
-    async def query_llm(
-        self,
-        llm_query: LLMQuery,
-    ) -> str | None:
+    async def query_llm(self, llm_query: LLMQuery) -> str | None:
         input_prompt = self.get_prompt(
             llm_query.place, llm_query.eval_term, llm_query.context
         )
@@ -145,7 +141,6 @@ class LLM(ABC):
     def parse_llm_output(self, output: str | None) -> LLMInferenceResult:
         if output is None or output == "null":
             return None
-
         try:
             # TODO: this is something that came with new gpt update. This is a bandaid solution that i'll look into later
             if output[:7] == "```json":
@@ -162,7 +157,5 @@ class LLM(ABC):
             return None
 
     @abstractmethod
-    async def query(
-        self, llm_queries: LLMQueries
-    ) -> AsyncGenerator[LLMInferenceResult, None]:
+    async def query(self, llm_queries: LLMQueries) -> list[LLMInferenceResult]:
         pass

@@ -25,9 +25,6 @@ class IndexEntity:
         self.dataset_dir = dataset_dir
         self.index_range = index_range
         self.dataset_file = os.path.join(dataset_dir, f"{name}.json")
-        assert os.path.exists(
-            self.dataset_file
-        ), f"Dataset file {self.dataset_file} does not exist"
 
     def get_index_data(self) -> Generator[ElasticSearchIndexData, None, None]:
         with open(self.dataset_file, "r") as f:
