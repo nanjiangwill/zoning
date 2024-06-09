@@ -7,6 +7,9 @@ target_state: connecticut
 eval_terms: ["min_lot_size"]
 thesaurus_file: data/thesaurus.json
 
+num_workers: 4
+random_seed: 13
+test_size: 5
 
 data_output_dir: data/${target_state}
 result_output_dir: results/${target_state}
@@ -48,8 +51,3 @@ llm:
   model_name: gpt-4-1106-preview
   max_tokens: 256
   formatted_response: false
-
-
-
-test_data_split_seed: 13
-test_data_split_percent: 0.3

@@ -16,6 +16,7 @@ class KeywordSearcher(Searcher):
         self.num_results = self.config.search.num_results
         self.is_district_fuzzy = self.config.search.is_district_fuzzy
         self.is_eval_term_fuzzy = self.config.search.is_eval_term_fuzzy
+        self.thesaurus_file = self.config.thesaurus_file
 
     def search(self, search_pattern: SearchPattern) -> list[SearchResult]:
         # Search in town

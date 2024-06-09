@@ -12,6 +12,9 @@ class Place(BaseModel):
     district_full_name: str
     district_short_name: str
 
+    def __str__(self) -> str:
+        return f"{self.town}-{self.district_full_name}"
+
 
 class SearchEvalTermPattern(BaseModel):
     name: str
@@ -132,10 +135,12 @@ class SearchPattern(BaseModel):
         return self.search_place_pattern.place.town
 
     def __str__(self) -> str:
-        return f"{self.search_eval_term_pattern.name} in {self.search_place_pattern.place.town}-{self.search_place_pattern.place.district_full_name}"
+        return (
+            f"{self.search_eval_term_pattern.name} in {self.search_place_pattern.place}"
+        )
 
 
-class EvaluationData(BaseModel):
+class EvaluationDatum(BaseModel):
     place: Place
     eval_term: str
     is_eval_term_fuzzy: bool
@@ -195,12 +200,12 @@ class LLMQueries(BaseModel):
 
 class LLMInferenceResult(BaseModel):
     input_prompt: list[dict[str, str]]
-    extracted_text: list[str]  # Check
-    rationale: str
-    answer: Optional[str | None]
+    extracted_text: Optional[list[str] | None] = None
+    rationale: Optional[str | None] = None
+    answer: Optional[str | None] = None
 
 
-class EvaluationDataResults(BaseModel):
+class EvaluationDatumResult(BaseModel):
     place: Place
     eval_term: str
     search_results: list[SearchResult]
@@ -208,34 +213,45 @@ class EvaluationDataResults(BaseModel):
     entire_search_results_page_range: list[int] = []
 
     def model_post_init(self, __context):
-        self.entire_search_results_page_range = [
-            r.page_range for r in self.search_results
-        ]
+        self.entire_search_results_page_range = set(
+            [i for r in self.search_results for i in r.page_range]
+        )
+
+
+class AllEvaluationResults(BaseModel):
+    all_evaluation_results: list[EvaluationDatumResult]
+
+    all_evaluation_results_by_town: dict[str, list[EvaluationDatumResult]] = {}
+    all_evaluation_results_by_district: dict[str, list[EvaluationDatumResult]] = {}
+    all_evaluation_results_by_eval_term: dict[str, list[EvaluationDatumResult]] = {}
+
+    def model_post_init(self, __context):
+        for evaluation_result in self.all_evaluation_results:
+            self.all_evaluation_results_by_town.setdefault(
+                evaluation_result.place.town, []
+            ).append(evaluation_result)
+            self.all_evaluation_results_by_district.setdefault(
+                evaluation_result.place.district_full_name, []
+            ).append(evaluation_result)
+            self.all_evaluation_results_by_eval_term.setdefault(
+                evaluation_result.eval_term, []
+            ).append(evaluation_result)
 
     def save_to(self, result_output_dir: str, experiment_name: str):
         # we can name experiment
         os.makedirs(
-            os.path.join(result_output_dir, experiment_name, self.eval_term),
+            os.path.join(result_output_dir, experiment_name),
             exist_ok=True,
         )
         term_output_dir = os.path.join(
             result_output_dir,
             experiment_name,
-            self.eval_term,
             "result.json",
         )
 
         data = []
-        for search_result, llm_inference_result in zip(
-            self.search_results, self.llm_inference_results
-        ):
-            data.append(
-                {
-                    "place": self.place.model_dump_json(),
-                    "eval_term": self.eval_term,
-                    "search_result": search_result.model_dump_json(),
-                    "llm_inference_result": llm_inference_result.model_dump_json(),
-                }
-            )
+        for evaluation_result in self.all_evaluation_results:
+
+            data.append(evaluation_result.model_dump_json())
         with open(term_output_dir, "w") as f:
             json.dump(data, f)
