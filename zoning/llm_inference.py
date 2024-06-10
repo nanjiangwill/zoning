@@ -55,7 +55,7 @@ def main(config_name: str = typer.Argument("base")):
         config (DictConfig): Configuration object specified in ../config/<config_name>.yaml
 
     Input File Format:
-        The input should be the names of the town/district and the evaluation term
+        The input should be the names of the town/district and the evaluation term. The input will be later used to generate the search pattern.
 
     Output File Format:
         JSON files, each containing a list of search results and LLM inference results for every evaluation terms and every town/district.
