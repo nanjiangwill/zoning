@@ -269,3 +269,4 @@ class EvaluationMetricByTerm(BaseModel):
     page_f1: float
     page_precision: float
     page_recall: float
+    is_in_entire_search_page_range: bool

@@ -54,18 +54,22 @@ def eval_term_metrics(eval_term: str, eval_result_dir: str, ground_truth: pl.Dat
     for evaluation_datum_result in evaluation_data:
         answer_flag = False
         page_flag = False
+        is_in_entire_search_page_range = (
+            evaluation_datum_result.ground_truth_page
+            in evaluation_datum_result.entire_search_results_page_range
+        )
         for search_result, llm_inference_result in zip(
             evaluation_datum_result.search_results,
             evaluation_datum_result.llm_inference_results,
         ):
-            if llm_inference_result.answer is not None:
-                if llm_inference_result.answer in evaluation_datum_result.ground_truth:
-                    answer_flag = True
-                    if (
-                        search_result.page_number
-                        == evaluation_datum_result.ground_truth_page
-                    ):
-                        page_flag = True
+            if (
+                llm_inference_result.answer is not None
+                and evaluation_datum_result.ground_truth in llm_inference_result.answer
+                and evaluation_datum_result.ground_truth_page
+                in search_result.page_range
+            ):
+                answer_flag = True
+                page_flag = True
 
         if answer_flag:
             answer_tp += 1
@@ -86,6 +90,7 @@ def eval_term_metrics(eval_term: str, eval_result_dir: str, ground_truth: pl.Dat
         page_f1=2 * page_tp / (2 * page_tp + page_fp + page_fn),
         page_precision=page_tp / (page_tp + page_fp),
         page_recall=page_tp / (page_tp + page_fn),
+        is_in_entire_search_page_range=is_in_entire_search_page_range,
     )
 
     with open(os.path.join(eval_result_dir, f"{eval_term}_metrics.json"), "w") as f:
