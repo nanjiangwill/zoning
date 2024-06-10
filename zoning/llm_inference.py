@@ -148,7 +148,7 @@ def main(config_name: str = typer.Argument("base")):
         all_evaluation_results = AllEvaluationResults(
             all_evaluation_results=async_results
         )
-        all_evaluation_results.save_to(config.result_output_dir, config.experiment_name)
+        all_evaluation_results.save_to(config.result_output_dir)
 
     aiorun(_main())
 

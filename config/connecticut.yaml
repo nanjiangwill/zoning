@@ -12,7 +12,7 @@ random_seed: 13
 test_size: 5
 
 data_output_dir: data/${target_state}
-result_output_dir: results/${target_state}
+result_output_dir: results/${target_state}/${experiment_name}
 ground_truth_file: ${data_output_dir}/ground_truth.csv
 town_district_file: ${data_output_dir}/town_district.csv
 target_names_file: ${data_output_dir}/all_towns_names.json

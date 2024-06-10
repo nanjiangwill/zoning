@@ -200,6 +200,7 @@ class LLMQueries(BaseModel):
 
 class LLMInferenceResult(BaseModel):
     input_prompt: list[dict[str, str]]
+    raw_model_response: str | None = None
     extracted_text: Optional[list[str] | None] = None
     rationale: Optional[str | None] = None
     answer: Optional[str | None] = None
@@ -211,6 +212,8 @@ class EvaluationDatumResult(BaseModel):
     search_results: list[SearchResult]
     llm_inference_results: list[LLMInferenceResult]
     entire_search_results_page_range: list[int] = []
+    ground_truth: str | None = None
+    ground_truth_page: str | None = None
 
     def model_post_init(self, __context):
         self.entire_search_results_page_range = set(
@@ -237,21 +240,32 @@ class AllEvaluationResults(BaseModel):
                 evaluation_result.eval_term, []
             ).append(evaluation_result)
 
-    def save_to(self, result_output_dir: str, experiment_name: str):
+    def save_to(self, result_output_dir: str):
         # we can name experiment
         os.makedirs(
-            os.path.join(result_output_dir, experiment_name),
+            os.path.join(result_output_dir),
             exist_ok=True,
         )
-        term_output_dir = os.path.join(
-            result_output_dir,
-            experiment_name,
-            "result.json",
-        )
+        for (
+            eval_term,
+            eval_term_results,
+        ) in self.all_evaluation_results_by_eval_term.items():
+            eval_term_output_dir = os.path.join(
+                result_output_dir,
+                f"{eval_term}.json",
+            )
+            data = []
+            for evaluation_result in eval_term_results:
+                data.append(evaluation_result.model_dump_json())
+            with open(eval_term_output_dir, "w") as f:
+                json.dump(data, f)
 
-        data = []
-        for evaluation_result in self.all_evaluation_results:
 
-            data.append(evaluation_result.model_dump_json())
-        with open(term_output_dir, "w") as f:
-            json.dump(data, f)
+class EvaluationMetricByTerm(BaseModel):
+    eval_term: str
+    answer_f1: float
+    answer_precision: float
+    answer_recall: float
+    page_f1: float
+    page_precision: float
+    page_recall: float
