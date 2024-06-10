@@ -99,6 +99,28 @@ def eval_term_metrics(eval_term: str, eval_result_dir: str, ground_truth: pl.Dat
 
 @hydra.main(version_base=None, config_path="../config", config_name="base")
 def main(config: DictConfig):
+    """Main function to run the search and LLM inference process based on the
+    provided configuration.
+
+    Args:
+        config (DictConfig): Configuration object specified in ../config/<config_name>.yaml
+
+    Input File Format:
+        The input should be the json serialized list of EvaluationDatumResult objects.
+
+    Output File Format:
+        EvaluationMetricByTerm objects for each evaluation term. This will be serialized to a json file.
+        {
+            eval_term:
+            answer_f1:
+            answer_precision:
+            answer_recall:
+            page_f1:
+            page_precision:
+            page_recall:
+            is_in_entire_search_page_range:
+        }
+    """
     OmegaConf.resolve(config)
 
     eval_terms = config.eval_terms
