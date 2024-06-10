@@ -1,7 +1,7 @@
 from asyncio import gather
-from typing import AsyncGenerator
 
-from ..utils import LookupOutput, flatten, page_coverage
+from class_types import LLMInferenceResult, LLMQueries, LLMQuery
+
 from .base_llm import LLM
 
 
@@ -9,19 +9,21 @@ class VanillaLLM(LLM):
     def __init__(self, config):
         super().__init__(config)
 
-    async def query(
-        self, town, district, term, pages
-    ) -> AsyncGenerator[LookupOutput, None]:
-        async def worker(page):
-            prompt = self.get_prompt(town, district, term, page.text)
-            return (
-                page,
-                self.parse_llm_output(await self.query_llm(prompt)),
+    async def query(self, llm_queries: LLMQueries) -> list[LLMInferenceResult]:
+        async def worker(llm_query: LLMQuery) -> LLMInferenceResult:
+            input_prompt, model_response = await self.query_llm(llm_query)
+            raw_model_response, parsed_model_response = self.parse_llm_output(
+                model_response
             )
 
-        for page, result in await gather(*map(worker, pages)):
-            yield LookupOutput(
-                output=result,
-                search_pages=[page],
-                search_pages_expanded=flatten(page_coverage([page])),
+            if parsed_model_response is None:
+                return LLMInferenceResult(
+                    input_prompt=input_prompt, raw_model_response=raw_model_response
+                )
+            return LLMInferenceResult(
+                input_prompt=input_prompt,
+                raw_model_response=raw_model_response,
+                **model_response
             )
+
+        return await gather(*map(worker, llm_queries.query_list))

@@ -1,46 +1,53 @@
 defaults:
   - _self_
 
-data_output_dir: data
+experiment_name: textract_es_vanilla_llm
+
 target_state: connecticut
-result_output_dir: results
-thesaurus_file: zoning/thesaurus.json
-ground_truth_file: data/${target_state}/ground_truth.csv
-town_district_file: data/${target_state}/town_district.csv
+eval_terms: ["min_lot_size"]
+thesaurus_file: data/thesaurus.json
+
+num_workers: 4
+random_seed: 13
+test_size: 5
+
+data_output_dir: data/${target_state}
+result_output_dir: results/${target_state}/${experiment_name}
+ground_truth_file: ${data_output_dir}/ground_truth.csv
+town_district_file: ${data_output_dir}/town_district.csv
+target_names_file: ${data_output_dir}/all_towns_names.json
+pdf_dir: ${data_output_dir}/pdfs
+ocr_result_dir: ${data_output_dir}/extract_dataset
+dataset_dir: ${data_output_dir}/extract_page_dataset
+
+
 
 extract:
   name: textract
+  run_ocr: false
   input_document_s3_bucket:
+  pdf_name_prefix_in_s3_bucket: zoning/${target_state}/
   feature_types: ["TABLES"]  # allowed ["TABLES", "FORMS", "QUERIES", "SIGNATURES", "LAYOUT"]
   hf_dataset:
     name: ${extract.name}-${target_state}
     publish_dataset: false
     private: true
-  embedding:
-    embedding_model: text-embedding-ada-002
 
 
 index:
   method: keyword # allowed keyword/embedding
+  index_key: town
   es_endpoint: http://localhost:9200
-  index_page_range: 10
+  index_range: 10
 
 search:
   method: ${index.method}
   num_results: 5
   is_district_fuzzy: false
-  is_term_fuzzy: false
+  is_eval_term_fuzzy: false
 
 llm:
-  method: zero-shot
+  method: vanilla
   model_name: gpt-4-1106-preview
   max_tokens: 256
   formatted_response: false
-
-
-
-test_data_split_seed: 13
-test_data_split_percent: 0.3
-
-eval:
-  terms: ["min_lot_size"]

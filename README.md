@@ -33,13 +33,13 @@ Create a new dir in data `mkdir -p data/<state_name>/pdfs` and move all related
 Option 1: Not redo textract OCR
 
 - Ask for extracted json files and store them in `data/<state_name>/extract_dataset`
-- comment line `self.extractor = boto3.client("textract")` in `zoning/extractor/textract.py`
-- comment line `extractor.extract(state_all_towns_names)` in `zoning/extract.py`
 - Run `python zoning/extract.py --config-name <state_name>`
+ with `extraction.run_ocr: false`
 
 Option 2: Redo textract OCR
 
 - Run `python zoning/extract.py --config-name <state_name>`
+ with `extraction.run_ocr: true`
 - It will generate data inside `data/<state_name>/extract_dataset`
 
 After running OCR/extraction, it will gather information from same page and make
@@ -70,18 +70,19 @@ The initial startup may take some time.
 
 `python zoning/index.py --config-name <state_name>`
 
-## Evaluation
+## Search and LLM Inference
 
-`python zoning/eval.py <state_name>`
+`python zoning/llm_inference.py <state_name>`
 Warning: this is different to `--config-name <state_name>` in previous code
  because `Type`r does not work well with `omegaconf`
 
-You will get result in `result_output_dir/<state_name>`
+You will get search results and LLM inference results in `result_output_dir/<state_name>/<experiment_name>`.
 
-- `result_output_dir/<state_name>/metrics.json` for accuracy/F1/etc score
-- `result_output_dir/<state_name>/pr_answers.csv` for samples that got right
- with larger search scope
-- `result_output_dir/<state_name>/wrong_answers.csv` for error analysis
+## Scoring
+
+`python zoning/score.py --config-name <state_name>`
+
+This code will return metrics in `result_output_dir/<state_name>/<experiment_name>`
 
 ## Visulization / Error Analysis
 

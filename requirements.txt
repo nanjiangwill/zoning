@@ -1,5 +1,6 @@
 anthropic
 boto3
+dataclasses_json
 datasets
 elasticsearch-dsl
 hydra-core

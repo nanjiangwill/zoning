@@ -1,9 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import Generator
 
+from class_types import SearchPattern, SearchResult
 from omegaconf import DictConfig
-
-from ..utils import District, PageSearchOutput
 
 
 class Searcher(ABC):
@@ -11,7 +9,5 @@ class Searcher(ABC):
         self.config = config
 
     @abstractmethod
-    def search(
-        self, town: str, district: District, term: str
-    ) -> Generator[PageSearchOutput, None, None]:
+    def search(self, search_pattern: SearchPattern) -> list[SearchResult]:
         pass

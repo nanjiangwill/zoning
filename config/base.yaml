@@ -20,7 +20,7 @@ extract:
 index:
   method: keyword # allowed keyword/embedding
   es_endpoint: http://localhost:9200
-  index_page_range: 10
+  index_range: 10
 
 
 llm:
