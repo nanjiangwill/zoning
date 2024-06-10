@@ -45,15 +45,14 @@ def eval_term_metrics(eval_term: str, eval_result_dir: str, ground_truth: pl.Dat
 
     # Calculate metrics
     # WIP
-    answer_tp = 0
-    answer_fp = 0
-    answer_fn = 0
-    page_tp = 0
-    page_fp = 0
-    page_fn = 0
+    # can add more metrics
+    answer_tp, answer_fp, answer_fn = 0
+    page_tp, page_fp, page_fn = 0
+    correct_search_and_llm_inference_pair_list = []
     for evaluation_datum_result in evaluation_data:
         answer_flag = False
         page_flag = False
+        correct_pair = None
         is_in_entire_search_page_range = (
             evaluation_datum_result.ground_truth_page
             in evaluation_datum_result.entire_search_results_page_range
@@ -70,6 +69,9 @@ def eval_term_metrics(eval_term: str, eval_result_dir: str, ground_truth: pl.Dat
             ):
                 answer_flag = True
                 page_flag = True
+                correct_pair = (search_result, llm_inference_result)
+                correct_search_and_llm_inference_pair_list.append(correct_pair)
+                break
 
         if answer_flag:
             answer_tp += 1
