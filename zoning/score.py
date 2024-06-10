@@ -111,14 +111,14 @@ def main(config: DictConfig):
     Output File Format:
         EvaluationMetricByTerm objects for each evaluation term. This will be serialized to a json file.
         {
-            eval_term:
-            answer_f1:
-            answer_precision:
-            answer_recall:
-            page_f1:
-            page_precision:
-            page_recall:
-            is_in_entire_search_page_range:
+            eval_term: str
+            answer_f1: float
+            answer_precision: float
+            answer_recall: float
+            page_f1: float
+            page_precision: float
+            page_recall: float
+            is_in_entire_search_page_range: bool
         }
     """
     OmegaConf.resolve(config)

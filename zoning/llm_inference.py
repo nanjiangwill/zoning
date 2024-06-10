@@ -113,7 +113,8 @@ def main(config_name: str = typer.Argument("base")):
         eval_terms = config.eval_terms
 
         # The folloing is not the correct way to generate evaluation dataset
-        # the reason for doing this is because
+        # the reason for doing this is because we have ground truth data first,
+        # and we want to generate evaluation dataset based on the ground truth data
         ground_truth = pl.read_csv(
             config.ground_truth_file,
             schema_overrides={
@@ -165,6 +166,7 @@ def main(config_name: str = typer.Argument("base")):
                 )
                 async_results.append(async_result)
         pbar.close()
+
         # potential implementation of multiprocessing
         # loop = asyncio.get_running_loop()
 
@@ -181,6 +183,7 @@ def main(config_name: str = typer.Argument("base")):
         #         multiprocess_results.append(value)
         #         pbar.update()
         #     pbar.close()
+
         all_evaluation_results = AllEvaluationResults(
             all_evaluation_results=async_results
         )
