@@ -44,6 +44,7 @@ def eval_term_metrics(eval_term: str, eval_result_dir: str, ground_truth: pl.Dat
     print(f"Loaded {len(evaluation_data)} evaluation data for evaluating {eval_term}")
 
     # Calculate metrics
+    # WIP
     answer_tp = 0
     answer_fp = 0
     answer_fn = 0

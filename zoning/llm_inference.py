@@ -48,6 +48,42 @@ async def search_and_llm_inference(
 # @hydra.main(version_base=None, config_path="../config", config_name="base")
 # hydra decorator was not support by Typer
 def main(config_name: str = typer.Argument("base")):
+    """Main function to run the search and LLM inference process based on the
+    provided configuration.
+
+    Args:
+        config (DictConfig): Configuration object specified in ../config/<config_name>.yaml
+
+    Input File Format:
+        The input should be the names of the town/district and the evaluation term
+
+    Output File Format:
+        JSON files, each containing a list of search results and LLM inference results for every evaluation terms and every town/district.
+        format:
+        [{
+            "place": {
+                "town": "town_name",
+                "district_full_name": "district_full_name",
+                "district_short_name": "district_short_name"
+            },
+            "eval_term": "evaluation_term",
+            "search_results": [
+                {
+                    "text": "...",
+                    "page_range": ...
+                    ...
+                }, ... ]
+            "llm_inference_results": [
+                {
+                    "input_prompt": [...],
+                    "raw_model_response": "...",
+                    "extracted_text": ["..."],
+                    "rationale": "...",
+                    "answer": "..."
+                }, ... ]
+        }]
+    """
+
     async def _main():
         with initialize(
             version_base=None, config_path="../config", job_name="test_app"

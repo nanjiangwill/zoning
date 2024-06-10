@@ -76,12 +76,13 @@ The initial startup may take some time.
 Warning: this is different to `--config-name <state_name>` in previous code
  because `Type`r does not work well with `omegaconf`
 
-You will get search results and LLM inference results in `result_output_dir/<eval_term>/<state_name>`.
+You will get search results and LLM inference results in `result_output_dir/<state_name>/<experiment_name>`.
 
 ## Scoring
 
 `python zoning/score.py --config-name <state_name>`
-WIP
+
+This code will return metrics in `result_output_dir/<state_name>/<experiment_name>`
 
 ## Visulization / Error Analysis
 
