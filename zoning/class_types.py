@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Iterable, Optional
+from typing import Dict, Generator, Iterable, Optional, Set, Tuple
 
 from elasticsearch_dsl import Q
 from pydantic import BaseModel
@@ -14,6 +14,178 @@ class Place(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.town}-{self.district_full_name}"
+
+
+class ExtractionEntity(BaseModel):
+    name: str
+    pdf_file: str
+    ocr_result_file: str
+    dataset_file: str
+
+
+class ExtractionEntities(BaseModel):
+    pdf_dir: str
+    ocr_result_dir: str
+    dataset_dir: str
+    target_names_file: str
+    targets: list[ExtractionEntity] = []
+
+    def model_post_init(self, __context):
+        self.targets = self.load_targets(self.target_names_file)
+        os.makedirs(self.pdf_dir, exist_ok=True)
+        os.makedirs(self.ocr_result_dir, exist_ok=True)
+        os.makedirs(self.dataset_dir, exist_ok=True)
+
+    def load_targets(self, target_names_file: str) -> list[ExtractionEntity]:
+        with open(target_names_file, "r") as f:
+            target_names = json.load(f)
+        return [
+            ExtractionEntity(
+                name=name,
+                pdf_file=os.path.join(self.pdf_dir, f"{name}.pdf"),
+                ocr_result_file=os.path.join(self.ocr_result_dir, f"{name}.json"),
+                dataset_file=os.path.join(self.dataset_dir, f"{name}.json"),
+            )
+            for name in target_names
+        ]
+
+    def get_all_names(self) -> list[str]:
+        return [target.name for target in self.targets]
+
+    def get_all_pdf_files(self) -> list[str]:
+        return [target.pdf_file for target in self.targets]
+
+    def get_all_ocr_result_files(self) -> list[str]:
+        return [target.ocr_result_file for target in self.targets]
+
+    def get_all_dataset_files(self) -> list[str]:
+        return [target.dataset_file for target in self.targets]
+
+
+class ExtractionResult(BaseModel):
+    id: str
+    text: str
+    typ: str
+    relationships: list[str]
+    position: Tuple[int, int]
+
+
+class ExtractionResults(BaseModel):
+    ents: list[ExtractionResult]
+    seen: Set[str]
+    relations: Dict[str, list[ExtractionResult]]
+
+    def add(self, entity: ExtractionResult):
+        if entity.id in self.seen:
+            return
+        self.ents.append(entity)
+        self.seen.add(entity.id)
+        for r in entity.relationships:
+            self.relations.setdefault(r, [])
+            self.relations[r].append(entity)
+
+    def __str__(self) -> str:
+        out = ""
+        for e in self.ents:
+            if e.typ == "LINE":
+                in_cell = [
+                    o
+                    for r in e.relationships
+                    for o in self.relations[r]
+                    if o.typ == "CELL"
+                ]
+                if not in_cell:
+                    out += e.text + "\n"
+            if e.typ == "CELL":
+                lines = [
+                    o
+                    for r in e.relationships
+                    for o in self.relations[r]
+                    if o.typ == "LINE"
+                ]
+
+                out += f"CELL {e.position}: \n"
+                seen = set()
+                for o in lines:
+                    if o.id in seen:
+                        continue
+                    seen.add(o.id)
+                    out += o.text + "\n"
+        return out
+
+
+class ElasticSearchIndexData(BaseModel):
+    index: str
+    id: str
+    document: Dict[str, str]
+    request_timeout: int = 30
+
+
+class IndexEntity(BaseModel):
+    name: str
+    dataset_dir: str
+    index_range: int
+    dataset_file: str = ""
+
+    def model_post_init(self, __context):
+        self.dataset_file = os.path.join(self.dataset_dir, f"{self.name}.json")
+
+    def get_index_data(self) -> Generator[ElasticSearchIndexData, None, None]:
+        with open(self.dataset_file, "r") as f:
+            index_data = json.load(f)
+        for idx in range(len(index_data)):
+            text = ""
+            for j in range(self.index_range):
+                if idx + j >= len(index_data):
+                    break
+                text += f"\nNEW PAGE {idx + j + 1}\n" + index_data[idx + j]["Text"]
+            yield ElasticSearchIndexData(
+                index=self.name,
+                id=str(idx + 1),
+                document={"Page": str(idx + 1), "Text": text},
+                request_timeout=30,
+            )
+
+
+class IndexEntities(BaseModel):
+    dataset_dir: str
+    index_range: int
+    target_names_file: str
+    index_entities: list[IndexEntity] = []
+
+    def model_post_init(self, __context):
+        assert os.path.exists(
+            self.dataset_dir
+        ), f"Dataset directory {self.dataset_dir} does not exist"
+        assert os.listdir(
+            self.dataset_dir
+        ), f"Dataset directory {self.dataset_dir} is empty"
+        self.index_entities = self.load_entities(
+            self.target_names_file
+        )  # we index every extracted file
+
+    def load_entities(self, target_names_file: str) -> list[IndexEntity]:
+        with open(target_names_file, "r") as f:
+            target_names = json.load(f)
+
+        # simple detect if there are any files that are not extracted
+        # can be deleted later
+        missing_files = [
+            name
+            for name in target_names
+            if not os.path.exists(os.path.join(self.dataset_dir, f"{name}.json"))
+        ]
+        print("Missing files: ", missing_files)
+        print("Total missing files: ", len(missing_files))
+        print("Total files: ", len(target_names))
+
+        return [
+            IndexEntity(
+                name=name, dataset_dir=self.dataset_dir, index_range=self.index_range
+            )
+            for name in target_names
+            if os.path.exists(os.path.join(self.dataset_dir, f"{name}.json"))
+        ]
 
 
 class SearchEvalTermPattern(BaseModel):

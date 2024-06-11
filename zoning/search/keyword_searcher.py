@@ -6,8 +6,6 @@ from elasticsearch_dsl import Search
 from omegaconf import DictConfig
 from search.base_searcher import Searcher
 
-# from ...utils import logger
-
 
 class KeywordSearcher(Searcher):
     def __init__(self, config: DictConfig):

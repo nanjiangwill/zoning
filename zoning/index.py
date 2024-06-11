@@ -1,5 +1,6 @@
 import hydra
-from index import IndexEntities, KeywordIndexer
+from class_types import IndexEntities
+from index import KeywordIndexer
 from omegaconf import DictConfig, OmegaConf
 
 
@@ -23,7 +24,11 @@ def main(config: DictConfig):
         case _:
             raise ValueError(f"Extractor {config.extract.name} not implemented")
 
-    index_entities = IndexEntities(config)
+    index_entities = IndexEntities(
+        dataset_dir=config.dataset_dir,
+        index_range=config.index_range if "index_range" in config else 1,
+        target_names_file=config.target_names_file,
+    )
 
     # TODO, currently we do not split the dataset, we index the whole dataset, but load_dataset need to specify train/test, so we store everything in train
     indexer.index(index_entities)

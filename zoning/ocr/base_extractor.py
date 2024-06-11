@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 
+from class_types import ExtractionEntities
 from omegaconf import DictConfig
-
-from .ocr_types import ExtractionTargets
 
 
 class Extractor(ABC):
@@ -14,5 +13,5 @@ class Extractor(ABC):
             )
 
     @abstractmethod
-    def extract(self, extract_target: ExtractionTargets) -> None:
+    def extract(self, extract_targets: ExtractionEntities) -> None:
         pass

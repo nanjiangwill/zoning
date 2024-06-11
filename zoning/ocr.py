@@ -1,5 +1,6 @@
 import hydra
-from ocr import ExtractionEntities, TextractExtractor
+from class_types import ExtractionEntities
+from ocr import TextractExtractor
 from omegaconf import DictConfig, OmegaConf
 from utils import publish_dataset
 
@@ -25,7 +26,12 @@ def main(config: DictConfig):
         case _:
             raise ValueError(f"Extractor {config.extract.name} not implemented")
 
-    extraction_targets = ExtractionEntities(config)
+    extraction_targets = ExtractionEntities(
+        pdf_dir=config.pdf_dir,
+        ocr_result_dir=config.ocr_result_dir,
+        dataset_dir=config.dataset_dir,
+        target_names_file=config.target_names_file,
+    )
 
     extractor.extract(extraction_targets)
 

@@ -5,7 +5,7 @@ from typing import Generator, Tuple
 
 import boto3
 import tqdm
-from ocr_types import (
+from class_types import (
     ExtractionEntities,
     ExtractionEntity,
     ExtractionResult,
@@ -107,16 +107,16 @@ class TextractExtractor(Extractor):
 
         extract_blocks = [b for d in data for b in d["Blocks"]]
 
-        entities = ExtractionResults([], set(), {})
+        entities = ExtractionResults(ents=[], seen=set(), relations={})
         rows = []
         for w in tqdm.tqdm(extract_blocks):
             if w["BlockType"] in ["LINE", "WORD", "CELL", "MERGED_CELL"]:
                 e = ExtractionResult(
-                    w["Id"],
-                    w.get("Text", ""),
-                    w["BlockType"],
-                    self.collect_relations(w),
-                    (
+                    id=w["Id"],
+                    text=w.get("Text", ""),
+                    typ=w["BlockType"],
+                    relationships=self.collect_relations(w),
+                    position=(
                         (w["RowIndex"], w["ColumnIndex"])
                         if "RowIndex" in w and "ColumnIndex" in w
                         else (-1, -1)
@@ -132,7 +132,7 @@ class TextractExtractor(Extractor):
                             "Text": str(entities),
                         }
                     )
-                entities = ExtractionResults([], set(), {})
+                entities = ExtractionResults(ents=[], seen=set(), relations={})
             elif w["BlockType"] == "TABLE":
                 pass
             else:
@@ -153,7 +153,6 @@ class TextractExtractor(Extractor):
     def extract(self, extract_targets: ExtractionEntities) -> None:
         if self.config.extract.run_ocr:
             thread_map(self._extract, extract_targets)
-
         assert (
             len(os.listdir(extract_targets.ocr_result_dir)) > 0
         ), "No OCR results found"
