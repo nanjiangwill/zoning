@@ -58,30 +58,7 @@ def main(config_name: str = typer.Argument("base")):
         The input should be the names of the town/district and the evaluation term. The input will be later used to generate the search pattern.
 
     Output File Format:
-        JSON files, each containing a list of search results and LLM inference results for every evaluation terms and every town/district.
-        format:
-        [{
-            "place": {
-                "town": "town_name",
-                "district_full_name": "district_full_name",
-                "district_short_name": "district_short_name"
-            },
-            "eval_term": "evaluation_term",
-            "search_results": [
-                {
-                    "text": "...",
-                    "page_range": ...
-                    ...
-                }, ... ]
-            "llm_inference_results": [
-                {
-                    "input_prompt": [...],
-                    "raw_model_response": "...",
-                    "extracted_text": ["..."],
-                    "rationale": "...",
-                    "answer": "..."
-                }, ... ]
-        }]
+        list of EvaluationDatumResult objects. This will be serialized to a json file.
     """
 
     async def _main():
