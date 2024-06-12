@@ -51,3 +51,7 @@ llm:
   model_name: gpt-4-1106-preview
   max_tokens: 256
   formatted_response: false
+
+hydra:
+  run:
+    dir: ./hydra_outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}

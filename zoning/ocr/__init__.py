@@ -1,3 +1,3 @@
-from .textract import TextractExtractor
+from zoning.ocr.textract import TextractExtractor
 
 __all__ = ["TextractExtractor"]

@@ -1,12 +1,13 @@
 import json
 from abc import ABC, abstractmethod
 
-from class_types import LLMInferenceResult, LLMQueries, LLMQuery, Place
 from jinja2 import Environment, FileSystemLoader
 from omegaconf import DictConfig
 from openai import AsyncOpenAI, OpenAI
 from pydantic import ValidationError
-from utils import get_thesaurus
+
+from zoning.class_types import LLMInferenceResult, LLMQueries, LLMQuery, Place
+from zoning.utils import get_thesaurus
 
 
 class LLM(ABC):

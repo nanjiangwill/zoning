@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 
-from class_types import SearchPattern, SearchResult
 from omegaconf import DictConfig
+
+from zoning.class_types import EvaluationDatum, SearchResult
 
 
 class Searcher(ABC):
@@ -9,5 +10,5 @@ class Searcher(ABC):
         self.config = config
 
     @abstractmethod
-    def search(self, search_pattern: SearchPattern) -> list[SearchResult]:
+    def search(self, search_pattern: EvaluationDatum) -> list[SearchResult]:
         pass

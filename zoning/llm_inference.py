@@ -5,25 +5,26 @@ from asyncio import run as aiorun
 import polars as pl
 import tqdm
 import typer
-from class_types import (
-    AllEvaluationResults,
-    EvaluationDatum,
-    EvaluationDatumResult,
-    LLMQueries,
-    Place,
-)
 from hydra import compose, initialize
 from llm import LLM, VanillaLLM
 from omegaconf import OmegaConf
 from search import KeywordSearcher, Searcher
 from typer import Typer
 
+from zoning.class_types import (
+    AllEvaluationResults,
+    EvaluationDatum,
+    EvaluationDatumResult,
+    LLMQueries,
+    Place,
+)
+
 
 async def search_and_llm_inference(
     evaluation_datum: EvaluationDatum, searcher: Searcher, llm: LLM
 ) -> EvaluationDatumResult | None:
     try:
-        search_results = searcher.search(evaluation_datum.search_pattern)
+        search_results = searcher.search(evaluation_datum)
         llm_inference_results = await llm.query(
             LLMQueries(
                 place=evaluation_datum.place,

@@ -7,6 +7,7 @@ from functools import partial, wraps
 from typing import Iterable, TypeVar
 
 from datasets import load_dataset
+from elasticsearch_dsl import Q
 from jinja2 import Environment, FileSystemLoader
 from openai import APIConnectionError, APIError, OpenAI, RateLimitError, Timeout
 from tenacity import retry, retry_if_exception_type, wait_random_exponential
@@ -157,3 +158,81 @@ def publish_dataset(extraction_target, config):
             config.extract.hf_dataset.name,
             private=config.extract.hf_dataset.private,
         )
+
+
+def get_district_query(
+    district_full_name: str,
+    district_short_name: str,
+    is_district_fuzzy: bool,
+    boost_value: float = 1.0,
+) -> Q:
+    exact_district_query = (
+        Q(
+            "match_phrase",
+            Text={"query": district_full_name, "boost": boost_value},
+        )
+        | Q(
+            "match_phrase",
+            Text={"query": district_short_name, "boost": boost_value},
+        )
+        | Q(
+            "match_phrase",
+            Text={
+                "query": district_short_name.replace("-", ""),
+                "boost": boost_value,
+            },
+        )
+        | Q(
+            "match_phrase",
+            Text={
+                "query": district_short_name.replace(".", ""),
+                "boost": boost_value,
+            },
+        )
+    )
+
+    fuzzy_district_query = Q(
+        "match", Text={"query": district_short_name, "fuzziness": "AUTO"}
+    ) | Q("match", Text={"query": district_full_name, "fuzziness": "AUTO"})
+
+    if is_district_fuzzy:
+        district_query = Q("bool", should=[exact_district_query, fuzzy_district_query])
+    else:
+        district_query = exact_district_query
+
+    return district_query
+
+
+def get_eval_term_query(
+    eval_term: str, is_eval_term_fuzzy: bool, thesaurus_file: str
+) -> Q:
+    expanded_eval_term = expand_term(thesaurus_file, eval_term)
+    exact_term_query = Q(
+        "bool",
+        should=list(Q("match_phrase", Text=t) for t in expanded_eval_term),
+        minimum_should_match=1,
+    )
+    if is_eval_term_fuzzy:
+        term_query = Q(
+            "bool",
+            should=[Q("match_phrase", Text=t) for t in expanded_eval_term]
+            + [
+                Q("match", Text={"query": t, "fuzziness": "AUTO"})
+                for t in expanded_eval_term
+            ],
+            minimum_should_match=1,
+        )
+    else:
+        term_query = exact_term_query
+
+    return term_query
+
+
+def get_units_query(eval_term: str, thesaurus_file: str) -> Q:
+    expanded_units = expand_term(thesaurus_file, f"{eval_term} units")
+    units_query = Q(
+        "bool",
+        should=list(Q("match_phrase", Text=t) for t in expanded_units),
+        minimum_should_match=1,
+    )
+    return units_query

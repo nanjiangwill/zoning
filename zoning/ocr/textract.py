@@ -5,16 +5,16 @@ from typing import Generator, Tuple
 
 import boto3
 import tqdm
-from class_types import (
+from omegaconf import DictConfig
+from tqdm.contrib.concurrent import process_map, thread_map
+
+from zoning.class_types import (
     ExtractionEntities,
     ExtractionEntity,
     ExtractionResult,
     ExtractionResults,
 )
-from omegaconf import DictConfig
-from tqdm.contrib.concurrent import process_map, thread_map
-
-from .base_extractor import Extractor
+from zoning.ocr.base_extractor import Extractor
 
 
 class TextractExtractor(Extractor):

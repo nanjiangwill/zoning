@@ -1,10 +1,12 @@
 import json
 
-from class_types import SearchPattern, SearchResult
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search
 from omegaconf import DictConfig
 from search.base_searcher import Searcher
+
+from zoning.class_types import EvaluationDatum, SearchResult
+from zoning.utils import get_district_query, get_eval_term_query, get_units_query
 
 
 class KeywordSearcher(Searcher):
@@ -16,11 +18,24 @@ class KeywordSearcher(Searcher):
         self.is_eval_term_fuzzy = self.config.search.is_eval_term_fuzzy
         self.thesaurus_file = self.config.thesaurus_file
 
-    def search(self, search_pattern: SearchPattern) -> list[SearchResult]:
+    def search(self, evaluation_datum: EvaluationDatum) -> list[SearchResult]:
         # Search in town
-        s = Search(using=self.es_client, index=search_pattern.get_index_key())
+        s = Search(using=self.es_client, index=evaluation_datum.get_index_key())
 
-        s.query = search_pattern.get_query()
+        district_query = get_district_query(
+            evaluation_datum.place.district_full_name,
+            evaluation_datum.place.district_short_name,
+            evaluation_datum.is_eval_term_fuzzy,
+            self.thesaurus_file,
+        )
+        eval_term_query = get_eval_term_query(
+            evaluation_datum.eval_term,
+            evaluation_datum.is_eval_term_fuzzy,
+            self.thesaurus_file,
+        )
+        units_query = get_units_query(evaluation_datum.eval_term, self.thesaurus_file)
+
+        s.query = district_query & eval_term_query & units_query
 
         s = s.extra(size=self.num_results)
 
@@ -28,7 +43,7 @@ class KeywordSearcher(Searcher):
 
         res = s.execute()
         if len(res) == 0:
-            print(f"No results found for {search_pattern}")
+            print(f"No results found for {evaluation_datum}")
 
         return [
             SearchResult(

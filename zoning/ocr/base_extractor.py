@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 
-from class_types import ExtractionEntities
 from omegaconf import DictConfig
+
+from zoning.class_types import ExtractionEntities
 
 
 class Extractor(ABC):

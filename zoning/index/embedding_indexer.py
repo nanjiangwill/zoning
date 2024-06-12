@@ -1,7 +1,7 @@
-from class_types import IndexEntities
 from omegaconf import DictConfig
 
-from .base_indexer import Indexer
+from zoning.class_types import IndexEntities
+from zoning.index.base_indexer import Indexer
 
 
 class EmbeddingIndexer(Indexer):

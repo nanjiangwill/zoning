@@ -1,8 +1,9 @@
 import hydra
-from class_types import ExtractionEntities
 from ocr import TextractExtractor
 from omegaconf import DictConfig, OmegaConf
-from utils import publish_dataset
+
+from zoning.class_types import ExtractionEntities
+from zoning.utils import publish_dataset
 
 
 @hydra.main(version_base=None, config_path="../config", config_name="base")

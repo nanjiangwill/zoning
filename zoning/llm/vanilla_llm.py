@@ -1,8 +1,7 @@
 from asyncio import gather
 
-from class_types import LLMInferenceResult, LLMQueries, LLMQuery
-
-from .base_llm import LLM
+from zoning.class_types import LLMInferenceResult, LLMQueries, LLMQuery
+from zoning.llm.base_llm import LLM
 
 
 class VanillaLLM(LLM):

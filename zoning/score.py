@@ -4,9 +4,10 @@ from functools import partial
 
 import hydra
 import polars as pl
-from class_types import EvaluationDatumResult, EvaluationMetricByTerm
 from omegaconf import DictConfig, OmegaConf
 from tqdm.contrib.concurrent import process_map
+
+from zoning.class_types import EvaluationDatumResult, EvaluationMetricByTerm
 
 
 def eval_term_metrics(eval_term: str, eval_result_dir: str, ground_truth: pl.DataFrame):
