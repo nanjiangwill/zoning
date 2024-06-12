@@ -4,12 +4,12 @@ defaults:
 experiment_name: textract_es_vanilla_llm
 
 target_state: connecticut
-eval_terms: ["min_lot_size"]
+eval_terms: ["min_lot_size", "min_unit_size", "max_height"]
 thesaurus_file: data/thesaurus.json
 
 num_workers: 4
 random_seed: 13
-test_size: 5
+test_size_per_term: 30
 
 data_output_dir: data/${target_state}
 result_output_dir: results/${target_state}/${experiment_name}

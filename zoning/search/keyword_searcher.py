@@ -26,7 +26,6 @@ class KeywordSearcher(Searcher):
             evaluation_datum.place.district_full_name,
             evaluation_datum.place.district_short_name,
             evaluation_datum.is_eval_term_fuzzy,
-            self.thesaurus_file,
         )
         eval_term_query = get_eval_term_query(
             evaluation_datum.eval_term,

@@ -10,9 +10,9 @@ class VanillaLLM(LLM):
 
     async def query(self, llm_queries: LLMQueries) -> list[LLMInferenceResult]:
         async def worker(llm_query: LLMQuery) -> LLMInferenceResult:
-            input_prompt, model_response = await self.query_llm(llm_query)
-            raw_model_response, parsed_model_response = self.parse_llm_output(
-                model_response
+            input_prompt, raw_model_response = await self.query_llm(llm_query)
+            parsed_model_response = self.parse_llm_output(
+                raw_model_response
             )
 
             if parsed_model_response is None:
@@ -22,7 +22,7 @@ class VanillaLLM(LLM):
             return LLMInferenceResult(
                 input_prompt=input_prompt,
                 raw_model_response=raw_model_response,
-                **model_response
+                **parsed_model_response
             )
 
         return await gather(*map(worker, llm_queries.query_list))

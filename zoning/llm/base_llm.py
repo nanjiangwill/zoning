@@ -1,6 +1,8 @@
 import json
+import os
 from abc import ABC, abstractmethod
 
+from dotenv import find_dotenv, load_dotenv
 from jinja2 import Environment, FileSystemLoader
 from omegaconf import DictConfig
 from openai import AsyncOpenAI, OpenAI
@@ -8,11 +10,10 @@ from pydantic import ValidationError
 
 from zoning.class_types import LLMInferenceResult, LLMQueries, LLMQuery, Place
 from zoning.utils import get_thesaurus
-from dotenv import load_dotenv, find_dotenv
-import os
 
 # dotenv will not override the env var if it's already set
 load_dotenv(find_dotenv())
+
 
 class LLM(ABC):
     def __init__(self, config: DictConfig):

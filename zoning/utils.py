@@ -167,27 +167,15 @@ def get_district_query(
     boost_value: float = 1.0,
 ) -> Q:
     exact_district_query = (
-        Q(
+        Q("match_phrase", Text={"query": district_full_name, "boost": boost_value})
+        | Q("match_phrase", Text={"query": district_short_name, "boost": boost_value})
+        | Q(
             "match_phrase",
-            Text={"query": district_full_name, "boost": boost_value},
+            Text={"query": district_short_name.replace("-", ""), "boost": boost_value},
         )
         | Q(
             "match_phrase",
-            Text={"query": district_short_name, "boost": boost_value},
-        )
-        | Q(
-            "match_phrase",
-            Text={
-                "query": district_short_name.replace("-", ""),
-                "boost": boost_value,
-            },
-        )
-        | Q(
-            "match_phrase",
-            Text={
-                "query": district_short_name.replace(".", ""),
-                "boost": boost_value,
-            },
+            Text={"query": district_short_name.replace(".", ""), "boost": boost_value},
         )
     )
 
@@ -236,3 +224,11 @@ def get_units_query(eval_term: str, thesaurus_file: str) -> Q:
         minimum_should_match=1,
     )
     return units_query
+
+
+def if_town_in_evaluation_dataset(dataset_dir: str, town: str) -> bool:
+    town_page_data_file = os.path.join(dataset_dir, f"{town}.json")
+    if os.path.exists(town_page_data_file):
+        return True
+    print(f"Town {town} not found in evaluation dataset")
+    return False

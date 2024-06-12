@@ -9,7 +9,7 @@ omegaconf
 openai
 polars
 pre-commit
+python-dotenv
 streamlit
 typer
 wandb
-python-dotenv

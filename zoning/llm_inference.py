@@ -18,6 +18,7 @@ from zoning.class_types import (
     LLMQueries,
     Place,
 )
+from zoning.utils import if_town_in_evaluation_dataset
 
 
 async def search_and_llm_inference(
@@ -25,6 +26,8 @@ async def search_and_llm_inference(
 ) -> EvaluationDatumResult | None:
     try:
         search_results = searcher.search(evaluation_datum)
+        if not search_results:
+            return None
         llm_inference_results = await llm.query(
             LLMQueries(
                 place=evaluation_datum.place,
@@ -100,8 +103,11 @@ def main(config_name: str = typer.Argument("base")):
                 **{f"{tc}_page_gt": pl.Utf8 for tc in eval_terms},
             },
         )
-        evaluation_dataset = []
+        evaluation_dataset_by_term = {}
         for row in ground_truth.iter_rows(named=True):
+            # check if the town is already in the evaluation dataset
+            if not if_town_in_evaluation_dataset(config.dataset_dir, row["town"]):
+                continue
             place = Place(
                 town=row["town"],
                 district_full_name=row["district"],
@@ -115,20 +121,25 @@ def main(config_name: str = typer.Argument("base")):
                     is_eval_term_fuzzy=searcher.is_eval_term_fuzzy,
                     thesaurus_file=searcher.thesaurus_file,
                 )
-                evaluation_dataset.append(evaluation_datum)
-
+                evaluation_dataset_by_term.setdefault(eval_term, []).append(
+                    evaluation_datum
+                )
         # Hack ends here
         # the target is to get evaluation_dataset in correct type
-
-        if config.random_seed and (config.test_size or config.test_percentage):
+        if config.random_seed and (
+            config.test_size_per_term or config.test_percentage_by_term
+        ):
             random.seed(config.random_seed)
-            random.shuffle(evaluation_dataset)
-            evaluation_dataset = evaluation_dataset[: config.test_size]
+            for eval_term, evaluation_dataset in evaluation_dataset_by_term.items():
+                random.shuffle(evaluation_dataset)
+                evaluation_dataset = evaluation_dataset[: config.test_size_per_term]
+                evaluation_dataset_by_term[eval_term] = evaluation_dataset
         else:
             raise ValueError("random_seed and test_size must be provided to save cost")
 
         async_tasks = [
             search_and_llm_inference(evaluation_data, searcher=searcher, llm=llm)
+            for evaluation_dataset in evaluation_dataset_by_term.values()
             for evaluation_data in evaluation_dataset
         ]
 
