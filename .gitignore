@@ -1,4 +1,5 @@
 .env
+.mypy_cache
 data/*/*_dataset
 data/*/pdfs
 hydra_outputs

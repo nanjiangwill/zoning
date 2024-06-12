@@ -8,7 +8,11 @@ from pydantic import ValidationError
 
 from zoning.class_types import LLMInferenceResult, LLMQueries, LLMQuery, Place
 from zoning.utils import get_thesaurus
+from dotenv import load_dotenv, find_dotenv
+import os
 
+# dotenv will not override the env var if it's already set
+load_dotenv(find_dotenv())
 
 class LLM(ABC):
     def __init__(self, config: DictConfig):
@@ -33,8 +37,8 @@ class LLM(ABC):
             "gpt-4-turbo": extraction_chat_completion_tmpl,
         }
         # Only support OPENAI for now
-        self.aclient = AsyncOpenAI()
-        self.client = OpenAI()
+        self.aclient = AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        self.client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
     def get_prompt(
         self, place: Place, eval_term: str, searched_text: str

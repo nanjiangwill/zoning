@@ -1,11 +1,9 @@
 anthropic
 boto3
-dataclasses_json
 datasets
 elasticsearch-dsl
 hydra-core
 ipykernel
-jsonlines
 matplotlib
 omegaconf
 openai
@@ -14,3 +12,4 @@ pre-commit
 streamlit
 typer
 wandb
+python-dotenv
