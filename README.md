@@ -33,12 +33,12 @@ Create a new dir in data `mkdir -p data/<state_name>/pdfs` and move all related
 Option 1: Not redo textract OCR
 
 - Ask for extracted json files and store them in `data/<state_name>/extract_dataset`
-- Run `python zoning/extract.py --config-name <state_name>`
+- Run `python zoning/ocr.py --config-name <state_name>`
  with `extraction.run_ocr: false`
 
 Option 2: Redo textract OCR
 
-- Run `python zoning/extract.py --config-name <state_name>`
+- Run `python zoning/ocr.py --config-name <state_name>`
  with `extraction.run_ocr: true`
 - It will generate data inside `data/<state_name>/extract_dataset`
 

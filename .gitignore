@@ -1,8 +1,8 @@
 .env
 data/*/*_dataset
 data/*/pdfs
-old_eval.py
 hydra_outputs
+old_eval.py
 results/
 zoning.egg-info/
 zoning/*/__pycache__
