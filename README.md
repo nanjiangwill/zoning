@@ -19,7 +19,8 @@ cp .env.example .env
 ```
 
 Change the config. You can refer to `config/connecticut.yaml` and
-Fill `.env` with corresponding API keys. dotenv will not override the env variable if it's already set.
+Fill `.env` with corresponding API keys.
+dotenv will not override the env variable if it's already set.
 
 ## Data Extraction
 
