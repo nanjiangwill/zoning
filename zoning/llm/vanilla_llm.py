@@ -13,14 +13,10 @@ class VanillaLLM(LLM):
             input_prompt, raw_model_response = await self.query_llm(llm_query)
             parsed_model_response = self.parse_llm_output(raw_model_response)
 
-            if parsed_model_response is None:
-                return LLMInferenceResult(
-                    input_prompt=input_prompt, raw_model_response=raw_model_response
-                )
             return LLMInferenceResult(
                 input_prompt=input_prompt,
                 raw_model_response=raw_model_response,
-                **parsed_model_response
+                **parsed_model_response if parsed_model_response else {},
             )
 
         return await gather(*map(worker, llm_queries.query_list))
