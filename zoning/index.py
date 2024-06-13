@@ -27,7 +27,7 @@ def main(config: DictConfig):
 
     index_entities = IndexEntities(
         dataset_dir=config.dataset_dir,
-        index_range=config.index_range if "index_range" in config else 1,
+        index_range=config.index.index_range if "index_range" in config.index else 1,
         target_names_file=config.target_names_file,
     )
 

@@ -1,4 +1,5 @@
 import json
+from typing import List
 
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search
@@ -18,7 +19,7 @@ class KeywordSearcher(Searcher):
         self.is_eval_term_fuzzy = self.config.search.is_eval_term_fuzzy
         self.thesaurus_file = self.config.thesaurus_file
 
-    def search(self, evaluation_datum: EvaluationDatum) -> list[SearchResult]:
+    def search(self, evaluation_datum: EvaluationDatum) -> List[SearchResult]:
         # Search in town
         s = Search(using=self.es_client, index=evaluation_datum.get_index_key())
 

@@ -1,3 +1,4 @@
+.diskcache
 .env
 .mypy_cache
 data/*/*_dataset

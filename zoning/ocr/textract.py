@@ -1,7 +1,7 @@
 import json
 import os
 import time
-from typing import Generator, Tuple
+from typing import Generator, List, Tuple
 
 import boto3
 import tqdm
@@ -62,7 +62,7 @@ class TextractExtractor(Extractor):
             nextToken = response.get("NextToken", None)
             yield response
 
-    def collect_relations(self, w) -> list[str]:
+    def collect_relations(self, w) -> List[str]:
         rels = w["Relationships"] if "Relationships" in w else []
         ids = []
         for r in rels if rels else []:

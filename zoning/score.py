@@ -44,11 +44,15 @@ def eval_term_metrics(eval_term: str, eval_result_dir: str, ground_truth: pl.Dat
 
     print(f"Loaded {len(evaluation_data)} evaluation data for evaluating {eval_term}")
 
+    with open(
+        os.path.join(eval_result_dir, f"{eval_term}_with_ground_truth.json"), "w"
+    ) as f:
+        json.dump([i.model_dump_json() for i in evaluation_data], f)
     # Calculate metrics
     # WIP
     # can add more metrics
-    answer_tp, answer_fp, answer_fn = 0
-    page_tp, page_fp, page_fn = 0
+    answer_tp = answer_fp = answer_fn = 0
+    page_tp = page_fp = page_fn = 0
     correct_search_and_llm_inference_pair_list = []
     for evaluation_datum_result in evaluation_data:
         answer_flag = False
@@ -58,6 +62,8 @@ def eval_term_metrics(eval_term: str, eval_result_dir: str, ground_truth: pl.Dat
             evaluation_datum_result.ground_truth_page
             in evaluation_datum_result.entire_search_results_page_range
         )
+        if evaluation_datum_result.ground_truth is None:
+            continue
         for search_result, llm_inference_result in zip(
             evaluation_datum_result.search_results,
             evaluation_datum_result.llm_inference_results,
@@ -134,6 +140,9 @@ def main(config: DictConfig):
             **{f"{tc}_page_gt": pl.Utf8 for tc in eval_terms},
         },
     )
+    # for eval_term in eval_terms:
+    #     eval_term_metrics(eval_term, config.result_output_dir, ground_truth)
+
     process_map(
         partial(
             eval_term_metrics,

@@ -1,15 +1,18 @@
 import json
 import os
 from abc import ABC, abstractmethod
+from typing import Dict, List, Tuple
 
+import diskcache as dc
 from dotenv import find_dotenv, load_dotenv
 from jinja2 import Environment, FileSystemLoader
 from omegaconf import DictConfig
 from openai import AsyncOpenAI, OpenAI
 from pydantic import ValidationError
+from tenacity import retry, wait_random_exponential
 
 from zoning.class_types import LLMInferenceResult, LLMQueries, LLMQuery, Place
-from zoning.utils import get_thesaurus
+from zoning.utils import cached, get_thesaurus, limit_global_concurrency
 
 # dotenv will not override the env var if it's already set
 load_dotenv(find_dotenv())
@@ -18,7 +21,8 @@ load_dotenv(find_dotenv())
 class LLM(ABC):
     def __init__(self, config: DictConfig):
         self.config = config
-        self.prompt_env = Environment(loader=FileSystemLoader("zoning/llm/templates"))
+        self.prompt_env = Environment(loader=FileSystemLoader(config.llm.templates_dir))
+        self.cache_dir = dc.Cache(config.llm.cache_dir)
         extraction_chat_completion_tmpl = self.prompt_env.get_template(
             "extraction_chat_completion.pmpt.tpl"
         )
@@ -43,7 +47,7 @@ class LLM(ABC):
 
     def get_prompt(
         self, place: Place, eval_term: str, searched_text: str
-    ) -> list[dict[str, str]] | str:
+    ) -> List[Dict[str, str]] | str:
         synonyms = ", ".join(
             get_thesaurus(self.config.thesaurus_file).get(eval_term, [])
         )
@@ -95,11 +99,17 @@ class LLM(ABC):
             case _:
                 raise ValueError(f"Unknown model name: {self.config.llm.model_name}")
 
-    # @cached(cache, lambda *args, **kwargs: json.dumps(args) + json.dumps(kwargs))
-    # @limit_global_concurrency(100)
-    async def query_llm(
+    # TODO: add back caching later
+    # @(
+    #     lambda method:
+    #         lambda self, *args, **kwargs:
+    #             cached(self.cache_dir, lambda *args, **kwargs: json.dumps(args) + json.dumps(kwargs))(method)(*args, **kwargs)
+    # )
+    @limit_global_concurrency(100)
+    @retry(wait=wait_random_exponential(min=1, max=60))
+    async def query_llm_once(
         self, llm_query: LLMQuery
-    ) -> list[list[dict[str, str]], str | None]:
+    ) -> Tuple[List[Dict[str, str]], str | None]:
         input_prompt = self.get_prompt(
             llm_query.place, llm_query.eval_term, llm_query.context
         )
@@ -165,5 +175,5 @@ class LLM(ABC):
             return None
 
     @abstractmethod
-    async def query(self, llm_queries: LLMQueries) -> list[LLMInferenceResult]:
+    async def query(self, llm_queries: LLMQueries) -> List[LLMInferenceResult]:
         pass

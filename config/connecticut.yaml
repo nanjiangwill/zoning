@@ -51,6 +51,8 @@ llm:
   model_name: gpt-4-1106-preview
   max_tokens: 256
   formatted_response: false
+  cache_dir: .diskcache
+  templates_dir: zoning/llm/templates
 
 hydra:
   run:

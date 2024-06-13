@@ -4,7 +4,7 @@ import json
 import os
 import re
 from functools import partial, wraps
-from typing import Iterable, TypeVar
+from typing import Iterable, List, TypeVar
 
 from datasets import load_dataset
 from elasticsearch_dsl import Q
@@ -88,7 +88,7 @@ def expand_term(thesarus_file: str, eval_term: str) -> Iterable[str]:
     # logger.info(f"Expanded {term} to {expanded_count} variations.")  # Log the total number of variations
 
 
-def page_coverage(searched_text: list[str]) -> list[list[int]]:
+def page_coverage(searched_text: List[str]) -> List[List[int]]:
     pages_covered = []
     for text in searched_text:
         chunks = text.split("NEW PAGE ")
@@ -100,7 +100,7 @@ def page_coverage(searched_text: list[str]) -> list[list[int]]:
     return pages_covered
 
 
-def flatten(t: Iterable[Iterable[T]]) -> list[T]:
+def flatten(t: Iterable[Iterable[T]]) -> List[T]:
     return [item for sublist in t for item in sublist]
 
 
@@ -232,3 +232,49 @@ def if_town_in_evaluation_dataset(dataset_dir: str, town: str) -> bool:
         return True
     print(f"Town {town} not found in evaluation dataset")
     return False
+
+
+def limit_global_concurrency(n: int):
+    def decorator(func):
+        semaphore = asyncio.Semaphore(n)
+
+        async def wrapper(*args, **kwargs):
+            async def sem_coro(coro):
+                async with semaphore:
+                    return await coro
+
+            return await sem_coro(func(*args, **kwargs))
+
+        return wrapper
+
+    return decorator
+
+
+def cached(cache, keyfunc):
+    def decorator(func):
+        if asyncio.iscoroutinefunction(func):
+
+            async def async_wrapper(*args, **kwargs):
+                key = keyfunc(*args, **kwargs)
+                if key in cache:
+                    return cache[key]
+                else:
+                    result = await func(*args, **kwargs)
+                    cache[key] = result
+                    return result
+
+            return async_wrapper
+        else:
+
+            def wrapper(*args, **kwargs):
+                key = keyfunc(*args, **kwargs)
+                if key in cache:
+                    return cache[key]
+                else:
+                    result = func(*args, **kwargs)
+                    cache[key] = result
+                    return result
+
+            return wrapper
+
+    return decorator

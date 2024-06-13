@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import List
 
 from omegaconf import DictConfig
 
@@ -10,5 +11,5 @@ class Searcher(ABC):
         self.config = config
 
     @abstractmethod
-    def search(self, search_pattern: EvaluationDatum) -> list[SearchResult]:
+    def search(self, search_pattern: EvaluationDatum) -> List[SearchResult]:
         pass

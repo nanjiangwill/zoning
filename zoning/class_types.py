@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Dict, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 from pydantic import BaseModel
 
@@ -28,7 +28,7 @@ class ExtractionEntities(BaseModel):
     ocr_result_dir: str
     dataset_dir: str
     target_names_file: str
-    targets: list[ExtractionEntity] = []
+    targets: List[ExtractionEntity] = []
 
     def model_post_init(self, __context):
         with open(self.target_names_file, "r") as f:
@@ -51,14 +51,14 @@ class ExtractionResult(BaseModel):
     id: str
     text: str
     typ: str
-    relationships: list[str]
+    relationships: List[str]
     position: Tuple[int, int]
 
 
 class ExtractionResults(BaseModel):
-    ents: list[ExtractionResult]
+    ents: List[ExtractionResult]
     seen: Set[str]
-    relations: Dict[str, list[ExtractionResult]]
+    relations: Dict[str, List[ExtractionResult]]
 
     def add(self, entity: ExtractionResult):
         if entity.id in self.seen:
@@ -120,7 +120,7 @@ class IndexEntities(BaseModel):
     dataset_dir: str
     index_range: int
     target_names_file: str
-    index_entities: list[IndexEntity] = []
+    index_entities: List[IndexEntity] = []
 
     def model_post_init(self, __context):
         assert os.path.exists(
@@ -155,8 +155,8 @@ class IndexEntities(BaseModel):
 class SearchResult(BaseModel):
     text: str
     page_number: int
-    page_range: list[int] = []
-    highlight: list[str]
+    page_range: List[int] = []
+    highlight: List[str]
     score: float
     query: str
 
@@ -173,8 +173,8 @@ class LLMQuery(BaseModel):
 class LLMQueries(BaseModel):
     place: Place
     eval_term: str
-    search_results: list[SearchResult]
-    query_list: list[LLMQuery] = []
+    search_results: List[SearchResult]
+    query_list: List[LLMQuery] = []
 
     def model_post_init(self, __context):
         self.query_list = [
@@ -186,9 +186,9 @@ class LLMQueries(BaseModel):
 
 
 class LLMInferenceResult(BaseModel):
-    input_prompt: list[dict[str, str]]
+    input_prompt: List[Dict[str, str]]
     raw_model_response: str | None = None
-    extracted_text: Optional[list[str] | None] = None
+    extracted_text: Optional[List[str] | None] = None
     rationale: Optional[str | None] = None
     answer: Optional[str | None] = None
 
@@ -210,9 +210,9 @@ class EvaluationDatum(BaseModel):
 class EvaluationDatumResult(BaseModel):
     place: Place
     eval_term: str
-    search_results: list[SearchResult]
-    llm_inference_results: list[LLMInferenceResult]
-    entire_search_results_page_range: list[int] = []
+    search_results: List[SearchResult]
+    llm_inference_results: List[LLMInferenceResult]
+    entire_search_results_page_range: set[int] = ()
     ground_truth: str | None = None
     ground_truth_page: str | None = None
 
@@ -223,11 +223,11 @@ class EvaluationDatumResult(BaseModel):
 
 
 class AllEvaluationResults(BaseModel):
-    all_evaluation_results: list[EvaluationDatumResult]
+    all_evaluation_results: List[EvaluationDatumResult]
 
-    all_evaluation_results_by_town: dict[str, list[EvaluationDatumResult]] = {}
-    all_evaluation_results_by_district: dict[str, list[EvaluationDatumResult]] = {}
-    all_evaluation_results_by_eval_term: dict[str, list[EvaluationDatumResult]] = {}
+    all_evaluation_results_by_town: Dict[str, List[EvaluationDatumResult]] = {}
+    all_evaluation_results_by_district: Dict[str, List[EvaluationDatumResult]] = {}
+    all_evaluation_results_by_eval_term: Dict[str, List[EvaluationDatumResult]] = {}
 
     def model_post_init(self, __context):
         for evaluation_result in self.all_evaluation_results:

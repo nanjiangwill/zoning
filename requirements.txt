@@ -1,6 +1,7 @@
 anthropic
 boto3
 datasets
+diskcache
 elasticsearch-dsl
 hydra-core
 ipykernel
