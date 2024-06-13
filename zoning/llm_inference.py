@@ -59,7 +59,7 @@ def main(config_name: str = typer.Argument("base")):
         config (DictConfig): Configuration object specified in ../config/<config_name>.yaml
 
     Input File Format:
-        The input should be the names of the town/district and the evaluation term. The input will be later used to generate the search pattern.
+        a list of EvaluationDatum objects.
 
     Output File Format:
         list of EvaluationDatumResult objects. This will be serialized to a json file.

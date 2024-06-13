@@ -14,11 +14,12 @@ def main(config: DictConfig):
     Args:
         config (DictConfig): Configuration object specified in ../config/<config_name>.yaml
 
-    Extraction Input File Format:
-        The input should be the names of the targets to be extracted and their pdfs files
+    Extraction Input Format:
+        List of ExtractionEntities
 
     Output File Format:
-        JSON files, each containing a list of dictionaries, where each dictionary represents extracted result from a page.
+        There is no data structure for the output, as it is dependent on the extractor used.
+        The output is JSON files, each containing a list of dictionaries, where each dictionary represents extracted result from a page.
     """
     OmegaConf.resolve(config)
     match config.extract.name:

@@ -115,20 +115,10 @@ def main(config: DictConfig):
         config (DictConfig): Configuration object specified in ../config/<config_name>.yaml
 
     Input File Format:
-        The input should be the json serialized list of EvaluationDatumResult objects.
+        A list of EvaluationDatumResult objects.
 
     Output File Format:
-        EvaluationMetricByTerm objects for each evaluation term. This will be serialized to a json file.
-        {
-            eval_term: str
-            answer_f1: float
-            answer_precision: float
-            answer_recall: float
-            page_f1: float
-            page_precision: float
-            page_recall: float
-            is_in_entire_search_page_range: bool
-        }
+        EvaluationMetricByTerm objects for each evaluation term.
     """
     OmegaConf.resolve(config)
 
