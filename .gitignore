@@ -1,6 +1,7 @@
 .diskcache
 .env
 .mypy_cache
+data/*/*.csv
 data/*/*_dataset
 data/*/pdfs
 hydra_outputs

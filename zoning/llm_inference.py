@@ -1,8 +1,8 @@
 import asyncio
+import json
 import random
 from asyncio import run as aiorun
 
-import polars as pl
 import tqdm
 import typer
 from hydra import compose, initialize
@@ -96,25 +96,19 @@ def main(config_name: str = typer.Argument("base")):
 
         eval_terms = config.eval_terms
 
-        # The folloing is not the correct way to generate evaluation dataset
-        # the reason for doing this is because we have ground truth data first,
-        # and we want to generate evaluation dataset based on the ground truth data
-        ground_truth = pl.read_csv(
-            config.ground_truth_file,
-            schema_overrides={
-                **{f"{tc}_gt": pl.Utf8 for tc in eval_terms},
-                **{f"{tc}_page_gt": pl.Utf8 for tc in eval_terms},
-            },
-        )
+        # load evaluation data from ground truth
+        with open(config.ground_truth_file, "r") as f:
+            ground_truth = json.load(f)
+
         evaluation_dataset_by_term = {}
-        for row in ground_truth.iter_rows(named=True):
+        for gt_data in ground_truth:
             # check if the town is already in the evaluation dataset
-            if not if_town_in_evaluation_dataset(config.dataset_dir, row["town"]):
+            if not if_town_in_evaluation_dataset(config.dataset_dir, gt_data["town"]):
                 continue
             place = Place(
-                town=row["town"],
-                district_full_name=row["district"],
-                district_short_name=row["district_abb"],
+                town=gt_data["town"],
+                district_full_name=gt_data["district"],
+                district_short_name=gt_data["district_abb"],
             )
             for eval_term in eval_terms:
                 evaluation_datum = EvaluationDatum(
@@ -127,7 +121,7 @@ def main(config_name: str = typer.Argument("base")):
                 evaluation_dataset_by_term.setdefault(eval_term, []).append(
                     evaluation_datum
                 )
-        # Hack ends here
+
         # the target is to get evaluation_dataset in correct type
         if config.random_seed and (
             config.test_size_per_term or config.test_percentage_by_term

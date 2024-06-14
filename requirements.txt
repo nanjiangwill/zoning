@@ -8,7 +8,6 @@ ipykernel
 matplotlib
 omegaconf
 openai
-polars
 pre-commit
 python-dotenv
 streamlit
