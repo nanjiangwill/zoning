@@ -154,7 +154,7 @@ class LLM(ABC):
                     )
         except Exception as exc:
             print("Error running prompt", exc)
-            return input_prompt, None
+            # return input_prompt, None
 
     def parse_llm_output(self, model_response: str | None) -> dict | None:
         if model_response is None or model_response == "null":

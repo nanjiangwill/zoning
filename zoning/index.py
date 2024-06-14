@@ -14,7 +14,7 @@ def main(config: DictConfig):
         config (DictConfig): Configuration object specified in ../config/<config_name>.yaml
 
     Index Input File Format:
-        A list of IndexEntity objects, where each object contains the index data for a page.
+        IndexEntities objects, where each object contains the index data for a page.
     """
     OmegaConf.resolve(config)
     match config.index.method:

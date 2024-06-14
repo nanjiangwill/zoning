@@ -186,7 +186,8 @@ class LLMQueries(BaseModel):
 
 
 class LLMInferenceResult(BaseModel):
-    input_prompt: List[Dict[str, str]]
+    input_prompt: List[Dict[str, str]] | str
+    search_page_range: Set[int]
     raw_model_response: str | None = None
     extracted_text: Optional[List[str] | None] = None
     rationale: Optional[str | None] = None

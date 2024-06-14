@@ -3,6 +3,7 @@ from typing import List
 
 from zoning.class_types import LLMInferenceResult, LLMQueries, LLMQuery
 from zoning.llm.base_llm import LLM
+from zoning.utils import flatten, page_coverage
 
 
 class VanillaLLM(LLM):
@@ -16,6 +17,7 @@ class VanillaLLM(LLM):
 
             return LLMInferenceResult(
                 input_prompt=input_prompt,
+                search_page_range=sorted(flatten(page_coverage([llm_query.context]))),
                 raw_model_response=raw_model_response,
                 **parsed_model_response if parsed_model_response else {},
             )

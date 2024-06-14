@@ -75,7 +75,7 @@ The initial startup may take some time.
 
 `python zoning/llm_inference.py <state_name>`
 Warning: this is different to `--config-name <state_name>` in previous code
- because `Type`r does not work well with `omegaconf`
+ because `Typer` does not work well with `omegaconf`
 
 You will get search results and LLM inference results in `result_output_dir/<state_name>/<experiment_name>`.
 
@@ -87,8 +87,8 @@ This code will return metrics in `result_output_dir/<state_name>/<experiment_nam
 
 ## Visulization / Error Analysis
 
-with `result_output_dir/<state_name>/wrong_answers.csv`, there are some
- exisiting code in `viz/viz.ipynb` for error analysis
+run `streamlit run viz/viz.py`
+use larger resolusion.
 
 ## Notes for developers
 

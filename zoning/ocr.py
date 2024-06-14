@@ -15,7 +15,7 @@ def main(config: DictConfig):
         config (DictConfig): Configuration object specified in ../config/<config_name>.yaml
 
     Extraction Input Format:
-        List of ExtractionEntities
+        ExtractionEntities Objects
 
     Output File Format:
         There is no data structure for the output, as it is dependent on the extractor used.

@@ -28,6 +28,9 @@ async def search_and_llm_inference(
         search_results = searcher.search(evaluation_datum)
         if not search_results:
             return None
+
+        # sort search results by score
+        search_results = sorted(search_results, key=lambda x: x.score, reverse=True)
         llm_inference_results = await llm.query(
             LLMQueries(
                 place=evaluation_datum.place,
