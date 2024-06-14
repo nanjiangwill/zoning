@@ -87,8 +87,9 @@ This code will return metrics in `result_output_dir/<state_name>/<experiment_nam
 
 ## Visulization / Error Analysis
 
-run `streamlit run viz/viz.py`
-use larger resolusion.
+run `streamlit run viz/viz.py` and use larger resolusion.
+
+Select files in `result_output_dir` and end with `_with_ground_truth.json`
 
 ## Notes for developers
 
