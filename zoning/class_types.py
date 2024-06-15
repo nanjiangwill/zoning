@@ -215,6 +215,7 @@ class EvaluationDatumResult(BaseModel):
     llm_inference_results: List[LLMInferenceResult]
     entire_search_results_page_range: set[int] = ()
     ground_truth: str | None = None
+    ground_truth_orig: str | None = None
     ground_truth_page: str | None = None
 
     def model_post_init(self, __context):

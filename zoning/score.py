@@ -8,6 +8,7 @@ from omegaconf import DictConfig, OmegaConf
 from tqdm.contrib.concurrent import process_map
 
 from zoning.class_types import EvaluationDatumResult, EvaluationMetricByTerm
+from zoning.utils import semantic_comparison
 
 
 def eval_term_metrics(
@@ -23,19 +24,6 @@ def eval_term_metrics(
             evaluation_datum_result = EvaluationDatumResult(**json.loads(d))
 
             # Load corresponding ground truth
-
-            # evaluation_datum_result_ground_truth = ground_truth.filter(
-            #     (pl.col("town") == evaluation_datum_result.place.town)
-            #     & (
-            #         pl.col("district")
-            #         == evaluation_datum_result.place.district_full_name
-            #     )
-            #     & (
-            #         pl.col("district_abb")
-            #         == evaluation_datum_result.place.district_short_name
-            #     )
-            # )[f"{eval_term}_gt", f"{eval_term}_page_gt"]
-
             evaluation_datum_result_ground_truth = list(
                 filter(
                     lambda x: x["town"] == evaluation_datum_result.place.town
@@ -48,12 +36,18 @@ def eval_term_metrics(
             )
 
             # there show be only one ground truth for each evaluation data
+            if evaluation_datum_result_ground_truth is None:
+                return None
+
             evaluation_datum_result_ground_truth = evaluation_datum_result_ground_truth[
                 0
             ]
             evaluation_datum_result.ground_truth = evaluation_datum_result_ground_truth[
                 f"{eval_term}_gt"
             ]
+            evaluation_datum_result.ground_truth_orig = (
+                evaluation_datum_result_ground_truth[f"{eval_term}_gt_orig"]
+            )
             evaluation_datum_result.ground_truth_page = (
                 evaluation_datum_result_ground_truth[f"{eval_term}_page_gt"]
             )
@@ -86,9 +80,22 @@ def eval_term_metrics(
             evaluation_datum_result.search_results,
             evaluation_datum_result.llm_inference_results,
         ):
+
+            lambda x: semantic_comparison(
+                x["actual"], x["expected_extended"]
+            ) or semantic_comparison(x["actual"], x["expected"])
             if (
                 llm_inference_result.answer is not None
-                and evaluation_datum_result.ground_truth in llm_inference_result.answer
+                and (
+                    semantic_comparison(
+                        llm_inference_result.answer,
+                        evaluation_datum_result.ground_truth,
+                    )
+                    or semantic_comparison(
+                        llm_inference_result.answer,
+                        evaluation_datum_result.ground_truth_orig,
+                    )
+                )
                 and evaluation_datum_result.ground_truth_page
                 in search_result.page_range
             ):
