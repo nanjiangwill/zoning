@@ -10,4 +10,5 @@ results/
 zoning.egg-info/
 zoning/*/__pycache__
 zoning/__pycache__
-~*
+zoning/~*
+zoning.egg-info
