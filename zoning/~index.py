@@ -1,8 +1,8 @@
 import hydra
-from index import KeywordIndexer
 from omegaconf import DictConfig, OmegaConf
 
 from zoning.class_types import IndexEntities
+from zoning.index import KeywordIndexer
 
 
 @hydra.main(version_base=None, config_path="../config", config_name="base")

@@ -7,6 +7,124 @@ from pydantic import BaseModel
 from zoning.utils import flatten, page_coverage
 
 
+class GlobalConfig(BaseModel):
+
+    experiment_name: str
+    target_state: str
+    eval_terms: List[str]
+
+    target_names_file: str
+    ground_truth_file: str
+    thesaurus_file: str
+
+    pdf_dir: str
+    ocr_results_dir: str
+
+    es_endpoint: str
+
+    data_flow_ocr_file: str
+    data_flow_index_file: str
+    data_flow_search_file: str
+    data_flow_llm_file: str
+    data_flow_eval_file: str
+
+
+class OCRConfig(BaseModel):
+
+    method: str
+    run_ocr: bool
+    input_document_s3_bucket: str | None
+    pdf_name_prefix_in_s3_bucket: str | None
+    feature_types: List[str]
+
+
+class IndexConfig(BaseModel):
+    method: str
+    index_key: str
+    es_endpoint: str
+    index_range: int
+
+
+class SearchConfig(BaseModel):
+    method: str
+    es_endpoint: str
+    num_results: int
+    is_district_fuzzy: bool
+    is_eval_term_fuzzy: bool
+    thesaurus_file: str
+
+
+class LLMConfig(BaseModel):
+
+    method: str
+    llm_name: str
+    max_tokens: int
+    templates_dir: str
+    formatted_response: bool
+    cache_dir: str
+    thesaurus_file: str
+
+
+class NormalizationConfig(BaseModel):
+
+    method: str
+
+
+class EvalConfig(BaseModel):
+    random_seed: int
+    test_size_per_term: int
+
+
+class ZoningConfig(BaseModel):
+    config: Dict[str, Dict[str, str | int | bool | List[str] | None]]
+
+    global_config: GlobalConfig = None
+    ocr_config: OCRConfig = None
+    index_config: IndexConfig = None
+    search_config: SearchConfig = None
+    llm_config: LLMConfig = None
+    normalization_config: NormalizationConfig | None = None
+    eval_config: EvalConfig = None
+
+    def model_post_init(self, __context):
+        self.global_config = GlobalConfig(**self.config["global_config"])
+        self.ocr_config = OCRConfig(**self.config["ocr_config"])
+        self.index_config = IndexConfig(**self.config["index_config"])
+        self.search_config = SearchConfig(**self.config["search_config"])
+        self.llm_config = LLMConfig(**self.config["llm_config"])
+        self.normalization_config = NormalizationConfig(
+            **self.config["normalization_config"]
+        )
+        self.eval_config = EvalConfig(**self.config["eval_config"])
+
+
+class OCREntity(BaseModel):
+    name: str
+    pdf_file: str
+    ocr_results_file: str
+
+
+class OCREntities(BaseModel):
+    target_names_file: str
+    pdf_dir: str
+    ocr_results_dir: str
+    ocr_entities: List[OCREntity] = []
+
+    def model_post_init(self, __context):
+        with open(self.target_names_file, "r") as f:
+            target_names = json.load(f)
+        self.ocr_entities = [
+            OCREntity(
+                name=name,
+                pdf_file=os.path.join(self.pdf_dir, f"{name}.pdf"),
+                ocr_results_file=os.path.join(self.ocr_results_dir, f"{name}.json"),
+            )
+            for name in target_names
+        ]
+        os.makedirs(self.pdf_dir, exist_ok=True)
+        os.makedirs(self.ocr_results_dir, exist_ok=True)
+
+
 class Place(BaseModel):
     town: str
     district_full_name: str
@@ -16,38 +134,7 @@ class Place(BaseModel):
         return f"{self.town}-{self.district_full_name}"
 
 
-class ExtractionEntity(BaseModel):
-    name: str
-    pdf_file: str
-    ocr_result_file: str
-    dataset_file: str
-
-
-class ExtractionEntities(BaseModel):
-    pdf_dir: str
-    ocr_result_dir: str
-    dataset_dir: str
-    target_names_file: str
-    targets: List[ExtractionEntity] = []
-
-    def model_post_init(self, __context):
-        with open(self.target_names_file, "r") as f:
-            target_names = json.load(f)
-        self.targets = [
-            ExtractionEntity(
-                name=name,
-                pdf_file=os.path.join(self.pdf_dir, f"{name}.pdf"),
-                ocr_result_file=os.path.join(self.ocr_result_dir, f"{name}.json"),
-                dataset_file=os.path.join(self.dataset_dir, f"{name}.json"),
-            )
-            for name in target_names
-        ]
-        os.makedirs(self.pdf_dir, exist_ok=True)
-        os.makedirs(self.ocr_result_dir, exist_ok=True)
-        os.makedirs(self.dataset_dir, exist_ok=True)
-
-
-class ExtractionResult(BaseModel):
+class OCRPageResult(BaseModel):
     id: str
     text: str
     typ: str
@@ -55,12 +142,12 @@ class ExtractionResult(BaseModel):
     position: Tuple[int, int]
 
 
-class ExtractionResults(BaseModel):
-    ents: List[ExtractionResult]
+class OCRPageResults(BaseModel):
+    ents: List[OCRPageResult]
     seen: Set[str]
-    relations: Dict[str, List[ExtractionResult]]
+    relations: Dict[str, List[OCRPageResult]]
 
-    def add(self, entity: ExtractionResult):
+    def add(self, entity: OCRPageResult):
         if entity.id in self.seen:
             return
         self.ents.append(entity)
@@ -108,51 +195,26 @@ class ElasticSearchIndexData(BaseModel):
 
 class IndexEntity(BaseModel):
     name: str
-    dataset_dir: str
-    index_range: int
-    dataset_file: str = ""
-
-    def model_post_init(self, __context):
-        self.dataset_file = os.path.join(self.dataset_dir, f"{self.name}.json")
+    page_data: List[Dict[str, str | int]]
 
 
 class IndexEntities(BaseModel):
-    dataset_dir: str
-    index_range: int
-    target_names_file: str
-    index_entities: List[IndexEntity] = []
-
-    def model_post_init(self, __context):
-        assert os.path.exists(
-            self.dataset_dir
-        ), f"Dataset directory {self.dataset_dir} does not exist"
-        assert os.listdir(
-            self.dataset_dir
-        ), f"Dataset directory {self.dataset_dir} is empty"
-
-        with open(self.target_names_file, "r") as f:
-            target_names = json.load(f)
-        # simple detect if there are any files that are not extracted
-        # can be deleted later
-        missing_files = [
-            name
-            for name in target_names
-            if not os.path.exists(os.path.join(self.dataset_dir, f"{name}.json"))
-        ]
-        print("Missing files: ", missing_files)
-        print("Total missing files: ", len(missing_files))
-        print("Total files: ", len(target_names))
-
-        self.index_entities = [
-            IndexEntity(
-                name=name, dataset_dir=self.dataset_dir, index_range=self.index_range
-            )
-            for name in target_names
-            if os.path.exists(os.path.join(self.dataset_dir, f"{name}.json"))
-        ]
+    index_entities: List[IndexEntity]
 
 
-class SearchResult(BaseModel):
+class SearchQuery(BaseModel):
+    place: Place
+    eval_term: str
+
+    def get_index_key(self) -> str:
+        return self.place.town
+
+
+class SearchQueries(BaseModel):
+    search_queries: List[SearchQuery]
+
+
+class SearchMatch(BaseModel):
     text: str
     page_number: int
     page_range: List[int] = []
@@ -164,28 +226,35 @@ class SearchResult(BaseModel):
         self.page_range = flatten(page_coverage([self.text]))
 
 
+class SearchResult(BaseModel):
+    place: Place
+    eval_term: str
+    search_matches: List[SearchMatch]
+    entire_search_page_range: Set[int]
+
+    def model_post_init(self, __context):
+        self.entire_search_page_range = flatten(
+            page_coverage([m.text for m in self.search_matches])
+        )
+
+
+class SearchResults(BaseModel):
+    search_results: List[SearchResult]
+
+    def model_post_init(self, __context):
+        self.search_results = [SearchResult(**d) for d in self.search_results]
+
+
 class LLMQuery(BaseModel):
     place: Place
     eval_term: str
-    context: str
+    search_match: SearchMatch
 
 
-class LLMQueries(BaseModel):
+class LLMOutput(BaseModel):
     place: Place
     eval_term: str
-    search_results: List[SearchResult]
-    query_list: List[LLMQuery] = []
-
-    def model_post_init(self, __context):
-        self.query_list = [
-            LLMQuery(
-                place=self.place, eval_term=self.eval_term, context=search_result.text
-            )
-            for search_result in self.search_results
-        ]
-
-
-class LLMInferenceResult(BaseModel):
+    search_match: SearchMatch
     input_prompt: List[Dict[str, str]] | str
     search_page_range: Set[int]
     raw_model_response: str | None = None
@@ -194,77 +263,44 @@ class LLMInferenceResult(BaseModel):
     answer: Optional[str | None] = None
 
 
-class EvaluationDatum(BaseModel):
+class LLMInferenceResult(BaseModel):
     place: Place
     eval_term: str
-    is_eval_term_fuzzy: bool
-    is_district_fuzzy: bool
-    thesaurus_file: str
-
-    def get_index_key(self) -> str:
-        return self.place.town
-
-    def __str__(self) -> str:
-        return f"{self.eval_term} in {self.place}"
+    search_result: SearchResult
+    llm_inference_result: List[LLMOutput]
 
 
-class EvaluationDatumResult(BaseModel):
-    place: Place
-    eval_term: str
-    search_results: List[SearchResult]
+class LLMInferenceResults(BaseModel):
     llm_inference_results: List[LLMInferenceResult]
-    entire_search_results_page_range: set[int] = ()
-    ground_truth: str | None = None
-    ground_truth_orig: str | None = None
-    ground_truth_page: str | None = None
+    llm_inference_results_by_eval_term: Dict[str, List[LLMInferenceResult]] = {}
 
     def model_post_init(self, __context):
-        self.entire_search_results_page_range = set(
-            [i for r in self.search_results for i in r.page_range]
-        )
+        self.llm_inference_results_by_eval_term = {
+            eval_term: [
+                r for r in self.llm_inference_results if r.eval_term == eval_term
+            ]
+            for eval_term in set([r.eval_term for r in self.llm_inference_results])
+        }
 
 
-class AllEvaluationResults(BaseModel):
-    all_evaluation_results: List[EvaluationDatumResult]
+class EvalQuery(BaseModel):
+    place: Place
+    eval_term: str
+    search_result: SearchResult
+    llm_inference_result: LLMInferenceResult
+    ground_truth: str
+    ground_truth_orig: str
+    ground_truth_page: str
 
-    all_evaluation_results_by_town: Dict[str, List[EvaluationDatumResult]] = {}
-    all_evaluation_results_by_district: Dict[str, List[EvaluationDatumResult]] = {}
-    all_evaluation_results_by_eval_term: Dict[str, List[EvaluationDatumResult]] = {}
+
+class EvalQueries(BaseModel):
+    evaluation_queries: List[EvalQuery]
 
     def model_post_init(self, __context):
-        for evaluation_result in self.all_evaluation_results:
-            self.all_evaluation_results_by_town.setdefault(
-                evaluation_result.place.town, []
-            ).append(evaluation_result)
-            self.all_evaluation_results_by_district.setdefault(
-                evaluation_result.place.district_full_name, []
-            ).append(evaluation_result)
-            self.all_evaluation_results_by_eval_term.setdefault(
-                evaluation_result.eval_term, []
-            ).append(evaluation_result)
-
-    def save_to(self, result_output_dir: str):
-        # we can name experiment
-        os.makedirs(
-            os.path.join(result_output_dir),
-            exist_ok=True,
-        )
-        for (
-            eval_term,
-            eval_term_results,
-        ) in self.all_evaluation_results_by_eval_term.items():
-            eval_term_output_dir = os.path.join(
-                result_output_dir,
-                f"{eval_term}.json",
-            )
-            data = []
-            for evaluation_result in eval_term_results:
-                data.append(evaluation_result.model_dump_json())
-            with open(eval_term_output_dir, "w") as f:
-                json.dump(data, f)
+        self.evaluation_queries = [EvalQuery(**d) for d in self.evaluation_queries]
 
 
-class EvaluationMetricByTerm(BaseModel):
+class EvalMetricByTerm(BaseModel):
     eval_term: str
     answer_f1: float
     answer_precision: float

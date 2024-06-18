@@ -1,15 +1,12 @@
 from abc import ABC, abstractmethod
-from typing import List
 
-from omegaconf import DictConfig
-
-from zoning.class_types import EvaluationDatum, SearchResult
+from zoning.class_types import SearchConfig, SearchQueries, SearchResults
 
 
 class Searcher(ABC):
-    def __init__(self, config: DictConfig):
-        self.config = config
+    def __init__(self, search_config: SearchConfig):
+        self.search_config = search_config
 
     @abstractmethod
-    def search(self, search_pattern: EvaluationDatum) -> List[SearchResult]:
+    def search(self, search_queries: SearchQueries) -> SearchResults:
         pass

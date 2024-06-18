@@ -1,28 +1,38 @@
 import json
+from typing import List
 
+import tqdm
 from elasticsearch import Elasticsearch
-from omegaconf import DictConfig
 from tqdm.contrib.concurrent import thread_map
 
-from zoning.class_types import ElasticSearchIndexData, IndexEntities, IndexEntity
+from zoning.class_types import (
+    ElasticSearchIndexData,
+    IndexConfig,
+    IndexEntities,
+    IndexEntity,
+    OCREntities,
+    OCREntity,
+    OCRPageResult,
+    OCRPageResults,
+)
 from zoning.index.base_indexer import Indexer
 
 
 class KeywordIndexer(Indexer):
-    def __init__(self, indexer_config: DictConfig):
-        super().__init__(indexer_config)
-        self.es_client = Elasticsearch(indexer_config.index.es_endpoint)
+    def __init__(self, index_config: IndexConfig):
+        super().__init__(index_config)
+        self.es_client = Elasticsearch(index_config.es_endpoint)
 
     def _index(self, index_entity: IndexEntity) -> None:
         all_index_data = []
-        with open(index_entity.dataset_file, "r") as f:
-            data = json.load(f)
-        for idx in range(len(data)):
+        page_data = index_entity.page_data
+
+        for idx in range(len(page_data)):
             text = ""
-            for j in range(index_entity.index_range):
-                if idx + j >= len(data):
+            for j in range(self.index_config.index_range):
+                if idx + j >= len(page_data):
                     break
-                text += f"\nNEW PAGE {idx + j + 1}\n" + data[idx + j]["Text"]
+                text += f"\nNEW PAGE {idx + j + 1}\n" + page_data[idx + j]["Text"]
             all_index_data.append(
                 ElasticSearchIndexData(
                     index=index_entity.name,
@@ -40,5 +50,79 @@ class KeywordIndexer(Indexer):
                 request_timeout=index_data.request_timeout,
             )
 
-    def index(self, index_entities: IndexEntities) -> None:
-        thread_map(self._index, index_entities.index_entities)
+    def collect_relations(self, w) -> List[str]:
+        rels = w["Relationships"] if "Relationships" in w else []
+        ids = []
+        for r in rels if rels else []:
+            for id in r["Ids"]:
+                ids.append(id)
+        return ids
+
+    def process_ocr_results(self, ocr_entity: OCREntity) -> IndexEntity:
+        """
+        Inputs: ocr_entity (OCREntity)
+        Returns: Corresponding IndexEntity
+        """
+        with open(ocr_entity.ocr_results_file, "r") as f:
+            try:
+                data = json.load(f)
+            except json.JSONDecodeError:
+                print(f"Error decoding {ocr_entity.ocr_results_file}")
+                return None
+
+        extract_blocks = [b for d in data for b in d["Blocks"]]
+
+        entities = OCRPageResults(ents=[], seen=set(), relations={})
+        rows = []
+        for w in tqdm.tqdm(extract_blocks):
+            if w["BlockType"] in ["LINE", "WORD", "CELL", "MERGED_CELL"]:
+                e = OCRPageResult(
+                    id=w["Id"],
+                    text=w.get("Text", ""),
+                    typ=w["BlockType"],
+                    relationships=self.collect_relations(w),
+                    position=(
+                        (w["RowIndex"], w["ColumnIndex"])
+                        if "RowIndex" in w and "ColumnIndex" in w
+                        else (-1, -1)
+                    ),
+                )
+                entities.add(e)
+            elif w["BlockType"] == "PAGE":
+                if len(entities.ents) > 0:
+
+                    # since the key name is not unique, we are unable to use a BaseModel for it
+                    # so here, we did not use a type hint for the key name
+                    rows.append(
+                        {
+                            self.index_config.index_key: f"{ocr_entity.name}",
+                            "Page": w["Page"] - 1,
+                            "Text": str(entities),
+                        }
+                    )
+                entities = OCRPageResults(ents=[], seen=set(), relations={})
+            elif w["BlockType"] == "TABLE":
+                pass
+            else:
+                continue
+
+        if len(entities.ents) > 0:
+            rows.append(
+                {
+                    self.index_config.index_key: f"{ocr_entity.name}",
+                    "Page": w["Page"],
+                    "Text": str(entities),
+                }
+            )
+
+        return IndexEntity(name=ocr_entity.name, page_data=rows)
+
+    def index(self, ocr_entities: OCREntities) -> IndexEntities:
+        index_entities = thread_map(self.process_ocr_results, ocr_entities.ocr_entities)
+        # removing None values
+        index_entities = [i for i in index_entities if i is not None]
+
+        print(f"Indexing {len(index_entities)} entities")
+        thread_map(self._index, index_entities)
+
+        return IndexEntities(index_entities=index_entities)

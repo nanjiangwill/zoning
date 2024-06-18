@@ -1,59 +1,73 @@
 defaults:
   - _self_
 
-experiment_name: textract_es_vanilla_llm
+global_config:
+  experiment_name: textract_es_vanilla_llm
+  target_state: connecticut
+  eval_terms: ["min_lot_size", "min_unit_size", "max_height"]
 
-target_state: connecticut
-eval_terms: ["min_lot_size", "min_unit_size", "max_height"]
-thesaurus_file: data/thesaurus.json
+  target_names_file: ${global_config.data_output_dir}/all_towns_names.json
+  ground_truth_file: ${global_config.data_output_dir}/ground_truth.json
+  thesaurus_file: data/thesaurus.json
 
-num_workers: 4
-random_seed: 13
-test_size_per_term: 30
+  data_output_dir: data/${global_config.target_state} # helper variable, just used to parse
+  result_output_dir: results/${global_config.target_state}/${global_config.experiment_name} # helper variable, just used to parse
 
-data_output_dir: data/${target_state}
-result_output_dir: results/${target_state}/${experiment_name}
-ground_truth_file: ${data_output_dir}/ground_truth.json
-town_district_file: ${data_output_dir}/town_district.csv
-target_names_file: ${data_output_dir}/all_towns_names.json
-pdf_dir: ${data_output_dir}/pdfs
-ocr_result_dir: ${data_output_dir}/extract_dataset
-dataset_dir: ${data_output_dir}/extract_page_dataset
+  pdf_dir: ${global_config.data_output_dir}/pdfs
+  ocr_results_dir: ${global_config.data_output_dir}/ocr_results
+
+  es_endpoint: http://localhost:9200
+
+  data_flow_ocr_file: ${global_config.result_output_dir}/data_flow/data_flow_ocr.json
+  data_flow_index_file: ${global_config.result_output_dir}/data_flow/data_flow_index.json
+  data_flow_search_file: ${global_config.result_output_dir}/data_flow/data_flow_search.json
+  data_flow_llm_file: ${global_config.result_output_dir}/data_flow/data_flow_llm.json
+  data_flow_eval_file: ${global_config.result_output_dir}/data_flow/data_flow_eval.json
 
 
 
-extract:
-  name: textract
+ocr_config:
+  method: textract
   run_ocr: false
   input_document_s3_bucket:
-  pdf_name_prefix_in_s3_bucket: zoning/${target_state}/
+  pdf_name_prefix_in_s3_bucket: zoning/${global_config.target_state}/
   feature_types: ["TABLES"]  # allowed ["TABLES", "FORMS", "QUERIES", "SIGNATURES", "LAYOUT"]
-  hf_dataset:
-    name: ${extract.name}-${target_state}
-    publish_dataset: false
-    private: true
 
 
-index:
+index_config:
   method: keyword # allowed keyword/embedding
   index_key: town
-  es_endpoint: http://localhost:9200
+  es_endpoint: ${global_config.es_endpoint}
   index_range: 5
 
-search:
-  method: ${index.method}
+search_config:
+  method: ${index_config.method}
+  es_endpoint: ${global_config.es_endpoint}
   num_results: 5
   is_district_fuzzy: false
   is_eval_term_fuzzy: false
+  thesaurus_file: ${global_config.thesaurus_file}
 
-llm:
+llm_config:
   method: vanilla
-  model_name: gpt-4-1106-preview
+  llm_name: gpt-4-1106-preview
   max_tokens: 256
   formatted_response: false
   cache_dir: .diskcache
   templates_dir: zoning/llm/templates
+  thesaurus_file: ${global_config.thesaurus_file}
 
 hydra:
   run:
     dir: ./hydra_outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+
+normalization_config:
+  method: todo
+
+
+eval_config:
+  random_seed: 13
+  test_size_per_term: 30
+
+testing:
+  result_output_dir: tests/results

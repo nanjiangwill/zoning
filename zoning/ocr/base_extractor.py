@@ -1,18 +1,12 @@
 from abc import ABC, abstractmethod
 
-from omegaconf import DictConfig
-
-from zoning.class_types import ExtractionEntities
+from zoning.class_types import OCRConfig, OCREntities
 
 
 class Extractor(ABC):
-    def __init__(self, extractor_config: DictConfig):
-        self.config = extractor_config
-        if self.config.target_state == "all":
-            raise NotImplementedError(
-                "Post-extraction for all states not yet implemented."
-            )
+    def __init__(self, ocr_config: OCRConfig):
+        self.ocr_config = ocr_config
 
     @abstractmethod
-    def extract(self, extract_targets: ExtractionEntities) -> None:
+    def extract(self, ocr_entities: OCREntities) -> None:
         pass

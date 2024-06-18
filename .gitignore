@@ -2,7 +2,7 @@
 .env
 .mypy_cache
 data/*/*.csv
-data/*/*_dataset
+data/*/ocr_results
 data/*/pdfs
 hydra_outputs
 old_eval.py
@@ -10,3 +10,4 @@ results/
 zoning.egg-info/
 zoning/*/__pycache__
 zoning/__pycache__
+~*

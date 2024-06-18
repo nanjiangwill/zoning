@@ -6,7 +6,6 @@ import re
 from functools import partial, wraps
 from typing import Iterable, List, TypeVar
 
-from datasets import load_dataset
 from elasticsearch_dsl import Q
 from jinja2 import Environment, FileSystemLoader
 from openai import APIConnectionError, APIError, OpenAI, RateLimitError, Timeout
@@ -143,21 +142,6 @@ def semantic_comparison(true_answer: str, predicted: str) -> bool:
     top_choice = resp.choices[0]
     text = top_choice.message.content
     return text == "Y"
-
-
-def publish_dataset(extraction_target, config):
-    hf_dataset_files = [
-        os.path.join(extraction_target.dataset_dir, file)
-        for file in os.listdir(extraction_target.dataset_dir)
-    ]
-
-    page_dataset = load_dataset("json", data_files=hf_dataset_files)
-
-    if config.extract.hf_dataset.publish_dataset:
-        page_dataset.push_to_hub(
-            config.extract.hf_dataset.name,
-            private=config.extract.hf_dataset.private,
-        )
 
 
 def get_district_query(

@@ -154,7 +154,7 @@ def main(config: DictConfig):
     process_map(
         partial(
             eval_term_metrics,
-            eval_result_dir=config.result_output_dir,
+            eval_result_dir=config.testing.result_output_dir,
             ground_truth=ground_truth,
         ),
         eval_terms,
