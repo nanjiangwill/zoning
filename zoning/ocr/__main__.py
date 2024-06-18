@@ -28,7 +28,7 @@ def main(config: ZoningConfig):
     global_config = ZoningConfig(config=config).global_config
     ocr_config = ZoningConfig(config=config).ocr_config
 
-    # Read the input data
+    # Construct the input data
     ocr_entities = OCREntities(
         target_names_file=global_config.target_names_file,
         pdf_dir=global_config.pdf_dir,
