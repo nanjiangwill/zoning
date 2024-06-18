@@ -25,8 +25,9 @@ def main(config_name: str = typer.Argument("base")):
         LLMInferenceResults
     """
 
-    # Parse the config
     async def _main():
+        # Parse the config
+        # async function does not work well with hydra, so we use the initialize function
         with initialize(
             version_base=None, config_path="../../config", job_name="test_app"
         ):
