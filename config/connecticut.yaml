@@ -23,6 +23,7 @@ global_config:
   data_flow_search_file: ${global_config.result_output_dir}/data_flow/data_flow_search.json
   data_flow_llm_file: ${global_config.result_output_dir}/data_flow/data_flow_llm.json
   data_flow_eval_file: ${global_config.result_output_dir}/data_flow/data_flow_eval.json
+  data_flow_eval_result_file: ${global_config.result_output_dir}/data_flow/data_flow_eval_result.json
 
 
 
@@ -68,6 +69,7 @@ normalization_config:
 eval_config:
   random_seed: 13
   test_size_per_term: 30
+
 
 testing:
   result_output_dir: tests/results
