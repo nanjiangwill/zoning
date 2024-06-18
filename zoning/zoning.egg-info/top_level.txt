@@ -1,4 +1,0 @@
-index
-llm
-ocr
-search
