@@ -126,17 +126,17 @@ def eval_term_metric(
 
 @hydra.main(version_base=None, config_path="../../config", config_name="base")
 def main(config: ZoningConfig):
-    """Main function to run the search and LLM inference process based on the
+    """Main function to run the evaluation process based on the
     provided configuration.
 
      Configs:
         - global_config: GlobalConfig.
-        - eval_config: OCRConfig
+        - eval_config: EvalConfig
 
-    Input File Format:
+    Eval Input File Format:
         LLMInferenceResults
 
-    Output File Format:
+    Eval Output File Format:
         EvalMetricByTerm objects for each evaluation term.
     """
     # Parse the config
@@ -151,6 +151,7 @@ def main(config: ZoningConfig):
             **json.loads(data_string)
         )
 
+    # Run the evaluation
     eval_term_metric_results = thread_map(
         partial(
             eval_term_metric,
