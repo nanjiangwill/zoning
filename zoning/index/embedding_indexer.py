@@ -1,12 +1,10 @@
-from omegaconf import DictConfig
-
-from .base_indexer import Indexer
-from .index_types import IndexEntities
+from zoning.class_types import IndexConfig, IndexEntities, OCREntities
+from zoning.index.base_indexer import Indexer
 
 
 class EmbeddingIndexer(Indexer):
-    def __init__(self, indexer_config: DictConfig):
-        super().__init__(indexer_config)
+    def __init__(self, index_config: IndexConfig):
+        super().__init__(index_config)
 
-    def index(self, index_entities: IndexEntities) -> None:
+    def index(self, ocr_entities: OCREntities) -> IndexEntities:
         pass

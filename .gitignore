@@ -1,13 +1,15 @@
+.diskcache
 .env
-data/*/*_dataset
+.mypy_cache
+data/*/*.csv
+data/*/ground_truth.*
+data/*/ocr_results
 data/*/pdfs
-
-# this is hydra output
-outputs
-
+hydra_outputs
+old_eval.py
+results/
+zoning.egg-info
+zoning.egg-info/
 zoning/*/__pycache__
 zoning/__pycache__
-
-archive_eval.py
-
-results/
+zoning/~*

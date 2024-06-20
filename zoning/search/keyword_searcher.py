@@ -1,44 +1,154 @@
 import json
 
-from class_types import SearchPattern, SearchResult
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search
-from omegaconf import DictConfig
-from search.base_searcher import Searcher
+from elasticsearch_dsl.query import Q
+from tqdm.contrib.concurrent import thread_map
 
-# from ...utils import logger
+from zoning.class_types import (
+    SearchConfig,
+    SearchMatch,
+    SearchQueries,
+    SearchQuery,
+    SearchResult,
+    SearchResults,
+)
+from zoning.search.base_searcher import Searcher
 
 
 class KeywordSearcher(Searcher):
-    def __init__(self, config: DictConfig):
-        super().__init__(config)
-        self.es_client = Elasticsearch(self.config.index.es_endpoint)
-        self.num_results = self.config.search.num_results
-        self.is_district_fuzzy = self.config.search.is_district_fuzzy
-        self.is_eval_term_fuzzy = self.config.search.is_eval_term_fuzzy
-        self.thesaurus_file = self.config.thesaurus_file
+    def __init__(self, search_config: SearchConfig):
+        super().__init__(search_config)
+        self.es_client = Elasticsearch(self.search_config.es_endpoint)
 
-    def search(self, search_pattern: SearchPattern) -> list[SearchResult]:
-        # Search in town
-        s = Search(using=self.es_client, index=search_pattern.get_index_key())
-
-        s.query = search_pattern.get_query()
-
-        s = s.extra(size=self.num_results)
-
-        s = s.highlight("Text")
-
-        res = s.execute()
-        if len(res) == 0:
-            print(f"No results found for {search_pattern}")
-
-        return [
-            SearchResult(
-                text=r.Text,
-                page_number=r.Page,
-                highlight=list(r.meta.highlight.Text),
-                score=r.meta.score,
-                query=json.dumps(s.query.to_dict()),
+    def get_district_query(
+        self,
+        district_full_name: str,
+        district_short_name: str,
+        is_district_fuzzy: bool,
+        boost_value: float = 1.0,
+    ) -> Q:
+        exact_district_query = (
+            Q("match_phrase", Text={"query": district_full_name, "boost": boost_value})
+            | Q(
+                "match_phrase",
+                Text={"query": district_short_name, "boost": boost_value},
             )
-            for r in res
-        ]
+            | Q(
+                "match_phrase",
+                Text={
+                    "query": district_short_name.replace("-", ""),
+                    "boost": boost_value,
+                },
+            )
+            | Q(
+                "match_phrase",
+                Text={
+                    "query": district_short_name.replace(".", ""),
+                    "boost": boost_value,
+                },
+            )
+        )
+
+        fuzzy_district_query = Q(
+            "match", Text={"query": district_short_name, "fuzziness": "AUTO"}
+        ) | Q("match", Text={"query": district_full_name, "fuzziness": "AUTO"})
+
+        if is_district_fuzzy:
+            district_query = Q(
+                "bool", should=[exact_district_query, fuzzy_district_query]
+            )
+        else:
+            district_query = exact_district_query
+
+        return district_query
+
+    def get_eval_term_query(
+        self, eval_term: str, is_eval_term_fuzzy: bool, thesaurus_file: str
+    ) -> Q:
+        expanded_eval_term = self.expand_term(thesaurus_file, eval_term)
+        exact_term_query = Q(
+            "bool",
+            should=list(Q("match_phrase", Text=t) for t in expanded_eval_term),
+            minimum_should_match=1,
+        )
+        if is_eval_term_fuzzy:
+            term_query = Q(
+                "bool",
+                should=[Q("match_phrase", Text=t) for t in expanded_eval_term]
+                + [
+                    Q("match", Text={"query": t, "fuzziness": "AUTO"})
+                    for t in expanded_eval_term
+                ],
+                minimum_should_match=1,
+            )
+        else:
+            term_query = exact_term_query
+
+        return term_query
+
+    def get_units_query(self, eval_term: str, thesaurus_file: str) -> Q:
+        expanded_units = self.expand_term(thesaurus_file, f"{eval_term} units")
+        units_query = Q(
+            "bool",
+            should=list(Q("match_phrase", Text=t) for t in expanded_units),
+            minimum_should_match=1,
+        )
+        return units_query
+
+    def _search(self, search_query: SearchQuery) -> SearchResult:
+        try:
+            s = Search(using=self.es_client, index=search_query.get_index_key())
+
+            district_query = self.get_district_query(
+                search_query.place.district_full_name,
+                search_query.place.district_short_name,
+                self.search_config.is_eval_term_fuzzy,
+            )
+            eval_term_query = self.get_eval_term_query(
+                search_query.eval_term,
+                self.search_config.is_eval_term_fuzzy,
+                self.search_config.thesaurus_file,
+            )
+            units_query = self.get_units_query(
+                search_query.eval_term, self.search_config.thesaurus_file
+            )
+
+            s.query = district_query & eval_term_query & units_query
+
+            s = s.extra(size=self.search_config.num_results)
+
+            s = s.highlight("Text")
+
+            res = s.execute()
+            if len(res) == 0:
+                print(f"No results found for {search_query}")
+
+            search_matches = [
+                SearchMatch(
+                    text=r.Text,
+                    page_number=r.Page,
+                    highlight=list(r.meta.highlight.Text),
+                    score=r.meta.score,
+                    query=json.dumps(s.query.to_dict()),
+                )
+                for r in res
+            ]
+
+            search_matches = sorted(search_matches, key=lambda x: x.score, reverse=True)
+
+            return SearchResult(
+                place=search_query.place,
+                eval_term=search_query.eval_term,
+                search_matches=search_matches,
+            )
+
+        except Exception as e:
+            print(f"Error searching {search_query}")
+            print(e)
+            return None
+
+    def search(self, search_queries: SearchQueries) -> SearchResults:
+        search_results = thread_map(self._search, search_queries.search_queries)
+        search_results = [sr for sr in search_results if sr]
+        return SearchResults(search_results=search_results)

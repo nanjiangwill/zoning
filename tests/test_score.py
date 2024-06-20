@@ -1,15 +1,19 @@
 import json
 import os
 from functools import partial
+from typing import Dict, List
 
 import hydra
-import polars as pl
-from class_types import EvaluationDatumResult, EvaluationMetricByTerm
 from omegaconf import DictConfig, OmegaConf
 from tqdm.contrib.concurrent import process_map
 
+from zoning.class_types import EvaluationDatumResult, EvaluationMetricByTerm
+from zoning.utils import semantic_comparison
 
-def eval_term_metrics(eval_term: str, eval_result_dir: str, ground_truth: pl.DataFrame):
+
+def eval_term_metrics(
+    eval_term: str, eval_result_dir: str, ground_truth: List[Dict[str, str]]
+):
     eval_term_result_file = os.path.join(eval_result_dir, f"{eval_term}.json")
     evaluation_data = []
 
@@ -20,34 +24,47 @@ def eval_term_metrics(eval_term: str, eval_result_dir: str, ground_truth: pl.Dat
             evaluation_datum_result = EvaluationDatumResult(**json.loads(d))
 
             # Load corresponding ground truth
-            evaluation_datum_result_ground_truth = ground_truth.filter(
-                (pl.col("town") == evaluation_datum_result.place.town)
-                & (
-                    pl.col("district")
+            evaluation_datum_result_ground_truth = list(
+                filter(
+                    lambda x: x["town"] == evaluation_datum_result.place.town
+                    and x["district"]
                     == evaluation_datum_result.place.district_full_name
+                    and x["district_abb"]
+                    == evaluation_datum_result.place.district_short_name,
+                    ground_truth,
                 )
-                & (
-                    pl.col("district_abb")
-                    == evaluation_datum_result.place.district_short_name
-                )
-            )[f"{eval_term}_gt", f"{eval_term}_page_gt"]
+            )
 
+            # there show be only one ground truth for each evaluation data
+            if evaluation_datum_result_ground_truth is None:
+                return None
+
+            evaluation_datum_result_ground_truth = evaluation_datum_result_ground_truth[
+                0
+            ]
             evaluation_datum_result.ground_truth = evaluation_datum_result_ground_truth[
                 f"{eval_term}_gt"
-            ].item()
+            ]
+            evaluation_datum_result.ground_truth_orig = (
+                evaluation_datum_result_ground_truth[f"{eval_term}_gt_orig"]
+            )
             evaluation_datum_result.ground_truth_page = (
-                evaluation_datum_result_ground_truth[f"{eval_term}_page_gt"].item()
+                evaluation_datum_result_ground_truth[f"{eval_term}_page_gt"]
             )
 
             evaluation_data.append(evaluation_datum_result)
 
     print(f"Loaded {len(evaluation_data)} evaluation data for evaluating {eval_term}")
 
+    with open(
+        os.path.join(eval_result_dir, f"{eval_term}_with_ground_truth.json"), "w"
+    ) as f:
+        json.dump([i.model_dump_json() for i in evaluation_data], f)
     # Calculate metrics
     # WIP
     # can add more metrics
-    answer_tp, answer_fp, answer_fn = 0
-    page_tp, page_fp, page_fn = 0
+    answer_tp = answer_fp = answer_fn = 0
+    page_tp = page_fp = page_fn = 0
     correct_search_and_llm_inference_pair_list = []
     for evaluation_datum_result in evaluation_data:
         answer_flag = False
@@ -57,13 +74,28 @@ def eval_term_metrics(eval_term: str, eval_result_dir: str, ground_truth: pl.Dat
             evaluation_datum_result.ground_truth_page
             in evaluation_datum_result.entire_search_results_page_range
         )
+        if evaluation_datum_result.ground_truth is None:
+            continue
         for search_result, llm_inference_result in zip(
             evaluation_datum_result.search_results,
             evaluation_datum_result.llm_inference_results,
         ):
+
+            lambda x: semantic_comparison(
+                x["actual"], x["expected_extended"]
+            ) or semantic_comparison(x["actual"], x["expected"])
             if (
                 llm_inference_result.answer is not None
-                and evaluation_datum_result.ground_truth in llm_inference_result.answer
+                and (
+                    semantic_comparison(
+                        llm_inference_result.answer,
+                        evaluation_datum_result.ground_truth,
+                    )
+                    or semantic_comparison(
+                        llm_inference_result.answer,
+                        evaluation_datum_result.ground_truth_orig,
+                    )
+                )
                 and evaluation_datum_result.ground_truth_page
                 in search_result.page_range
             ):
@@ -108,35 +140,21 @@ def main(config: DictConfig):
         config (DictConfig): Configuration object specified in ../config/<config_name>.yaml
 
     Input File Format:
-        The input should be the json serialized list of EvaluationDatumResult objects.
+        A list of EvaluationDatumResult objects.
 
     Output File Format:
-        EvaluationMetricByTerm objects for each evaluation term. This will be serialized to a json file.
-        {
-            eval_term: str
-            answer_f1: float
-            answer_precision: float
-            answer_recall: float
-            page_f1: float
-            page_precision: float
-            page_recall: float
-            is_in_entire_search_page_range: bool
-        }
+        EvaluationMetricByTerm objects for each evaluation term.
     """
     OmegaConf.resolve(config)
 
     eval_terms = config.eval_terms
-    ground_truth = pl.read_csv(
-        config.ground_truth_file,
-        schema_overrides={
-            **{f"{tc}_gt": pl.Utf8 for tc in eval_terms},
-            **{f"{tc}_page_gt": pl.Utf8 for tc in eval_terms},
-        },
-    )
+    with open(config.ground_truth_file, "r") as f:
+        ground_truth = json.load(f)
+
     process_map(
         partial(
             eval_term_metrics,
-            eval_result_dir=config.result_output_dir,
+            eval_result_dir=config.testing.result_output_dir,
             ground_truth=ground_truth,
         ),
         eval_terms,

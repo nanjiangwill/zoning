@@ -19,7 +19,8 @@ cp .env.example .env
 ```
 
 Change the config. You can refer to `config/connecticut.yaml` and
-fill `.env` with corresponding API keys.
+Fill `.env` with corresponding API keys.
+dotenv will not override the env variable if it's already set.
 
 ## Data Extraction
 
@@ -33,12 +34,12 @@ Create a new dir in data `mkdir -p data/<state_name>/pdfs` and move all related
 Option 1: Not redo textract OCR
 
 - Ask for extracted json files and store them in `data/<state_name>/extract_dataset`
-- Run `python zoning/extract.py --config-name <state_name>`
+- Run `python zoning/ocr.py --config-name <state_name>`
  with `extraction.run_ocr: false`
 
 Option 2: Redo textract OCR
 
-- Run `python zoning/extract.py --config-name <state_name>`
+- Run `python zoning/ocr.py --config-name <state_name>`
  with `extraction.run_ocr: true`
 - It will generate data inside `data/<state_name>/extract_dataset`
 
@@ -74,7 +75,7 @@ The initial startup may take some time.
 
 `python zoning/llm_inference.py <state_name>`
 Warning: this is different to `--config-name <state_name>` in previous code
- because `Type`r does not work well with `omegaconf`
+ because `Typer` does not work well with `omegaconf`
 
 You will get search results and LLM inference results in `result_output_dir/<state_name>/<experiment_name>`.
 
@@ -86,8 +87,9 @@ This code will return metrics in `result_output_dir/<state_name>/<experiment_nam
 
 ## Visulization / Error Analysis
 
-with `result_output_dir/<state_name>/wrong_answers.csv`, there are some
- exisiting code in `viz/viz.ipynb` for error analysis
+run `streamlit run viz/viz.py` and use larger resolusion.
+
+Select files in `result_output_dir` and end with `_with_ground_truth.json`
 
 ## Notes for developers
 

@@ -1,15 +1,9 @@
 import asyncio
 import inspect
 import json
-import os
-import re
 from functools import partial, wraps
-from typing import Iterable, TypeVar
+from typing import Iterable, List, TypeVar
 
-from datasets import load_dataset
-from jinja2 import Environment, FileSystemLoader
-from openai import APIConnectionError, APIError, OpenAI, RateLimitError, Timeout
-from tenacity import retry, retry_if_exception_type, wait_random_exponential
 from typer import Typer
 
 T = TypeVar("T")
@@ -39,55 +33,13 @@ class AsyncTyper(Typer):
         return partial(self.maybe_run_async, decorator)
 
 
-def normalize_town(x) -> str:
-    x = x.lower().strip()
-    x = re.sub(r"\s*-\s*", "-", x)
-    x = re.sub(r"\s*/\s*", "-", x)
-    x = re.sub(r"\s+", "-", x)
-    return x
-
-
 def get_thesaurus(thesarus_file) -> dict:
     with open(thesarus_file, "r", encoding="utf-8") as f:
         thesaurus = json.load(f)
     return thesaurus
 
 
-def expand_term(thesarus_file: str, eval_term: str) -> Iterable[str]:
-    # term = term.replace("_", " ").strip()
-    # logger.info(f"Term: {term}")  # Initial logging of the term
-    thesarus = get_thesaurus(thesarus_file)
-    min_variations = thesarus.get("min", [])
-    max_variations = thesarus.get("max", [])
-    expanded_count = 0
-    for query in thesarus.get(
-        eval_term, []
-    ):  # Iterate over thesaurus entries for the term
-        # query = query.replace("_", " ").strip()
-        if "min" in query or "minimum" in query:  # Handling minimum variations
-            for r in min_variations:
-                modified_query = query.replace(
-                    "min", r
-                )  # Replace 'min' with its variations
-                # logger.info(f"Yielding: {modified_query}")  # Log the value to be yielded
-                expanded_count += 1
-                yield modified_query
-        elif "max" in query or "maximum" in query:  # Handling maximum variations
-            for r in max_variations:
-                modified_query = query.replace(
-                    "max", r
-                )  # Replace 'max' with its variations
-                # logger.info(f"Yielding: {modified_query}")  # Log the value to be yielded
-                expanded_count += 1
-                yield modified_query
-        else:
-            # logger.info(f"Yielding: {query}")  # Log the unmodified query to be yielded
-            expanded_count += 1
-            yield query
-    # logger.info(f"Expanded {term} to {expanded_count} variations.")  # Log the total number of variations
-
-
-def page_coverage(searched_text: list[str]) -> list[list[int]]:
+def page_coverage(searched_text: List[str]) -> List[List[int]]:
     pages_covered = []
     for text in searched_text:
         chunks = text.split("NEW PAGE ")
@@ -99,61 +51,54 @@ def page_coverage(searched_text: list[str]) -> list[list[int]]:
     return pages_covered
 
 
-def flatten(t: Iterable[Iterable[T]]) -> list[T]:
+def flatten(t: Iterable[Iterable[T]]) -> List[T]:
     return [item for sublist in t for item in sublist]
 
 
 # cache = dc.Cache(get_project_root() / ".diskcache")
 
 
-# @cached(cache, lambda *args: json.dumps(args))
-@retry(
-    retry=retry_if_exception_type(
-        (
-            APIError,
-            RateLimitError,
-            APIConnectionError,
-            Timeout,
-        )
-    ),
-    wait=wait_random_exponential(multiplier=1, max=60),
-)
-def semantic_comparison(true_answer: str, predicted: str) -> bool:
-    client = OpenAI()
-    template = Environment(
-        loader=FileSystemLoader("zoning/llm/templates")
-    ).get_template("semantic_comparison.pmpt.tpl")
-    # TODO: Is there a way to share this implementation with our generic prompt
-    # function?
-    resp = client.chat.completions.create(
-        model="gpt-4-turbo",
-        temperature=0.0,  # We want these responses to be deterministic
-        max_tokens=1,
-        messages=[
-            {
-                "role": "user",
-                "content": template.render(
-                    predicted=predicted,
-                    true_answer=true_answer,
-                ),
-            },
-        ],
-    )
-    top_choice = resp.choices[0]
-    text = top_choice.message.content
-    return text == "Y"
+def limit_global_concurrency(n: int):
+    def decorator(func):
+        semaphore = asyncio.Semaphore(n)
+
+        async def wrapper(*args, **kwargs):
+            async def sem_coro(coro):
+                async with semaphore:
+                    return await coro
+
+            return await sem_coro(func(*args, **kwargs))
+
+        return wrapper
+
+    return decorator
 
 
-def publish_dataset(extraction_target, config):
-    hf_dataset_files = [
-        os.path.join(extraction_target.dataset_dir, file)
-        for file in os.listdir(extraction_target.dataset_dir)
-    ]
+def cached(cache, keyfunc):
+    def decorator(func):
+        if asyncio.iscoroutinefunction(func):
 
-    page_dataset = load_dataset("json", data_files=hf_dataset_files)
+            async def async_wrapper(*args, **kwargs):
+                key = keyfunc(*args, **kwargs)
+                if key in cache:
+                    return cache[key]
+                else:
+                    result = await func(*args, **kwargs)
+                    cache[key] = result
+                    return result
 
-    if config.extract.hf_dataset.publish_dataset:
-        page_dataset.push_to_hub(
-            config.extract.hf_dataset.name,
-            private=config.extract.hf_dataset.private,
-        )
+            return async_wrapper
+        else:
+
+            def wrapper(*args, **kwargs):
+                key = keyfunc(*args, **kwargs)
+                if key in cache:
+                    return cache[key]
+                else:
+                    result = func(*args, **kwargs)
+                    cache[key] = result
+                    return result
+
+            return wrapper
+
+    return decorator
