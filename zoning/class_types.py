@@ -19,16 +19,14 @@ class GlobalConfig(BaseModel):
     thesaurus_file: str
 
     pdf_dir: str
-    ocr_results_dir: str
+    ocr_dir: str
+    format_ocr_dir: str
+    index_dir: str
+    search_dir: str
+    llm_dir: str
+    eval_dir: str
 
     es_endpoint: str
-
-    data_flow_ocr_file: str
-    data_flow_index_file: str
-    data_flow_search_file: str
-    data_flow_llm_file: str
-    data_flow_eval_file: str
-    data_flow_eval_result_file: str
 
     random_seed: int
     test_size_per_term: int
@@ -41,6 +39,9 @@ class OCRConfig(BaseModel):
     input_document_s3_bucket: str | None
     pdf_name_prefix_in_s3_bucket: str | None
     feature_types: List[str]
+
+class FormatOCRConfig(BaseModel):
+    temp: str
 
 
 class IndexConfig(BaseModel):
@@ -83,14 +84,17 @@ class ZoningConfig(BaseModel):
 
     global_config: GlobalConfig = None
     ocr_config: OCRConfig = None
+    format_ocr_config: OCRConfig = None
     index_config: IndexConfig = None
     search_config: SearchConfig = None
     llm_config: LLMConfig = None
     normalization_config: NormalizationConfig | None = None
+    eval_config: EvalConfig | None = None
 
     def model_post_init(self, __context):
         self.global_config = GlobalConfig(**self.config["global_config"])
         self.ocr_config = OCRConfig(**self.config["ocr_config"])
+        self.format_ocr_config = FormatOCRConfig(**self.config["format_ocr_config"])
         self.index_config = IndexConfig(**self.config["index_config"])
         self.search_config = SearchConfig(**self.config["search_config"])
         self.llm_config = LLMConfig(**self.config["llm_config"])
@@ -100,30 +104,30 @@ class ZoningConfig(BaseModel):
         self.eval_config = EvalConfig(**self.config["eval_config"])
 
 
-class OCREntity(BaseModel):
-    name: str
-    pdf_file: str
-    ocr_results_file: str
+# class OCREntity(BaseModel):
+#     name: str
+#     pdf_file: str
+#     ocr_results_file: str
 
 
-class OCREntities(BaseModel):
-    target_names_file: str
-    pdf_dir: str
-    ocr_results_dir: str
-    ocr_entities: List[OCREntity] = []
+# class OCREntities(BaseModel):
+#     target_names_file: str
+#     pdf_dir: str
+#     ocr_results_dir: str
+#     ocr_entities: List[OCREntity] = []
 
-    def model_post_init(self, __context):
-        target_names = json.load(open(self.target_names_file))
-        self.ocr_entities = [
-            OCREntity(
-                name=name,
-                pdf_file=os.path.join(self.pdf_dir, f"{name}.pdf"),
-                ocr_results_file=os.path.join(self.ocr_results_dir, f"{name}.json"),
-            )
-            for name in target_names
-        ]
-        os.makedirs(self.pdf_dir, exist_ok=True)
-        os.makedirs(self.ocr_results_dir, exist_ok=True)
+#     def model_post_init(self, __context):
+#         target_names = json.load(open(self.target_names_file))
+#         self.ocr_entities = [
+#             OCREntity(
+#                 name=name,
+#                 pdf_file=os.path.join(self.pdf_dir, f"{name}.pdf"),
+#                 ocr_results_file=os.path.join(self.ocr_results_dir, f"{name}.json"),
+#             )
+#             for name in target_names
+#         ]
+#         os.makedirs(self.pdf_dir, exist_ok=True)
+#         os.makedirs(self.ocr_results_dir, exist_ok=True)
 
 
 class Place(BaseModel):
@@ -135,7 +139,11 @@ class Place(BaseModel):
         return f"{self.town}-{self.district_full_name}"
 
 
-class OCRPageResult(BaseModel):
+# =================
+# Formatted OCR
+# =================
+    
+class OCRBlock(BaseModel):
     id: str
     text: str
     typ: str
@@ -143,21 +151,22 @@ class OCRPageResult(BaseModel):
     position: Tuple[int, int]
 
 
-class OCRPageResults(BaseModel):
-    ents: List[OCRPageResult]
-    seen: Set[str]
-    relations: Dict[str, List[OCRPageResult]]
+class Page(BaseModel):
+    ents: List[OCRBlock] = []
+    seen: Dict[str, bool] = {}
+    relations: Dict[str, List[OCRBlock]] = {}
+    page: int = 0
 
-    def add(self, entity: OCRPageResult):
+    def add(self, entity: OCRBlock):
         if entity.id in self.seen:
             return
         self.ents.append(entity)
-        self.seen.add(entity.id)
+        self.seen[entity.id] = True
         for r in entity.relationships:
             self.relations.setdefault(r, [])
             self.relations[r].append(entity)
 
-    def __str__(self) -> str:
+    def make_string(self) -> str:
         out = ""
         for e in self.ents:
             if e.typ == "LINE":
@@ -186,6 +195,16 @@ class OCRPageResults(BaseModel):
                     out += o.text + "\n"
         return out
 
+class FormattedOCR(BaseModel):
+    """
+    The formatted OCR representation
+    for a town. Linked to format_ocr.
+    """
+
+    pages: List[str]
+    town_name: str
+
+# ==================
 
 class ElasticSearchIndexData(BaseModel):
     index: str

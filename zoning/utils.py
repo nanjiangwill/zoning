@@ -3,11 +3,25 @@ import inspect
 import json
 from functools import partial, wraps
 from typing import Iterable, List, TypeVar
-
+from tqdm.contrib.concurrent import thread_map
 from typer import Typer
 
 T = TypeVar("T")
 
+def town_name(town, dir):
+    return f"{dir}/{town}.json" 
+
+def process(target_name_file: str, input_dir: str, output_dir: str, fn, 
+            converter=lambda x: x, output=True):
+    targets = json.load(open(target_name_file))
+
+    def process_target(target):
+        inp = converter(json.load(open(town_name(target, input_dir))))
+        output_result = fn(inp, target)
+        if output:
+            with open(town_name(target, output_dir), "w") as f:
+                json.dump(output_result.model_dump(), f)
+    thread_map(process_target, targets)    
 
 # Copied from https://github.com/tiangolo/typer/issues/88
 class AsyncTyper(Typer):

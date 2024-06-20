@@ -22,33 +22,25 @@ Change the config. You can refer to `config/connecticut.yaml` and
 Fill `.env` with corresponding API keys.
 dotenv will not override the env variable if it's already set.
 
-## Data Extraction
+## Stage 1 - OCR
 
-### Step 1
+### Input Data Location
 
-Create a new dir in data `mkdir -p data/<state_name>/pdfs` and move all related
- pdfs to this folder.
+Default: `data/<state_name>/pdfs` 
 
-### Step 2
+### Command
 
-Option 1: Not redo textract OCR
+Run `python -m zoning.ocr --config-name <state_name>`
+ 
+### Output Data Location 
 
-- Ask for extracted json files and store them in `data/<state_name>/extract_dataset`
-- Run `python zoning/ocr.py --config-name <state_name>`
- with `extraction.run_ocr: false`
+Default: `data/<state_name>/ocr`
 
-Option 2: Redo textract OCR
+## Stage 2 - Indexing
 
-- Run `python zoning/ocr.py --config-name <state_name>`
- with `extraction.run_ocr: true`
-- It will generate data inside `data/<state_name>/extract_dataset`
+### Input Data Location
 
-After running OCR/extraction, it will gather information from same page and make
- it to one data sample, which is stored in `data/<state_name>/extract_page_dataset`.
-  `data/<state_name>/hf_dataset` is same to `data/<state_name>/extract_page_dataset`
-   and can be read by `load_datasets` directly.
-
-## Indexing
+Default: `data/<state_name>/ocr` 
 
 ### Running an ElasticSearch Cluster locally
 
