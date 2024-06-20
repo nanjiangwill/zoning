@@ -204,7 +204,7 @@ def main():
         if uploaded_file is not None:
             all_evaluation_results = json.load(uploaded_file)
             print(all_evaluation_results)
-            asdf
+            
             all_evaluation_results = [
                 EvaluationDatumResult(**json.loads(i)) for i in all_evaluation_results
             ]
