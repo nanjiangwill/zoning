@@ -12,10 +12,10 @@ from tenacity import retry, wait_random_exponential
 
 from zoning.class_types import (
     LLMConfig,
-    LLMInferenceResults,
+    LLMInferenceResult,
     LLMQuery,
     Place,
-    SearchResults,
+    SearchResult,
 )
 from zoning.utils import cached, get_thesaurus, limit_global_concurrency
 
@@ -112,11 +112,11 @@ class LLM(ABC):
     # )
     @limit_global_concurrency(100)
     @retry(wait=wait_random_exponential(min=1, max=60))
-    async def query_llm_once(
+    async def call_llm(
         self, llm_query: LLMQuery
     ) -> Tuple[List[Dict[str, str]], str | None]:
         input_prompt = self.get_prompt(
-            llm_query.place, llm_query.eval_term, llm_query.search_match.text
+            llm_query.place, llm_query.eval_term, llm_query.context
         )
         base_params = {
             "model": self.llm_config.llm_name,
@@ -178,5 +178,5 @@ class LLM(ABC):
             return None
 
     @abstractmethod
-    async def query(self, search_results: SearchResults) -> LLMInferenceResults:
+    async def query(self, search_result: SearchResult) -> LLMInferenceResult:
         pass

@@ -1,15 +1,9 @@
 import asyncio
 import inspect
 import json
-import os
-import re
 from functools import partial, wraps
 from typing import Iterable, List, TypeVar
 
-from elasticsearch_dsl import Q
-from jinja2 import Environment, FileSystemLoader
-from openai import APIConnectionError, APIError, OpenAI, RateLimitError, Timeout
-from tenacity import retry, retry_if_exception_type, wait_random_exponential
 from typer import Typer
 
 T = TypeVar("T")
@@ -39,52 +33,10 @@ class AsyncTyper(Typer):
         return partial(self.maybe_run_async, decorator)
 
 
-def normalize_town(x) -> str:
-    x = x.lower().strip()
-    x = re.sub(r"\s*-\s*", "-", x)
-    x = re.sub(r"\s*/\s*", "-", x)
-    x = re.sub(r"\s+", "-", x)
-    return x
-
-
 def get_thesaurus(thesarus_file) -> dict:
     with open(thesarus_file, "r", encoding="utf-8") as f:
         thesaurus = json.load(f)
     return thesaurus
-
-
-def expand_term(thesarus_file: str, eval_term: str) -> Iterable[str]:
-    # term = term.replace("_", " ").strip()
-    # logger.info(f"Term: {term}")  # Initial logging of the term
-    thesarus = get_thesaurus(thesarus_file)
-    min_variations = thesarus.get("min", [])
-    max_variations = thesarus.get("max", [])
-    expanded_count = 0
-    for query in thesarus.get(
-        eval_term, []
-    ):  # Iterate over thesaurus entries for the term
-        # query = query.replace("_", " ").strip()
-        if "min" in query or "minimum" in query:  # Handling minimum variations
-            for r in min_variations:
-                modified_query = query.replace(
-                    "min", r
-                )  # Replace 'min' with its variations
-                # logger.info(f"Yielding: {modified_query}")  # Log the value to be yielded
-                expanded_count += 1
-                yield modified_query
-        elif "max" in query or "maximum" in query:  # Handling maximum variations
-            for r in max_variations:
-                modified_query = query.replace(
-                    "max", r
-                )  # Replace 'max' with its variations
-                # logger.info(f"Yielding: {modified_query}")  # Log the value to be yielded
-                expanded_count += 1
-                yield modified_query
-        else:
-            # logger.info(f"Yielding: {query}")  # Log the unmodified query to be yielded
-            expanded_count += 1
-            yield query
-    # logger.info(f"Expanded {term} to {expanded_count} variations.")  # Log the total number of variations
 
 
 def page_coverage(searched_text: List[str]) -> List[List[int]]:
@@ -104,118 +56,6 @@ def flatten(t: Iterable[Iterable[T]]) -> List[T]:
 
 
 # cache = dc.Cache(get_project_root() / ".diskcache")
-
-
-# @cached(cache, lambda *args: json.dumps(args))
-@retry(
-    retry=retry_if_exception_type(
-        (
-            APIError,
-            RateLimitError,
-            APIConnectionError,
-            Timeout,
-        )
-    ),
-    wait=wait_random_exponential(multiplier=1, max=60),
-)
-def semantic_comparison(true_answer: str, predicted: str) -> bool:
-    client = OpenAI()
-    template = Environment(
-        loader=FileSystemLoader("zoning/llm/templates")
-    ).get_template("semantic_comparison.pmpt.tpl")
-    # TODO: Is there a way to share this implementation with our generic prompt
-    # function?
-    resp = client.chat.completions.create(
-        model="gpt-4-turbo",
-        temperature=0.0,  # We want these responses to be deterministic
-        max_tokens=1,
-        messages=[
-            {
-                "role": "user",
-                "content": template.render(
-                    predicted=predicted,
-                    true_answer=true_answer,
-                ),
-            },
-        ],
-    )
-    top_choice = resp.choices[0]
-    text = top_choice.message.content
-    return text == "Y"
-
-
-def get_district_query(
-    district_full_name: str,
-    district_short_name: str,
-    is_district_fuzzy: bool,
-    boost_value: float = 1.0,
-) -> Q:
-    exact_district_query = (
-        Q("match_phrase", Text={"query": district_full_name, "boost": boost_value})
-        | Q("match_phrase", Text={"query": district_short_name, "boost": boost_value})
-        | Q(
-            "match_phrase",
-            Text={"query": district_short_name.replace("-", ""), "boost": boost_value},
-        )
-        | Q(
-            "match_phrase",
-            Text={"query": district_short_name.replace(".", ""), "boost": boost_value},
-        )
-    )
-
-    fuzzy_district_query = Q(
-        "match", Text={"query": district_short_name, "fuzziness": "AUTO"}
-    ) | Q("match", Text={"query": district_full_name, "fuzziness": "AUTO"})
-
-    if is_district_fuzzy:
-        district_query = Q("bool", should=[exact_district_query, fuzzy_district_query])
-    else:
-        district_query = exact_district_query
-
-    return district_query
-
-
-def get_eval_term_query(
-    eval_term: str, is_eval_term_fuzzy: bool, thesaurus_file: str
-) -> Q:
-    expanded_eval_term = expand_term(thesaurus_file, eval_term)
-    exact_term_query = Q(
-        "bool",
-        should=list(Q("match_phrase", Text=t) for t in expanded_eval_term),
-        minimum_should_match=1,
-    )
-    if is_eval_term_fuzzy:
-        term_query = Q(
-            "bool",
-            should=[Q("match_phrase", Text=t) for t in expanded_eval_term]
-            + [
-                Q("match", Text={"query": t, "fuzziness": "AUTO"})
-                for t in expanded_eval_term
-            ],
-            minimum_should_match=1,
-        )
-    else:
-        term_query = exact_term_query
-
-    return term_query
-
-
-def get_units_query(eval_term: str, thesaurus_file: str) -> Q:
-    expanded_units = expand_term(thesaurus_file, f"{eval_term} units")
-    units_query = Q(
-        "bool",
-        should=list(Q("match_phrase", Text=t) for t in expanded_units),
-        minimum_should_match=1,
-    )
-    return units_query
-
-
-def if_town_in_evaluation_dataset(dataset_dir: str, town: str) -> bool:
-    town_page_data_file = os.path.join(dataset_dir, f"{town}.json")
-    if os.path.exists(town_page_data_file):
-        return True
-    print(f"Town {town} not found in evaluation dataset")
-    return False
 
 
 def limit_global_concurrency(n: int):

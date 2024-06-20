@@ -2,6 +2,7 @@ import json
 
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search
+from elasticsearch_dsl.query import Q
 from tqdm.contrib.concurrent import thread_map
 
 from zoning.class_types import (
@@ -13,7 +14,6 @@ from zoning.class_types import (
     SearchResults,
 )
 from zoning.search.base_searcher import Searcher
-from zoning.utils import get_district_query, get_eval_term_query, get_units_query
 
 
 class KeywordSearcher(Searcher):
@@ -21,21 +21,96 @@ class KeywordSearcher(Searcher):
         super().__init__(search_config)
         self.es_client = Elasticsearch(self.search_config.es_endpoint)
 
+    def get_district_query(
+        self,
+        district_full_name: str,
+        district_short_name: str,
+        is_district_fuzzy: bool,
+        boost_value: float = 1.0,
+    ) -> Q:
+        exact_district_query = (
+            Q("match_phrase", Text={"query": district_full_name, "boost": boost_value})
+            | Q(
+                "match_phrase",
+                Text={"query": district_short_name, "boost": boost_value},
+            )
+            | Q(
+                "match_phrase",
+                Text={
+                    "query": district_short_name.replace("-", ""),
+                    "boost": boost_value,
+                },
+            )
+            | Q(
+                "match_phrase",
+                Text={
+                    "query": district_short_name.replace(".", ""),
+                    "boost": boost_value,
+                },
+            )
+        )
+
+        fuzzy_district_query = Q(
+            "match", Text={"query": district_short_name, "fuzziness": "AUTO"}
+        ) | Q("match", Text={"query": district_full_name, "fuzziness": "AUTO"})
+
+        if is_district_fuzzy:
+            district_query = Q(
+                "bool", should=[exact_district_query, fuzzy_district_query]
+            )
+        else:
+            district_query = exact_district_query
+
+        return district_query
+
+    def get_eval_term_query(
+        self, eval_term: str, is_eval_term_fuzzy: bool, thesaurus_file: str
+    ) -> Q:
+        expanded_eval_term = self.expand_term(thesaurus_file, eval_term)
+        exact_term_query = Q(
+            "bool",
+            should=list(Q("match_phrase", Text=t) for t in expanded_eval_term),
+            minimum_should_match=1,
+        )
+        if is_eval_term_fuzzy:
+            term_query = Q(
+                "bool",
+                should=[Q("match_phrase", Text=t) for t in expanded_eval_term]
+                + [
+                    Q("match", Text={"query": t, "fuzziness": "AUTO"})
+                    for t in expanded_eval_term
+                ],
+                minimum_should_match=1,
+            )
+        else:
+            term_query = exact_term_query
+
+        return term_query
+
+    def get_units_query(self, eval_term: str, thesaurus_file: str) -> Q:
+        expanded_units = self.expand_term(thesaurus_file, f"{eval_term} units")
+        units_query = Q(
+            "bool",
+            should=list(Q("match_phrase", Text=t) for t in expanded_units),
+            minimum_should_match=1,
+        )
+        return units_query
+
     def _search(self, search_query: SearchQuery) -> SearchResult:
         try:
             s = Search(using=self.es_client, index=search_query.get_index_key())
 
-            district_query = get_district_query(
+            district_query = self.get_district_query(
                 search_query.place.district_full_name,
                 search_query.place.district_short_name,
                 self.search_config.is_eval_term_fuzzy,
             )
-            eval_term_query = get_eval_term_query(
+            eval_term_query = self.get_eval_term_query(
                 search_query.eval_term,
                 self.search_config.is_eval_term_fuzzy,
                 self.search_config.thesaurus_file,
             )
-            units_query = get_units_query(
+            units_query = self.get_units_query(
                 search_query.eval_term, self.search_config.thesaurus_file
             )
 

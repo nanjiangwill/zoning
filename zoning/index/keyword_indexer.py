@@ -58,17 +58,12 @@ class KeywordIndexer(Indexer):
                 ids.append(id)
         return ids
 
-    def process_ocr_results(self, ocr_entity: OCREntity) -> IndexEntity:
-        """
-        Inputs: ocr_entity (OCREntity)
-        Returns: Corresponding IndexEntity
-        """
-        with open(ocr_entity.ocr_results_file, "r") as f:
-            try:
-                data = json.load(f)
-            except json.JSONDecodeError:
-                print(f"Error decoding {ocr_entity.ocr_results_file}")
-                return None
+    def process_ocr_result(self, ocr_entity: OCREntity) -> IndexEntity:
+        try:
+            data = json.load(open(ocr_entity.ocr_results_file))
+        except json.JSONDecodeError:
+            print(f"Error decoding {ocr_entity.ocr_results_file}")
+            return None
 
         extract_blocks = [b for d in data for b in d["Blocks"]]
 
@@ -107,6 +102,9 @@ class KeywordIndexer(Indexer):
                 continue
 
         if len(entities.ents) > 0:
+
+            # since the key name is not unique, we are unable to use a BaseModel for it
+            # so here, we did not use a type hint for the key name
             rows.append(
                 {
                     self.index_config.index_key: f"{ocr_entity.name}",
@@ -118,7 +116,7 @@ class KeywordIndexer(Indexer):
         return IndexEntity(name=ocr_entity.name, page_data=rows)
 
     def index(self, ocr_entities: OCREntities) -> IndexEntities:
-        index_entities = thread_map(self.process_ocr_results, ocr_entities.ocr_entities)
+        index_entities = thread_map(self.process_ocr_result, ocr_entities.ocr_entities)
         # removing None values
         index_entities = [i for i in index_entities if i is not None]
 

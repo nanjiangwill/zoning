@@ -4,10 +4,10 @@ defaults:
 global_config:
   experiment_name: textract_es_vanilla_llm
   target_state: connecticut
-  eval_terms: ["min_lot_size", "min_unit_size", "max_height"]
+  eval_terms: ["min_lot_size", "min_unit_size", "max_height"] # all available eval terms ['floor_to_area_ratio', 'max_height', 'max_lot_coverage', 'max_lot_coverage_pavement', 'min_lot_size', 'min_parking_spaces', 'min_unit_size']
 
   target_names_file: ${global_config.data_output_dir}/all_towns_names.json
-  ground_truth_file: ${global_config.data_output_dir}/ground_truth.json
+  test_data_file: ${global_config.data_output_dir}/test_data.json
   thesaurus_file: data/thesaurus.json
 
   data_output_dir: data/${global_config.target_state} # helper variable, just used to parse
@@ -25,6 +25,8 @@ global_config:
   data_flow_eval_file: ${global_config.result_output_dir}/data_flow/data_flow_eval.json
   data_flow_eval_result_file: ${global_config.result_output_dir}/data_flow/data_flow_eval_result.json
 
+  random_seed: 13
+  test_size_per_term: 30
 
 
 ocr_config:
@@ -58,18 +60,12 @@ llm_config:
   templates_dir: zoning/llm/templates
   thesaurus_file: ${global_config.thesaurus_file}
 
-hydra:
-  run:
-    dir: ./hydra_outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
-
 normalization_config:
   method: todo
 
-
 eval_config:
-  random_seed: 13
-  test_size_per_term: 30
+  template_dir: zoning/eval/templates
 
-
-testing:
-  result_output_dir: tests/results
+hydra:
+  run:
+    dir: ./hydra_outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}

@@ -46,7 +46,7 @@ def main(config: ZoningConfig):
 
     # Write the output data, data type is OCREntities
     with open(global_config.data_flow_ocr_file, "w") as f:
-        json.dump(ocr_entities.model_dump_json(), f)
+        json.dump(ocr_entities.model_dump(), f)
 
 
 if __name__ == "__main__":

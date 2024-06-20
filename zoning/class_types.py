@@ -1,5 +1,6 @@
 import json
 import os
+import random
 from typing import Dict, List, Optional, Set, Tuple
 
 from pydantic import BaseModel
@@ -14,7 +15,7 @@ class GlobalConfig(BaseModel):
     eval_terms: List[str]
 
     target_names_file: str
-    ground_truth_file: str
+    test_data_file: str
     thesaurus_file: str
 
     pdf_dir: str
@@ -27,6 +28,10 @@ class GlobalConfig(BaseModel):
     data_flow_search_file: str
     data_flow_llm_file: str
     data_flow_eval_file: str
+    data_flow_eval_result_file: str
+
+    random_seed: int
+    test_size_per_term: int
 
 
 class OCRConfig(BaseModel):
@@ -66,13 +71,11 @@ class LLMConfig(BaseModel):
 
 
 class NormalizationConfig(BaseModel):
-
     method: str
 
 
 class EvalConfig(BaseModel):
-    random_seed: int
-    test_size_per_term: int
+    template_dir: str
 
 
 class ZoningConfig(BaseModel):
@@ -84,7 +87,6 @@ class ZoningConfig(BaseModel):
     search_config: SearchConfig = None
     llm_config: LLMConfig = None
     normalization_config: NormalizationConfig | None = None
-    eval_config: EvalConfig = None
 
     def model_post_init(self, __context):
         self.global_config = GlobalConfig(**self.config["global_config"])
@@ -111,8 +113,7 @@ class OCREntities(BaseModel):
     ocr_entities: List[OCREntity] = []
 
     def model_post_init(self, __context):
-        with open(self.target_names_file, "r") as f:
-            target_names = json.load(f)
+        target_names = json.load(open(self.target_names_file))
         self.ocr_entities = [
             OCREntity(
                 name=name,
@@ -211,7 +212,52 @@ class SearchQuery(BaseModel):
 
 
 class SearchQueries(BaseModel):
-    search_queries: List[SearchQuery]
+    query_file: str
+
+    search_queries: List[SearchQuery] = []
+    search_queries_by_eval_term: Dict[str, List[SearchQuery]] = {}
+
+    def model_post_init(self, __context):
+        query_data = json.load(open(self.query_file))
+
+        all_eval_terms = [
+            i.replace("_page_gt", "")
+            for i in query_data[0].keys()
+            if i.endswith("_page_gt")
+        ]
+
+        self.search_queries = [
+            SearchQuery(
+                place=Place(
+                    town=d["town"],
+                    district_full_name=d["district"],
+                    district_short_name=d["district_abb"],
+                ),
+                eval_term=eval_term,
+            )
+            for d in query_data
+            for eval_term in all_eval_terms
+        ]
+        self.search_queries_by_eval_term = {
+            eval_term: [q for q in self.search_queries if q.eval_term == eval_term]
+            for eval_term in all_eval_terms
+        }
+
+    def get_test_data_search_queries(
+        self, eval_terms: List[str], random_seed: int, test_size_per_term: int
+    ) -> None:
+        random.seed(random_seed)
+        test_data_search_queries = []
+        for eval_term in eval_terms:
+            search_queries = self.search_queries_by_eval_term[eval_term]
+            test_data_search_queries += random.sample(
+                search_queries, test_size_per_term
+            )
+        self.search_queries = test_data_search_queries
+        self.search_queries_by_eval_term = {
+            eval_term: [q for q in self.search_queries if q.eval_term == eval_term]
+            for eval_term in set([q.eval_term for q in self.search_queries])
+        }
 
 
 class SearchMatch(BaseModel):
@@ -230,44 +276,51 @@ class SearchResult(BaseModel):
     place: Place
     eval_term: str
     search_matches: List[SearchMatch]
-    entire_search_page_range: Set[int]
+    entire_search_page_range: List[int] = []
 
     def model_post_init(self, __context):
-        self.entire_search_page_range = flatten(
-            page_coverage([m.text for m in self.search_matches])
+        self.entire_search_page_range = list(
+            set(flatten(page_coverage([m.text for m in self.search_matches])))
         )
+        self.entire_search_page_range.sort()
 
 
 class SearchResults(BaseModel):
     search_results: List[SearchResult]
 
     def model_post_init(self, __context):
-        self.search_results = [SearchResult(**d) for d in self.search_results]
+        if isinstance(type(self.search_results[0]), dict):
+            self.search_results = [SearchResult(**d) for d in self.search_results]
 
 
 class LLMQuery(BaseModel):
     place: Place
     eval_term: str
-    search_match: SearchMatch
+    context: str
 
 
 class LLMOutput(BaseModel):
     place: Place
     eval_term: str
-    search_match: SearchMatch
+    search_match: SearchMatch | None
     input_prompt: List[Dict[str, str]] | str
-    search_page_range: Set[int]
+    search_page_range: List[int] | None = []
     raw_model_response: str | None = None
     extracted_text: Optional[List[str] | None] = None
     rationale: Optional[str | None] = None
     answer: Optional[str | None] = None
+
+    def model_post_init(self, __context):
+        self.search_page_range = sorted(
+            flatten(page_coverage([self.search_match.text]))
+        )
 
 
 class LLMInferenceResult(BaseModel):
     place: Place
     eval_term: str
     search_result: SearchResult
-    llm_inference_result: List[LLMOutput]
+    llm_outputs: List[LLMOutput]
 
 
 class LLMInferenceResults(BaseModel):
@@ -275,6 +328,10 @@ class LLMInferenceResults(BaseModel):
     llm_inference_results_by_eval_term: Dict[str, List[LLMInferenceResult]] = {}
 
     def model_post_init(self, __context):
+        if isinstance(self.llm_inference_results[0], dict):
+            self.llm_inference_results = [
+                LLMInferenceResult(**d) for d in self.llm_inference_results
+            ]
         self.llm_inference_results_by_eval_term = {
             eval_term: [
                 r for r in self.llm_inference_results if r.eval_term == eval_term
@@ -288,24 +345,20 @@ class EvalQuery(BaseModel):
     eval_term: str
     search_result: SearchResult
     llm_inference_result: LLMInferenceResult
-    ground_truth: str
-    ground_truth_orig: str
-    ground_truth_page: str
+    ground_truth: str | None
+    ground_truth_orig: str | None
+    ground_truth_page: str | None
 
 
 class EvalQueries(BaseModel):
-    evaluation_queries: List[EvalQuery]
+    eval_queries: List[EvalQuery]
 
     def model_post_init(self, __context):
-        self.evaluation_queries = [EvalQuery(**d) for d in self.evaluation_queries]
+        if isinstance(self.eval_queries[0], dict):
+            self.eval_queries = [EvalQuery(**d) for d in self.eval_queries]
 
 
 class EvalMetricByTerm(BaseModel):
     eval_term: str
-    answer_f1: float
-    answer_precision: float
-    answer_recall: float
-    page_f1: float
+    answer_accuracy: float
     page_precision: float
-    page_recall: float
-    is_in_entire_search_page_range: bool

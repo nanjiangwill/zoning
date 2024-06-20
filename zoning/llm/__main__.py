@@ -1,12 +1,14 @@
+import asyncio
 import json
 from asyncio import run as aiorun
 
+import tqdm
 import typer
 from hydra import compose, initialize
 from omegaconf import OmegaConf
 from typer import Typer
 
-from zoning.class_types import SearchResults, ZoningConfig
+from zoning.class_types import LLMInferenceResults, SearchResults, ZoningConfig
 from zoning.llm.vanilla_llm import VanillaLLM
 
 
@@ -38,9 +40,9 @@ def main(config_name: str = typer.Argument("base")):
         llm_config = ZoningConfig(config=config).llm_config
 
         # Read the input data
-        with open(global_config.data_flow_search_file, "r") as f:
-            data_string = json.load(f)
-            search_results = SearchResults.model_construct(**json.loads(data_string))
+        search_results = SearchResults.model_construct(
+            **json.load(open(global_config.data_flow_search_file))
+        )
 
         # Load the searcher
         match llm_config.method:
@@ -51,11 +53,27 @@ def main(config_name: str = typer.Argument("base")):
             case _:
                 raise ValueError(f"LLM method {llm_config.method} is not supported")
 
-        llm_inference_results = await llm.query(search_results)
+        # Run the async inference and show the progress bar
+        async_tasks = [
+            llm.query(search_result) for search_result in search_results.search_results
+        ]
+        async_results = []
 
+        pbar = tqdm.tqdm(total=len(async_tasks))
+        for f in asyncio.as_completed(async_tasks):
+            async_result = await f
+            pbar.update()
+            if async_result is not None:
+                pbar.set_description(
+                    f"Processing {async_result.place} {async_result.eval_term}"
+                )
+                async_results.append(async_result)
+        pbar.close()
+
+        llm_inference_results = LLMInferenceResults(llm_inference_results=async_results)
         # Write the output data, data type is SearchResults
         with open(global_config.data_flow_llm_file, "w") as f:
-            json.dump(llm_inference_results.model_dump_json(), f)
+            json.dump(llm_inference_results.model_dump(), f)
 
     aiorun(_main())
 

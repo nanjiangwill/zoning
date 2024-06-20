@@ -28,9 +28,9 @@ def main(config: ZoningConfig):
     index_config = ZoningConfig(config=config).index_config
 
     # Read the input data
-    with open(global_config.data_flow_ocr_file, "r") as f:
-        data_string = json.load(f)
-        ocr_entities = OCREntities.model_construct(**json.loads(data_string))
+    ocr_entities = OCREntities.model_construct(
+        **json.load(open(global_config.data_flow_ocr_file))
+    )
 
     # Load the indexer
     match index_config.method:
@@ -46,7 +46,7 @@ def main(config: ZoningConfig):
     # Write the output data, data type is IndexEntities
     # Since we index the data to ES, we just store the index_entities for testing purpose
     with open(global_config.data_flow_index_file, "w") as f:
-        json.dump(index_entities.model_dump_json(), f)
+        json.dump(index_entities.model_dump(), f)
 
 
 if __name__ == "__main__":
