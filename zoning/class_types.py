@@ -1,7 +1,6 @@
 import json
-import os
 import random
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from pydantic import BaseModel
 
@@ -14,8 +13,10 @@ class GlobalConfig(BaseModel):
     target_state: str
     eval_terms: List[str]
 
-    target_names_file: str
-    test_data_file: str
+    target_town_file: str
+    target_district_file: str
+    target_eval_file: str
+    ground_truth_file: str
     thesaurus_file: str
 
     pdf_dir: str
@@ -24,6 +25,7 @@ class GlobalConfig(BaseModel):
     index_dir: str
     search_dir: str
     llm_dir: str
+    normalization_dir: str
     eval_dir: str
 
     es_endpoint: str
@@ -39,6 +41,7 @@ class OCRConfig(BaseModel):
     input_document_s3_bucket: str | None
     pdf_name_prefix_in_s3_bucket: str | None
     feature_types: List[str]
+
 
 class FormatOCRConfig(BaseModel):
     temp: str
@@ -132,17 +135,18 @@ class ZoningConfig(BaseModel):
 
 class Place(BaseModel):
     town: str
-    district_full_name: str
     district_short_name: str
+    district_full_name: str
 
     def __str__(self) -> str:
-        return f"{self.town}-{self.district_full_name}"
+        return f"{self.town}__{self.district_short_name}__{self.district_full_name}"
 
 
 # =================
 # Formatted OCR
 # =================
-    
+
+
 class OCRBlock(BaseModel):
     id: str
     text: str
@@ -151,7 +155,7 @@ class OCRBlock(BaseModel):
     position: Tuple[int, int]
 
 
-class Page(BaseModel):
+class OCRPage(BaseModel):
     ents: List[OCRBlock] = []
     seen: Dict[str, bool] = {}
     relations: Dict[str, List[OCRBlock]] = {}
@@ -195,16 +199,19 @@ class Page(BaseModel):
                     out += o.text + "\n"
         return out
 
-class FormattedOCR(BaseModel):
-    """
-    The formatted OCR representation
-    for a town. Linked to format_ocr.
+
+class FormatOCR(BaseModel):
+    """The formatted OCR representation for a town.
+
+    Linked to format_ocr.
     """
 
     pages: List[str]
     town_name: str
 
+
 # ==================
+
 
 class ElasticSearchIndexData(BaseModel):
     index: str
@@ -223,11 +230,24 @@ class IndexEntities(BaseModel):
 
 
 class SearchQuery(BaseModel):
-    place: Place
-    eval_term: str
+    raw_query_str: str
 
-    def get_index_key(self) -> str:
-        return self.place.town
+    place: Place = None
+    eval_term: str = ""
+
+    def model_post_init(self, __context):
+        eval_term, town, district_short_name, district_full_name = (
+            self.raw_query_str.split("__")
+        )
+        self.place = Place(
+            town=town,
+            district_short_name=district_short_name,
+            district_full_name=district_full_name,
+        )
+        self.eval_term = eval_term
+
+    def __str__(self) -> str:
+        return f"{self.eval_term}__{self.place}"
 
 
 class SearchQueries(BaseModel):
@@ -298,6 +318,10 @@ class SearchResult(BaseModel):
     entire_search_page_range: List[int] = []
 
     def model_post_init(self, __context):
+        if isinstance(self.place, dict):
+            self.place = Place(**self.place)
+        if isinstance(self.search_matches[0], dict):
+            self.search_matches = [SearchMatch(**d) for d in self.search_matches]
         self.entire_search_page_range = list(
             set(flatten(page_coverage([m.text for m in self.search_matches])))
         )
@@ -341,6 +365,10 @@ class LLMInferenceResult(BaseModel):
     search_result: SearchResult
     llm_outputs: List[LLMOutput]
 
+    def model_post_init(self, __context):
+        if isinstance(self.llm_outputs[0], dict):
+            self.llm_outputs = [LLMOutput(**d) for d in self.llm_outputs]
+
 
 class LLMInferenceResults(BaseModel):
     llm_inference_results: List[LLMInferenceResult]
@@ -357,6 +385,40 @@ class LLMInferenceResults(BaseModel):
             ]
             for eval_term in set([r.eval_term for r in self.llm_inference_results])
         }
+
+
+class NormalizedLLMOutput(BaseModel):
+    llm_output: LLMOutput
+    normalized_answer: List[str] | None
+
+
+class NormalizedLLMInferenceResult(BaseModel):
+    place: Place
+    eval_term: str
+    search_result: SearchResult
+    normalized_llm_outputs: List[NormalizedLLMOutput]
+
+    def model_post_init(self, __context):
+        if isinstance(self.place, dict):
+            self.place = Place(**self.place)
+
+        if isinstance(self.search_result, dict):
+            self.search_result = SearchResult(**self.search_result)
+        if isinstance(self.normalized_llm_outputs[0], dict):
+            self.normalized_llm_outputs = [
+                NormalizedLLMOutput(**d) for d in self.normalized_llm_outputs
+            ]
+
+
+class DistrictEvalResult(BaseModel):
+    place: Place
+    eval_term: str
+    normalized_llm_inference_result: NormalizedLLMInferenceResult
+    ground_truth: str | None
+    ground_truth_orig: str | None
+    ground_truth_page: str | None
+    answer_correct: bool | None
+    page_in_range: bool | None
 
 
 class EvalQuery(BaseModel):

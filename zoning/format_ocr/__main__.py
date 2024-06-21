@@ -1,12 +1,12 @@
-import json
 from typing import Any, Dict, List
 
 import hydra
-from omegaconf import OmegaConf
 import tqdm
+from omegaconf import OmegaConf
 
-from zoning.class_types import ZoningConfig, Page, OCRBlock, FormattedOCR
+from zoning.class_types import FormatOCR, OCRBlock, OCRPage, ZoningConfig
 from zoning.utils import process
+
 
 def collect_relations(w) -> List[str]:
     rels = w["Relationships"] if "Relationships" in w else []
@@ -19,11 +19,12 @@ def collect_relations(w) -> List[str]:
 
 OCROutput = List[Dict[str, Any]]
 
-def process_ocr_result(data: OCROutput, town_name: str) -> FormattedOCR:
+
+def process_ocr_result(data: OCROutput, town_name: str) -> FormatOCR:
     extract_blocks = [b for d in data for b in d["Blocks"]]
 
-    page = Page()
-    formatted_ocr = FormattedOCR(pages=[], town_name=town_name)
+    page = OCRPage()
+    formatted_ocr = FormatOCR(pages=[], town_name=town_name)
     for w in tqdm.tqdm(extract_blocks):
         if w["BlockType"] in ["LINE", "WORD", "CELL", "MERGED_CELL"]:
             e = OCRBlock(
@@ -51,12 +52,12 @@ def process_ocr_result(data: OCROutput, town_name: str) -> FormattedOCR:
                 #         "Text": str(entities),
                 #     }
                 # )
-            entities = Page()
+            entities = OCRPage()
         elif w["BlockType"] == "TABLE":
             pass
         else:
             continue
-    
+
     if len(entities.ents) > 0:
 
         # since the key name is not unique, we are unable to use a BaseModel for it
@@ -71,10 +72,10 @@ def process_ocr_result(data: OCROutput, town_name: str) -> FormattedOCR:
         # )
     return formatted_ocr
 
+
 @hydra.main(version_base=None, config_path="../../config", config_name="base")
 def main(config: ZoningConfig):
-    """
-    Format ocr results into structure data format.
+    """Format ocr results into structure data format.
 
     Configs:
         - global_config: GlobalConfig.
@@ -95,8 +96,13 @@ def main(config: ZoningConfig):
     ocr_config = ZoningConfig(config=config).format_ocr_config
 
     # Construct the input data
-    process(global_config.target_names_file, global_config.ocr_dir, 
-            global_config.format_ocr_dir, process_ocr_result)
+    process(
+        global_config.target_town_file,
+        global_config.ocr_dir,
+        global_config.format_ocr_dir,
+        process_ocr_result,
+    )
+
 
 if __name__ == "__main__":
     main()

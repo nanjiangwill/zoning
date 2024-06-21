@@ -71,7 +71,7 @@ class TextractExtractor(Extractor):
                 )
             elif status == "SUCCEEDED":
                 result = list(self.get_job_results(job_id))
-            
+
                 with open(ocr_entity.ocr_results_file, "w", encoding="utf-8") as f:
                     json.dump(result, f)
                 print(

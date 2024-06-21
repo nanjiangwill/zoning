@@ -4,7 +4,7 @@ import os
 
 import streamlit as st
 
-from zoning.class_types import EvalQueries
+from zoning.class_types import DistrictEvalResult
 
 PDF_DIR = "data/connecticut/pdfs"
 
@@ -196,61 +196,67 @@ def main():
             "Step 1: Upload data_flow_eval.json",
             divider="rainbow",
         )
-        uploaded_file = st.file_uploader(
+        uploaded_files = st.file_uploader(
             "You can find this file under results/<state>/<experiment_name>",
             type="json",
             on_change=reset,
+            accept_multiple_files=True,
         )
-        if uploaded_file is not None:
-            all_evaluation_results = json.load(uploaded_file)
-            print(all_evaluation_results)
-            
-            all_evaluation_results = [
-                EvaluationDatumResult(**json.loads(i)) for i in all_evaluation_results
-            ]
-            st.session_state.all_evaluation_results = all_evaluation_results
-            st.session_state.num_all_evaluation_data = len(all_evaluation_results)
-            st.write(
-                "Number of :orange-background[all] evaluation data: ",
-                st.session_state.num_all_evaluation_data,
-            )
+        district_eval_results = [
+            DistrictEvalResult.model_construct(**json.load(uploaded_file))
+            for uploaded_file in uploaded_files
+        ]
 
-        # Step 2: Config
-        st.divider()
-        st.subheader("Step 2: Config", divider="rainbow")
-        st.radio(
-            "Choosing :orange-background[Evaluation Datum Category] you want to check",
-            (
-                "all",
-                "correct",
-                "only_wrong_answer",
-                "only_wrong_page",
-                "wrong_answer_and_page",
-            ),
-            key="evaluation_type",
-            index=0,
-        )
-        st.toggle(
-            "Not including ground truth which is None", key="not_including_gt_is_none"
-        )
+        # if uploaded_file is not None:
+        #     all_evaluation_results = json.load(uploaded_file)
+        #     print(all_evaluation_results)
 
-        st.button("Apply Changes", on_click=process_evaluation_results)
+        #     all_evaluation_results = [
+        #         EvaluationDatumResult(**json.loads(i)) for i in all_evaluation_results
+        #     ]
+        #     st.session_state.all_evaluation_results = all_evaluation_results
+        #     st.session_state.num_all_evaluation_data = len(all_evaluation_results)
+        #     st.write(
+        #         "Number of :orange-background[all] evaluation data: ",
+        #         st.session_state.num_all_evaluation_data,
+        #     )
 
-        # Step 3: Select one evaluation datum to check
-        st.divider()
-        st.subheader("Step 3: Select one evaluation datum to check", divider="rainbow")
-        st.write(
-            f"There are total :orange-background[{st.session_state.num_current_evaluation_data} selected] evaluation data"
-        )
-        st.number_input(
-            "Which evaluation datum to check?",
-            key="evaluation_datum_index",
-            min_value=0,
-            max_value=st.session_state.num_current_evaluation_data,
-            value=None,
-            step=1,
-            on_change=generating_evaluation_datum_view,
-        )
+        # # Step 2: Config
+        # st.divider()
+        # st.subheader("Step 2: Config", divider="rainbow")
+        # st.radio(
+        #     "Choosing :orange-background[Evaluation Datum Category] you want to check",
+        #     (
+        #         "all",
+        #         "correct",
+        #         "only_wrong_answer",
+        #         "only_wrong_page",
+        #         "wrong_answer_and_page",
+        #     ),
+        #     key="evaluation_type",
+        #     index=0,
+        # )
+        # st.toggle(
+        #     "Not including ground truth which is None", key="not_including_gt_is_none"
+        # )
+
+        # st.button("Apply Changes", on_click=process_evaluation_results)
+
+        # # Step 3: Select one evaluation datum to check
+        # st.divider()
+        # st.subheader("Step 3: Select one evaluation datum to check", divider="rainbow")
+        # st.write(
+        #     f"There are total :orange-background[{st.session_state.num_current_evaluation_data} selected] evaluation data"
+        # )
+        # st.number_input(
+        #     "Which evaluation datum to check?",
+        #     key="evaluation_datum_index",
+        #     min_value=0,
+        #     max_value=st.session_state.num_current_evaluation_data,
+        #     value=None,
+        #     step=1,
+        #     on_change=generating_evaluation_datum_view,
+        # )
 
 
 if __name__ == "__main__":

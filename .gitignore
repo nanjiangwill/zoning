@@ -1,10 +1,13 @@
 .diskcache
 .env
 .mypy_cache
-data/*/*.csv
-data/*/ground_truth.*
-data/*/ocr_results
+data/*/eval
+data/*/format_ocr
+data/*/llm
+data/*/normalization
+data/*/ocr
 data/*/pdfs
+data/*/search
 hydra_outputs
 old_eval.py
 results/
@@ -13,3 +16,4 @@ zoning.egg-info/
 zoning/*/__pycache__
 zoning/__pycache__
 zoning/~*
+data/.DS_Store

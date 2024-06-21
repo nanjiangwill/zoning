@@ -1,0 +1,76 @@
+import re
+from typing import List
+
+import hydra
+from omegaconf import OmegaConf
+
+from zoning.class_types import (
+    LLMInferenceResult,
+    NormalizedLLMInferenceResult,
+    NormalizedLLMOutput,
+    ZoningConfig,
+)
+from zoning.utils import process
+
+
+def subtract_numerical_values(answer: str) -> List[str] | None:
+    number_pattern = r"-?(?:\d{1,3}(?:,\d{3})*|\d+)(?:\.\d+)?"
+    numbers_str = re.findall(number_pattern, answer)
+    numbers_str = [num.replace(",", "") for num in numbers_str]
+
+    return numbers_str if numbers_str else None
+
+
+def normalize(data: LLMInferenceResult, target: str) -> NormalizedLLMInferenceResult:
+    normalized_llm_outputs = []
+    for llm_output in data.llm_outputs:
+        normalized_llm_output = NormalizedLLMOutput(
+            llm_output=llm_output,
+            normalized_answer=(
+                subtract_numerical_values(llm_output.answer)
+                if llm_output.answer
+                else None
+            ),
+        )
+        normalized_llm_outputs.append(normalized_llm_output)
+    return NormalizedLLMInferenceResult(
+        place=data.place,
+        eval_term=data.eval_term,
+        search_result=data.search_result,
+        normalized_llm_outputs=normalized_llm_outputs,
+    )
+
+
+@hydra.main(version_base=None, config_path="../../config", config_name="base")
+def main(config: ZoningConfig):
+    """Main function to run the index process based on the provided
+    configuration.
+
+    Configs:
+        - global_config: GlobalConfig.
+        - index_config: IndexConfig
+
+    Index Input File Format:
+        FormatOCR object
+    """
+    # Parse the config
+    config = OmegaConf.to_object(config)
+    global_config = ZoningConfig(config=config).global_config
+    normalization_config = ZoningConfig(config=config).normalization_config
+
+    # Load the indexer
+    # match normalization_config.method:
+    #     case "tool":
+    #         normalizer = ToolNormalizer(normalization_config)
+
+    process(
+        global_config.target_eval_file,
+        global_config.llm_dir,
+        global_config.normalization_dir,
+        normalize,
+        converter=lambda x: LLMInferenceResult.model_construct(**x),
+    )
+
+
+if __name__ == "__main__":
+    main()

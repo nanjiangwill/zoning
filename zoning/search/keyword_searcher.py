@@ -3,16 +3,8 @@ import json
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search
 from elasticsearch_dsl.query import Q
-from tqdm.contrib.concurrent import thread_map
 
-from zoning.class_types import (
-    SearchConfig,
-    SearchMatch,
-    SearchQueries,
-    SearchQuery,
-    SearchResult,
-    SearchResults,
-)
+from zoning.class_types import SearchConfig, SearchMatch, SearchQuery, SearchResult
 from zoning.search.base_searcher import Searcher
 
 
@@ -96,9 +88,9 @@ class KeywordSearcher(Searcher):
         )
         return units_query
 
-    def _search(self, search_query: SearchQuery) -> SearchResult:
+    def search(self, search_query: SearchQuery, target: str) -> SearchResult:
         try:
-            s = Search(using=self.es_client, index=search_query.get_index_key())
+            s = Search(using=self.es_client, index=search_query.place.town)
 
             district_query = self.get_district_query(
                 search_query.place.district_full_name,
@@ -122,7 +114,7 @@ class KeywordSearcher(Searcher):
 
             res = s.execute()
             if len(res) == 0:
-                print(f"No results found for {search_query}")
+                print(f"No results found for {target}")
 
             search_matches = [
                 SearchMatch(
@@ -144,11 +136,6 @@ class KeywordSearcher(Searcher):
             )
 
         except Exception as e:
-            print(f"Error searching {search_query}")
+            print(f"Error searching {target}")
             print(e)
             return None
-
-    def search(self, search_queries: SearchQueries) -> SearchResults:
-        search_results = thread_map(self._search, search_queries.search_queries)
-        search_results = [sr for sr in search_results if sr]
-        return SearchResults(search_results=search_results)

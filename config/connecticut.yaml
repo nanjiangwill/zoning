@@ -4,10 +4,12 @@ defaults:
 global_config:
   experiment_name: textract_es_vanilla_llm
   target_state: connecticut
-  eval_terms: ["min_lot_size", "min_unit_size", "max_height"] # all available eval terms ['floor_to_area_ratio', 'max_height', 'max_lot_coverage', 'max_lot_coverage_pavement', 'min_lot_size', 'min_parking_spaces', 'min_unit_size']
+  eval_terms: ["min_lot_size"] #, "min_unit_size", "max_height"] # all available eval terms ['floor_to_area_ratio', 'max_height', 'max_lot_coverage', 'max_lot_coverage_pavement', 'min_lot_size', 'min_parking_spaces', 'min_unit_size']
 
-  target_names_file: ${global_config.data_output_dir}/all_towns_names.json
-  test_data_file: ${global_config.data_output_dir}/test_data.json
+  target_town_file: ${global_config.data_output_dir}/target_towns_names.json
+  target_district_file: ${global_config.data_output_dir}/target_districts_names.json
+  target_eval_file: ${global_config.data_output_dir}/target_eval_data.json
+  ground_truth_file: ${global_config.data_output_dir}/ground_truth.json
   thesaurus_file: data/thesaurus.json
 
   data_output_dir: data/${global_config.target_state} # helper variable, just used to parse
@@ -19,6 +21,7 @@ global_config:
   index_dir: ${global_config.data_output_dir}/index
   search_dir: ${global_config.data_output_dir}/search
   llm_dir: ${global_config.data_output_dir}/llm
+  normalization_dir: ${global_config.data_output_dir}/normalization
   eval_dir: ${global_config.data_output_dir}/eval
 
 

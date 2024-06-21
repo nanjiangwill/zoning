@@ -1,9 +1,7 @@
-import json
-
 import hydra
 from omegaconf import OmegaConf
 
-from zoning.class_types import FormattedOCR, ZoningConfig
+from zoning.class_types import FormatOCR, ZoningConfig
 from zoning.index.keyword_indexer import KeywordIndexer
 from zoning.utils import process
 
@@ -18,7 +16,7 @@ def main(config: ZoningConfig):
         - index_config: IndexConfig
 
     Index Input File Format:
-        FormattedOCR object
+        FormatOCR object
     """
     # Parse the config
     config = OmegaConf.to_object(config)
@@ -34,10 +32,15 @@ def main(config: ZoningConfig):
         case _:
             raise ValueError(f"Extractor {index_config.name} not implemented")
 
-    process(global_config.target_names_file, global_config.format_ocr_dir, 
-            global_config.index_dir, indexer.index, 
-            converter=lambda x: FormattedOCR.model_construct(**x),
-            output=False)
+    process(
+        global_config.target_town_file,
+        global_config.format_ocr_dir,
+        global_config.index_dir,
+        indexer.index,
+        converter=lambda x: FormatOCR.model_construct(**x),
+        output=False,
+    )
+
 
 if __name__ == "__main__":
     main()
