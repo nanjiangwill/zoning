@@ -64,16 +64,18 @@ def main(config: ZoningConfig):
         - global_config: GlobalConfig.
         - eval_config: EvalConfig
 
-    Eval Input File Format:
+    Input File Format:
         NormalizedLLMInferenceResult
+        config.normalization_dir
 
-    Eval Output File Format:
-        EvalMetricByTerm objects for each evaluation term.
+    Output File Format:
+        DistrictEvalResult
+        config.eval_dir
     """
     # Parse the config
     config = OmegaConf.to_object(config)
     global_config = ZoningConfig(config=config).global_config
-    eval_config = ZoningConfig(config=config).eval_config
+    # eval_config = ZoningConfig(config=config).eval_config
 
     # Read the input data and read ground truth
     # llm_inference_results = LLMInferenceResults.model_construct(
@@ -87,6 +89,7 @@ def main(config: ZoningConfig):
         global_config.eval_dir,
         fn=lambda x, y: eval_fn(x, json.load(open(global_config.ground_truth_file)), y),
         converter=lambda x: NormalizedLLMInferenceResult.model_construct(**x),
+        mode="eval",
     )
 
     # Calculate metrics

@@ -1,6 +1,7 @@
 import json
 import os
 import time
+from functools import partial
 from typing import Generator, Tuple
 
 import boto3
@@ -55,30 +56,27 @@ class TextractExtractor(Extractor):
             nextToken = response.get("NextToken", None)
             yield response
 
-    def _extract(self, ocr_entity: OCREntity) -> None:
+    def extract(self, ocr_dir: str, pdf_file: str) -> None:
         if self.ocr_config.pdf_name_prefix_in_s3_bucket:
-            s3_bucket_name = (
-                self.ocr_config.pdf_name_prefix_in_s3_bucket + ocr_entity.pdf_file
-            )
+            s3_bucket_name = self.ocr_config.pdf_name_prefix_in_s3_bucket + pdf_file
         else:
-            s3_bucket_name = ocr_entity.pdf_file
+            s3_bucket_name = pdf_file
         job_id = self.start_job(s3_bucket_name)
         for s in self.get_job_status(job_id):
             status, status_message = s
             if status == "FAILED":
                 print(
-                    f"Job {job_id} on file {ocr_entity.pdf_file} FAILED. Reason: {status_message}"
+                    f"Job {job_id} on file {pdf_file} FAILED. Reason: {status_message}"
                 )
             elif status == "SUCCEEDED":
                 result = list(self.get_job_results(job_id))
 
-                with open(ocr_entity.ocr_results_file, "w", encoding="utf-8") as f:
+                ocr_file = f"{ocr_dir}/{pdf_file.replace(".pdf", "json")}"
+                with open(ocr_file, "w") as f:
                     json.dump(result, f)
-                print(
-                    f"Job {job_id} on file {ocr_entity.pdf_file} SUCCEEDED. Write to {ocr_entity.ocr_results_file}"
-                )
+                print(f"Job {job_id} on file {pdf_file} SUCCEEDED. Write to {ocr_file}")
 
-    def process_files_and_write_output(self, config) -> None:
+    def process_files_and_write_output(self, pdf_dir: str, ocr_dir: str) -> None:
         if self.ocr_config.run_ocr:
-            thread_map(self._extract, ocr_entities.ocr_entities)
-        assert len(os.listdir(ocr_entities.ocr_results_dir)) > 0, "No OCR results found"
+            thread_map(partial(self._extract, ocr_dir), os.listdir(pdf_dir))
+        assert len(os.listdir(ocr_dir)) > 0, "No OCR results found"

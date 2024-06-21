@@ -11,18 +11,19 @@ from zoning.utils import process_async
 
 
 def main(config_name: str = typer.Argument("base")):
-    """Main function to run the llm inference based on the provided
-    configuration.
+    """Main function to run the llm based on the provided configuration.
 
     Configs:
         - global_config: GlobalConfig.
         - llm_config: LLMConfig
 
-    LLM Input File Format:
-        SearchResults
+    Input File Format:
+        SearchResult
+        config.search_dir
 
-    LLM Output File Format:
-        LLMInferenceResults
+    Output File Format:
+        NormalizedLLMInferenceResult
+        config.normalization_dir
     """
 
     async def _main():

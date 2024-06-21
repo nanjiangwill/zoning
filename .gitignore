@@ -8,6 +8,7 @@ data/*/normalization
 data/*/ocr
 data/*/pdfs
 data/*/search
+data/.DS_Store
 hydra_outputs
 old_eval.py
 results/
@@ -16,4 +17,3 @@ zoning.egg-info/
 zoning/*/__pycache__
 zoning/__pycache__
 zoning/~*
-data/.DS_Store

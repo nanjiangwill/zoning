@@ -43,20 +43,23 @@ def normalize(data: LLMInferenceResult, target: str) -> NormalizedLLMInferenceRe
 
 @hydra.main(version_base=None, config_path="../../config", config_name="base")
 def main(config: ZoningConfig):
-    """Main function to run the index process based on the provided
+    """Main function to run the normalization process based on the provided
     configuration.
 
     Configs:
         - global_config: GlobalConfig.
-        - index_config: IndexConfig
+        - normalization_config: NormalizationConfig
 
-    Index Input File Format:
-        FormatOCR object
+    Input File Format:
+        LLMInferenceResult
+        config.llm_dir
+
+    Output File Format:
     """
     # Parse the config
     config = OmegaConf.to_object(config)
     global_config = ZoningConfig(config=config).global_config
-    normalization_config = ZoningConfig(config=config).normalization_config
+    # normalization_config = ZoningConfig(config=config).normalization_config
 
     # Load the indexer
     # match normalization_config.method:
@@ -69,6 +72,7 @@ def main(config: ZoningConfig):
         global_config.normalization_dir,
         normalize,
         converter=lambda x: LLMInferenceResult.model_construct(**x),
+        mode="normalization",
     )
 
 

@@ -33,10 +33,11 @@ def main(config: ZoningConfig):
 
     Search Input File Format:
         None
-        Need to construct the SearchQuery object
+        Need to construct the target with `preprocess_search_target`
 
     Search Output File Format:
-        SearchResults object
+        SearchResult
+        config.search_dir
     """
     # Parse the config
     config = OmegaConf.to_object(config)
@@ -75,6 +76,7 @@ def main(config: ZoningConfig):
         global_config.search_dir,
         searcher.search,
         converter=lambda x: SearchQuery(raw_query_str=x),
+        mode="search",
     )
 
     # Write the output data, data type is SearchResults

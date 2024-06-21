@@ -15,8 +15,12 @@ def main(config: ZoningConfig):
         - global_config: GlobalConfig.
         - index_config: IndexConfig
 
-    Index Input File Format:
+    Input File Format:
         FormatOCR object
+        config.format_ocr_dir
+
+    Output File Format:
+        None
     """
     # Parse the config
     config = OmegaConf.to_object(config)
@@ -38,6 +42,7 @@ def main(config: ZoningConfig):
         global_config.index_dir,
         indexer.index,
         converter=lambda x: FormatOCR.model_construct(**x),
+        mode="index",
         output=False,
     )
 

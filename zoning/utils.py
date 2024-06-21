@@ -17,31 +17,42 @@ def target_name(target, dir):
     return f"{dir}/{target}.json"
 
 
+def target_pdf(target, dir):
+    """Target can be town or term_district."""
+
+    return f"{dir}/{target}.pdf"
+
+
 def process(
     target_name_file: str,
-    input_dir: str | None,
+    input_dir: str,
     output_dir: str,
     fn,
     converter=lambda x: x,
+    mode="ocr",
     output=True,
 ):
     targets = json.load(open(target_name_file))
 
     def process_target(target):
-        # try:
-        if input_dir:
-            inp = converter(json.load(open(target_name(target, input_dir))))
-        else:
-            # search does not need input_dir
-            inp = converter(target)
-        output_result = fn(inp, target)
+        try:
+            if mode == "search":
+                inp = converter(target)
+            else:
+                inp = converter(json.load(open(target_name(target, input_dir))))
 
-        if output:
-            with open(target_name(target, output_dir), "w") as f:
-                json.dump(output_result.model_dump(), f)
-        # except Exception as e:
-        #     print(f"Error processing {target}")
-        #     print(e)
+            output_result = fn(inp, target)
+
+            if output:
+                if mode == "ocr":
+                    with open(target_name(target, output_dir), "w") as f:
+                        json.dump(output_result, f)
+                else:
+                    with open(target_name(target, output_dir), "w") as f:
+                        json.dump(output_result.model_dump(), f)
+        except Exception as e:
+            print(f"Error processing {target}")
+            print(e)
 
     thread_map(process_target, targets)
 

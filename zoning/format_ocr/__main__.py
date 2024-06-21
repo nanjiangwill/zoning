@@ -79,21 +79,21 @@ def main(config: ZoningConfig):
 
     Configs:
         - global_config: GlobalConfig.
-        - ocr_config: OCRConfig
+        - format_ocr_config: FormatOCRConfig
 
-    OCR Input File Format:
+    Input File Format:
         Raw OCR from Textract
-        config.ocr_results_dir
+        config.ocr_dir
 
-    OCR Output File Format:
-        OCREntities
-        config.format_ocr_results_dir
+    Output File Format:
+        FormatOCR
+        config.format_ocr_dir
     """
 
     # Parse the config
     config = OmegaConf.to_object(config)
     global_config = ZoningConfig(config=config).global_config
-    ocr_config = ZoningConfig(config=config).format_ocr_config
+    # format_ocr_config = ZoningConfig(config=config).format_ocr_config
 
     # Construct the input data
     process(
@@ -101,6 +101,7 @@ def main(config: ZoningConfig):
         global_config.ocr_dir,
         global_config.format_ocr_dir,
         process_ocr_result,
+        mode="format_ocr",
     )
 
 
