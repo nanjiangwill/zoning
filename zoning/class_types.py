@@ -453,6 +453,8 @@ class DistrictEvalResult(BaseModel):
             self.normalized_llm_outputs = [
                 NormalizedLLMOutput(**d) for d in self.normalized_llm_outputs
             ]
+
+
 # class EvalQuery(BaseModel):
 #     place: Place
 #     eval_term: str

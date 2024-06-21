@@ -25,7 +25,9 @@ def go_to_pdf_page():
 
 
 def generating_checked_data_view():
-    checked_data = st.session_state.selected_data[st.session_state.selected_data_index-1]
+    checked_data = st.session_state.selected_data[
+        st.session_state.selected_data_index - 1
+    ]
     place = checked_data.place
     eval_term = checked_data.eval_term
     search_result = checked_data.search_result
@@ -35,7 +37,7 @@ def generating_checked_data_view():
     ground_truth_page = checked_data.ground_truth_page
     answer_correct = checked_data.answer_correct
     page_in_range = checked_data.page_in_range
-    
+
     pdf_file = os.path.join(
         PDF_DIR,
         f"{place.town}-zoning-code.pdf",
@@ -172,11 +174,15 @@ def process_evaluation_results():
     else:
         raise NotImplementedError("Not implemented yet")
 
+
 def get_selected_data():
     selected_data = [
-        i for i in st.session_state.district_eval_results_by_eval_term[st.session_state.eval_term]
+        i
+        for i in st.session_state.district_eval_results_by_eval_term[
+            st.session_state.eval_term
+        ]
     ]
-    
+
     if st.session_state.eval_type == "all":
         st.session_state.selected_data = selected_data
     elif st.session_state.eval_type == "correct":
@@ -232,23 +238,25 @@ def main():
                 DistrictEvalResult.model_construct(**json.load(uploaded_file))
                 for uploaded_file in uploaded_files
             ]
-            
+
             st.session_state.district_eval_results = district_eval_results
             st.session_state.num_district_eval_results = len(district_eval_results)
             st.write(
                 "Number of :orange-background[all] selected data: ",
                 st.session_state.num_district_eval_results,
             )
-        
+
         # Step 2: Config
         st.divider()
         st.subheader("Step 2: Config", divider="rainbow")
-        st.session_state.all_eval_terms = list(set([i.eval_term for i in district_eval_results]))
+        st.session_state.all_eval_terms = list(
+            set([i.eval_term for i in district_eval_results])
+        )
         st.session_state.district_eval_results_by_eval_term = {
             eval_term: [i for i in district_eval_results if i.eval_term == eval_term]
             for eval_term in st.session_state.all_eval_terms
         }
-        
+
         st.radio(
             "Choosing :orange-background[Eval Term] you want to check",
             st.session_state.all_eval_terms,
@@ -256,7 +264,7 @@ def main():
             index=0,
             on_change=get_selected_data,
         )
-        
+
         st.radio(
             "Choosing :orange-background[Data Result Type] you want to check",
             (
@@ -270,10 +278,9 @@ def main():
             index=0,
             on_change=get_selected_data,
         )
-        
-        
+
         # Step 3: Select one data to check
-        
+
         st.divider()
         st.subheader("Step 3: Select one data to check", divider="rainbow")
         st.write(
@@ -288,7 +295,6 @@ def main():
             step=1,
             on_change=generating_checked_data_view,
         )
-        
 
         # if uploaded_file is not None:
         #     all_evaluation_results = json.load(uploaded_file)

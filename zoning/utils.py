@@ -25,25 +25,21 @@ def target_pdf(target, dir):
 
 def process(
     target_name_file: str,
-    input_dir: str,
+    input_dir: str | None,
     output_dir: str,
     fn,
+    read_fn=lambda x, y: json.load(open(target_name(x, y))),
     converter=lambda x: x,
-    mode="ocr",
     output=True,
 ):
     targets = json.load(open(target_name_file))
 
     def process_target(target):
         try:
-            if mode == "search":
-                inp = converter(target)
-            else:
-                inp = converter(json.load(open(target_name(target, input_dir))))
-
+            inp = converter(read_fn(target, input_dir))
             output_result = fn(inp, target)
 
-            if output and output_result is not None:
+            if output:
                 with open(target_name(target, output_dir), "w") as f:
                     json.dump(output_result.model_dump(), f)
         except Exception as e:

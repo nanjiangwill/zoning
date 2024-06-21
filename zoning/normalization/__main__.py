@@ -72,7 +72,6 @@ def main(config: ZoningConfig):
         global_config.normalization_dir,
         normalize,
         converter=lambda x: LLMInferenceResult.model_construct(**x),
-        mode="normalization",
     )
 
 

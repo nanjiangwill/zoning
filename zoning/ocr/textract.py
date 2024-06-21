@@ -9,6 +9,7 @@ from tqdm.contrib.concurrent import thread_map
 
 from zoning.class_types import OCRConfig
 from zoning.ocr.base_extractor import Extractor
+from zoning.utils import target_name, target_pdf
 
 
 class TextractExtractor(Extractor):
@@ -56,7 +57,10 @@ class TextractExtractor(Extractor):
             nextToken = response.get("NextToken", None)
             yield response
 
-    def extract(self, ocr_dir: str, pdf_file: str) -> None:
+    def extract(self, target: str, pdf_dir: str, ocr_dir: str) -> None:
+        pdf_file = target_pdf(target, pdf_dir)
+        ocr_file = target_name(target, ocr_dir)
+
         if self.ocr_config.pdf_name_prefix_in_s3_bucket:
             s3_bucket_name = self.ocr_config.pdf_name_prefix_in_s3_bucket + pdf_file
         else:
@@ -71,12 +75,13 @@ class TextractExtractor(Extractor):
             elif status == "SUCCEEDED":
                 result = list(self.get_job_results(job_id))
 
-                ocr_file = f"{ocr_dir}/{pdf_file.replace(".pdf", "json")}"
                 with open(ocr_file, "w") as f:
                     json.dump(result, f)
                 print(f"Job {job_id} on file {pdf_file} SUCCEEDED. Write to {ocr_file}")
 
-    def process_files_and_write_output(self, pdf_dir: str, ocr_dir: str) -> None:
+    def process_files_and_write_output(
+        self, target_towns: str, pdf_dir: str, ocr_dir: str
+    ) -> None:
         if self.ocr_config.run_ocr:
-            thread_map(partial(self._extract, ocr_dir), os.listdir(pdf_dir))
+            thread_map(partial(self._extract, pdf_dir, ocr_dir), target_towns)
         assert len(os.listdir(ocr_dir)) > 0, "No OCR results found"
