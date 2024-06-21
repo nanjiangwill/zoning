@@ -90,7 +90,6 @@ def main(config: ZoningConfig):
         global_config.eval_dir,
         fn=lambda x, y: eval_fn(x, json.load(open(global_config.ground_truth_file)), y),
         converter=lambda x: NormalizedLLMInferenceResult.model_construct(**x),
-        mode="eval",
     )
 
     # Calculate metrics

@@ -8,10 +8,13 @@ from zoning.search.keyword_searcher import KeywordSearcher
 from zoning.utils import process
 
 
-def preprocess_search_target(district_file, eval_terms, output_file):
+def preprocess_search_target(town_file, district_file, eval_terms, output_file):
+    town = json.load(open(town_file))
     districts = json.load(open(district_file))
     search_targets = []
     for district in districts:
+        if district.split("__")[0] not in town:
+            continue
         town, district_short_name, district_full_name = district.split("__")
         for term in eval_terms:
             search_targets.append(
@@ -65,6 +68,7 @@ def main(config: ZoningConfig):
 
     # search_results = searcher.search(search_queries)
     preprocess_search_target(
+        global_config.target_town_file,
         global_config.target_district_file,
         global_config.eval_terms,
         global_config.target_eval_file,
@@ -75,6 +79,7 @@ def main(config: ZoningConfig):
         None,
         global_config.search_dir,
         searcher.search,
+        read_fn=lambda x, y: x,
         converter=lambda x: SearchQuery(raw_query_str=x),
         mode="search",
     )

@@ -42,7 +42,6 @@ def main(config: ZoningConfig):
         global_config.index_dir,
         indexer.index,
         converter=lambda x: FormatOCR.model_construct(**x),
-        mode="index",
         output=False,
     )
 
