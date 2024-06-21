@@ -14,16 +14,15 @@ global_config:
   result_output_dir: results/${global_config.target_state}/${global_config.experiment_name} # helper variable, just used to parse
 
   pdf_dir: ${global_config.data_output_dir}/pdfs
-  ocr_results_dir: ${global_config.data_output_dir}/ocr_results
+  ocr_dir: ${global_config.data_output_dir}/ocr
+  format_ocr_dir: ${global_config.data_output_dir}/format_ocr
+  index_dir: ${global_config.data_output_dir}/index
+  search_dir: ${global_config.data_output_dir}/search
+  llm_dir: ${global_config.data_output_dir}/llm
+  eval_dir: ${global_config.data_output_dir}/eval
+
 
   es_endpoint: http://localhost:9200
-
-  data_flow_ocr_file: ${global_config.result_output_dir}/data_flow/data_flow_ocr.json
-  data_flow_index_file: ${global_config.result_output_dir}/data_flow/data_flow_index.json
-  data_flow_search_file: ${global_config.result_output_dir}/data_flow/data_flow_search.json
-  data_flow_llm_file: ${global_config.result_output_dir}/data_flow/data_flow_llm.json
-  data_flow_eval_file: ${global_config.result_output_dir}/data_flow/data_flow_eval.json
-  data_flow_eval_result_file: ${global_config.result_output_dir}/data_flow/data_flow_eval_result.json
 
   random_seed: 13
   test_size_per_term: 30
@@ -36,6 +35,8 @@ ocr_config:
   pdf_name_prefix_in_s3_bucket: zoning/${global_config.target_state}/
   feature_types: ["TABLES"]  # allowed ["TABLES", "FORMS", "QUERIES", "SIGNATURES", "LAYOUT"]
 
+format_ocr_config:
+  temp: x
 
 index_config:
   method: keyword # allowed keyword/embedding

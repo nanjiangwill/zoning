@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from zoning.class_types import IndexConfig, IndexEntities, OCREntities
+from zoning.class_types import IndexConfig, IndexEntities, FormattedOCR
 
 
 class Indexer(ABC):
@@ -8,5 +8,5 @@ class Indexer(ABC):
         self.index_config = index_config
 
     @abstractmethod
-    def index(self, ocr_entities: OCREntities) -> IndexEntities:
+    def index(self, format_ocr: FormattedOCR, target:str) -> None:
         pass

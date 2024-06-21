@@ -6,7 +6,7 @@ from typing import Generator, Tuple
 import boto3
 from tqdm.contrib.concurrent import thread_map
 
-from zoning.class_types import OCRConfig, OCREntities, OCREntity
+from zoning.class_types import OCRConfig
 from zoning.ocr.base_extractor import Extractor
 
 
@@ -71,13 +71,14 @@ class TextractExtractor(Extractor):
                 )
             elif status == "SUCCEEDED":
                 result = list(self.get_job_results(job_id))
+            
                 with open(ocr_entity.ocr_results_file, "w", encoding="utf-8") as f:
                     json.dump(result, f)
                 print(
                     f"Job {job_id} on file {ocr_entity.pdf_file} SUCCEEDED. Write to {ocr_entity.ocr_results_file}"
                 )
 
-    def extract(self, ocr_entities: OCREntities) -> None:
+    def process_files_and_write_output(self, config) -> None:
         if self.ocr_config.run_ocr:
             thread_map(self._extract, ocr_entities.ocr_entities)
         assert len(os.listdir(ocr_entities.ocr_results_dir)) > 0, "No OCR results found"

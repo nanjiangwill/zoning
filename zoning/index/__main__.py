@@ -3,8 +3,9 @@ import json
 import hydra
 from omegaconf import OmegaConf
 
-from zoning.class_types import OCREntities, ZoningConfig
+from zoning.class_types import FormattedOCR, ZoningConfig
 from zoning.index.keyword_indexer import KeywordIndexer
+from zoning.utils import process
 
 
 @hydra.main(version_base=None, config_path="../../config", config_name="base")
@@ -17,20 +18,12 @@ def main(config: ZoningConfig):
         - index_config: IndexConfig
 
     Index Input File Format:
-        OCREntities object
-
-    Index Output File Format:
-        IndexEntities object
+        FormattedOCR object
     """
     # Parse the config
     config = OmegaConf.to_object(config)
     global_config = ZoningConfig(config=config).global_config
     index_config = ZoningConfig(config=config).index_config
-
-    # Read the input data
-    ocr_entities = OCREntities.model_construct(
-        **json.load(open(global_config.data_flow_ocr_file))
-    )
 
     # Load the indexer
     match index_config.method:
@@ -41,13 +34,10 @@ def main(config: ZoningConfig):
         case _:
             raise ValueError(f"Extractor {index_config.name} not implemented")
 
-    index_entities = indexer.index(ocr_entities)
-
-    # Write the output data, data type is IndexEntities
-    # Since we index the data to ES, we just store the index_entities for testing purpose
-    with open(global_config.data_flow_index_file, "w") as f:
-        json.dump(index_entities.model_dump(), f)
-
+    process(global_config.target_names_file, global_config.format_ocr_dir, 
+            global_config.index_dir, indexer.index, 
+            converter=lambda x: FormattedOCR.model_construct(**x),
+            output=False)
 
 if __name__ == "__main__":
     main()
