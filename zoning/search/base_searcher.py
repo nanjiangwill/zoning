@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Iterable
 
-from zoning.class_types import SearchConfig, SearchQueries, SearchResults
+from zoning.class_types import SearchConfig, SearchQuery, SearchResult
 from zoning.utils import get_thesaurus
 
 
@@ -43,5 +43,5 @@ class Searcher(ABC):
         # logger.info(f"Expanded {term} to {expanded_count} variations.")  # Log the total number of variations
 
     @abstractmethod
-    def search(self, search_queries: SearchQueries) -> SearchResults:
+    def search(self, search_query: SearchQuery, target: str) -> SearchResult:
         pass

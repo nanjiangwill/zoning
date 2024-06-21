@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from zoning.class_types import OCRConfig, OCREntities
+from zoning.class_types import OCRConfig
 
 
 class Extractor(ABC):
@@ -8,5 +8,5 @@ class Extractor(ABC):
         self.ocr_config = ocr_config
 
     @abstractmethod
-    def extract(self, ocr_entities: OCREntities) -> None:
+    def extract(self, pdf_file: str, ocr_file: str) -> None:
         pass

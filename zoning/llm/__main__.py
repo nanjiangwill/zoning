@@ -1,30 +1,29 @@
-import asyncio
-import json
 from asyncio import run as aiorun
 
-import tqdm
 import typer
 from hydra import compose, initialize
 from omegaconf import OmegaConf
 from typer import Typer
 
-from zoning.class_types import LLMInferenceResults, SearchResults, ZoningConfig
+from zoning.class_types import SearchResult, ZoningConfig
 from zoning.llm.vanilla_llm import VanillaLLM
+from zoning.utils import process_async
 
 
 def main(config_name: str = typer.Argument("base")):
-    """Main function to run the llm inference based on the provided
-    configuration.
+    """Main function to run the llm based on the provided configuration.
 
     Configs:
         - global_config: GlobalConfig.
         - llm_config: LLMConfig
 
-    LLM Input File Format:
-        SearchResults
+    Input File Format:
+        SearchResult
+        config.search_dir
 
-    LLM Output File Format:
-        LLMInferenceResults
+    Output File Format:
+        NormalizedLLMInferenceResult
+        config.normalization_dir
     """
 
     async def _main():
@@ -39,10 +38,10 @@ def main(config_name: str = typer.Argument("base")):
         global_config = ZoningConfig(config=config).global_config
         llm_config = ZoningConfig(config=config).llm_config
 
-        # Read the input data
-        search_results = SearchResults.model_construct(
-            **json.load(open(global_config.data_flow_search_file))
-        )
+        # # Read the input data
+        # search_results = SearchResults.model_construct(
+        #     **json.load(open(global_config.data_flow_search_file))
+        # )
 
         # Load the searcher
         match llm_config.method:
@@ -53,27 +52,35 @@ def main(config_name: str = typer.Argument("base")):
             case _:
                 raise ValueError(f"LLM method {llm_config.method} is not supported")
 
-        # Run the async inference and show the progress bar
-        async_tasks = [
-            llm.query(search_result) for search_result in search_results.search_results
-        ]
-        async_results = []
+        await process_async(
+            global_config.target_eval_file,
+            global_config.search_dir,
+            global_config.llm_dir,
+            llm.query,
+            converter=lambda x: SearchResult.model_construct(**x),
+        )
 
-        pbar = tqdm.tqdm(total=len(async_tasks))
-        for f in asyncio.as_completed(async_tasks):
-            async_result = await f
-            pbar.update()
-            if async_result is not None:
-                pbar.set_description(
-                    f"Processing {async_result.place} {async_result.eval_term}"
-                )
-                async_results.append(async_result)
-        pbar.close()
+        # # Run the async inference and show the progress bar
+        # async_tasks = [
+        #     llm.query(search_result) for search_result in search_results.search_results
+        # ]
+        # async_results = []
 
-        llm_inference_results = LLMInferenceResults(llm_inference_results=async_results)
-        # Write the output data, data type is SearchResults
-        with open(global_config.data_flow_llm_file, "w") as f:
-            json.dump(llm_inference_results.model_dump(), f)
+        # pbar = tqdm.tqdm(total=len(async_tasks))
+        # for f in asyncio.as_completed(async_tasks):
+        #     async_result = await f
+        #     pbar.update()
+        #     if async_result is not None:
+        #         pbar.set_description(
+        #             f"Processing {async_result.place} {async_result.eval_term}"
+        #         )
+        #         async_results.append(async_result)
+        # pbar.close()
+
+        # llm_inference_results = LLMInferenceResults(llm_inference_results=async_results)
+        # # Write the output data, data type is SearchResults
+        # with open(global_config.data_flow_llm_file, "w") as f:
+        #     json.dump(llm_inference_results.model_dump(), f)
 
     aiorun(_main())
 

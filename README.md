@@ -1,3 +1,4 @@
+
 # zoning
 
 Introduction WIP
@@ -7,6 +8,7 @@ ONLY WORK FOR ONE STATE NOW
 ## Download PDFs and store in S3 (Optional)
 
 Download all zoning PDFs and store in S3 in the format
+
 `zoning/<target_state>/zoning-<town_name>.pdf`
 
 ## Config
@@ -14,82 +16,166 @@ Download all zoning PDFs and store in S3 in the format
 check [Supported Config below](#supported-config) for available configs
 
 ```bash
-cp config/base.yaml config/<state_name>.yaml
-cp .env.example .env
+
+cp  config/base.yaml  config/<state_name>.yaml
+
+cp  .env.example  .env
+
 ```
 
 Change the config. You can refer to `config/connecticut.yaml` and
+
 Fill `.env` with corresponding API keys.
+
 dotenv will not override the env variable if it's already set.
 
 ## Stage 1 - OCR
 
 ### Input Data Location
 
-Default: `data/<state_name>/pdfs` 
+Default: `data/<state_name>/pdfs`
 
 ### Command
 
 Run `python -m zoning.ocr --config-name <state_name>`
- 
-### Output Data Location 
+
+### Output Data Location
 
 Default: `data/<state_name>/ocr`
 
-## Stage 2 - Indexing
+## Stage 2 - Format OCR
 
 ### Input Data Location
 
-Default: `data/<state_name>/ocr` 
+Default: `data/<state_name>/ocr`
 
 ### Running an ElasticSearch Cluster locally
 
 A Docker Compose setup for running a full ElasticSearch stack with Logstash and
+
 Kibana is provided by the Docker Organization. This is the easiest way to run
+
 ElasticSearch locally, but it requires having Docker available on your machine.
 
 If you have Docker available, you can clone the repository and start the cluster
+
 by running:
 
 ```bash
-git clone https://github.com/maxdumas/awesome-compose
-cd awesome-compose/elasticsearch-logstash-kibana
-docker compose up
+
+git  clone  https://github.com/maxdumas/awesome-compose
+
+cd  awesome-compose/elasticsearch-logstash-kibana
+
+docker  compose  up
+
 ```
 
 The initial startup may take some time.
 
-### Run indexing code
+### Command
 
-`python zoning/index.py --config-name <state_name>`
+Run `python -m zoning.format_ocr --config-name <state_name>`
 
-## Search and LLM Inference
+### Output Data Location
 
-`python zoning/llm_inference.py <state_name>`
+Default: `data/<state_name>/format_ocr`
+
+## Stage 3: Indexing
+
+### Input Data Location
+
+Default: `data/<state_name>/format_ocr`
+
+### Command
+
+Run `python -m zoning.index --config-name <state_name>`
+
+### Output Data Location
+
+Default: `None`
+
+## Stage 4: Search
+
+### Input Data Location
+
+Default: `None`
+
+### Command
+
+Run `python -m zoning.search --config-name <state_name>`
+
+### Output Data Location
+
+Default: `data/<state_name>/search`
+
+## Stage 5: LLM Infernence
+
+### Input Data Location
+
+Default: `data/<state_name>/search`
+
+### Command
+
+Run `python -m zoning.search  <state_name>`
+
 Warning: this is different to `--config-name <state_name>` in previous code
- because `Typer` does not work well with `omegaconf`
 
-You will get search results and LLM inference results in `result_output_dir/<state_name>/<experiment_name>`.
+because `Typer` does not work well with `omegaconf`
 
-## Scoring
+### Output Data Location
 
-`python zoning/score.py --config-name <state_name>`
+Default: `data/<state_name>/llm`
 
-This code will return metrics in `result_output_dir/<state_name>/<experiment_name>`
+## Stage 6: Normalization
 
-## Visulization / Error Analysis
+### Input Data Location
 
-run `streamlit run viz/viz.py` and use larger resolusion.
+Default: `data/<state_name>/search`
 
-Select files in `result_output_dir` and end with `_with_ground_truth.json`
+### Command
+
+Run `python -m zoning.normalization --config-name <state_name>`
+
+### Output Data Location
+
+Default: `data/<state_name>/normalization`
+
+## Stage 7: Eval
+
+### Input Data Location
+
+Default: `data/<state_name>/normalization`
+
+### Command
+
+`python -m zoning.eval --config-name <state_name>`
+
+### Output Data Location
+
+Default: `data/<state_name>/eval`
+
+## Stage 8 Visulization / Error Analysis
+
+### Input Data Location
+
+Default: `data/<state_name>/eval`
+
+### Command
+
+- run `streamlit run viz/viz.py` and use larger resolusion.
+- Select files in input data location
 
 ## Notes for developers
 
 run the following code for type check/format check/etc before commit
 
 ```bash
-pre-commit autoupdate
-pre-commit run --all-files
+
+pre-commit  autoupdate
+
+pre-commit  run  --all-files
+
 ```
 
 ## Supported Config

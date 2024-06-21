@@ -1,17 +1,6 @@
-import json
-from typing import List
-
-import tqdm
 from elasticsearch import Elasticsearch
-from tqdm.contrib.concurrent import thread_map
 
-from zoning.class_types import (
-    ElasticSearchIndexData,
-    IndexConfig,
-    IndexEntities,
-    IndexEntity,
-    FormattedOCR
-)
+from zoning.class_types import ElasticSearchIndexData, FormatOCR, IndexConfig
 from zoning.index.base_indexer import Indexer
 
 
@@ -20,7 +9,7 @@ class KeywordIndexer(Indexer):
         super().__init__(index_config)
         self.es_client = Elasticsearch(index_config.es_endpoint)
 
-    def index(self, formatted_ocr: FormattedOCR, name: str) -> None:
+    def index(self, formatted_ocr: FormatOCR, town_name: str) -> None:
         all_index_data = []
         page_data = formatted_ocr.pages
 
@@ -32,7 +21,7 @@ class KeywordIndexer(Indexer):
                 text += f"\nNEW PAGE {idx + j + 1}\n" + page_data[idx + j]
             all_index_data.append(
                 ElasticSearchIndexData(
-                    index=name,
+                    index=town_name,
                     id=str(idx + 1),
                     document={"Page": str(idx + 1), "Text": text},
                     request_timeout=30,
@@ -47,7 +36,6 @@ class KeywordIndexer(Indexer):
                 request_timeout=index_data.request_timeout,
             )
 
-
         # self._index(formatted_ocr, town)
 
         # index_entities = thread_map(self.process_ocr_result, ocr_entities.ocr_entities)
@@ -56,5 +44,3 @@ class KeywordIndexer(Indexer):
 
         # print(f"Indexing {len(index_entities)} entities")
         # thread_map(self._index, index_entities)
-
-

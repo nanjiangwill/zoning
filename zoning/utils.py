@@ -3,25 +3,94 @@ import inspect
 import json
 from functools import partial, wraps
 from typing import Iterable, List, TypeVar
+
+import tqdm
 from tqdm.contrib.concurrent import thread_map
 from typer import Typer
 
 T = TypeVar("T")
 
-def town_name(town, dir):
-    return f"{dir}/{town}.json" 
 
-def process(target_name_file: str, input_dir: str, output_dir: str, fn, 
-            converter=lambda x: x, output=True):
+def target_name(target, dir):
+    """Target can be town or term_district."""
+
+    return f"{dir}/{target}.json"
+
+
+def target_pdf(target, dir):
+    """Target can be town or term_district."""
+
+    return f"{dir}/{target}.pdf"
+
+
+def process(
+    target_name_file: str,
+    input_dir: str,
+    output_dir: str,
+    fn,
+    converter=lambda x: x,
+    mode="ocr",
+    output=True,
+):
     targets = json.load(open(target_name_file))
 
     def process_target(target):
-        inp = converter(json.load(open(town_name(target, input_dir))))
-        output_result = fn(inp, target)
-        if output:
-            with open(town_name(target, output_dir), "w") as f:
-                json.dump(output_result.model_dump(), f)
-    thread_map(process_target, targets)    
+        try:
+            if mode == "search":
+                inp = converter(target)
+            else:
+                inp = converter(json.load(open(target_name(target, input_dir))))
+
+            output_result = fn(inp, target)
+
+            if output and output_result is not None:
+                with open(target_name(target, output_dir), "w") as f:
+                    json.dump(output_result.model_dump(), f)
+        except Exception as e:
+            print(f"Error processing {target}")
+            print(e)
+
+    thread_map(process_target, targets)
+
+
+async def process_async(
+    target_name_file: str,
+    input_dir: str,
+    output_dir: str,
+    fn,
+    converter=lambda x: x,
+    output=True,
+):
+    targets = json.load(open(target_name_file))
+
+    async def process_target(target):
+        try:
+            if input_dir:
+                inp = converter(json.load(open(target_name(target, input_dir))))
+
+            output_result = await fn(inp, target)
+
+            if output:
+                with open(target_name(target, output_dir), "w") as f:
+                    json.dump(output_result.model_dump(), f)
+
+            return output_result
+        except Exception as e:
+            print(f"Error processing {target}")
+            print(e)
+
+    async_tasks = [process_target(target) for target in targets]
+
+    pbar = tqdm.tqdm(total=len(async_tasks))
+    for f in asyncio.as_completed(async_tasks):
+        async_result = await f
+        pbar.update()
+        if async_result is not None:
+            pbar.set_description(
+                f"Processing {async_result.place} {async_result.eval_term}"
+            )
+    pbar.close()
+
 
 # Copied from https://github.com/tiangolo/typer/issues/88
 class AsyncTyper(Typer):

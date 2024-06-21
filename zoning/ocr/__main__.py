@@ -1,16 +1,13 @@
-import json
-
 import hydra
 from omegaconf import OmegaConf
 
-from zoning.class_types import OCREntities, ZoningConfig
+from zoning.class_types import ZoningConfig
 from zoning.ocr.textract import TextractExtractor
 
 
 @hydra.main(version_base=None, config_path="../../config", config_name="base")
 def main(config: ZoningConfig):
-    """
-    Converts PDF files to textract json format. 
+    """Converts PDF files to textract json format.
 
     Configs:
         - global_config: GlobalConfig.
@@ -37,7 +34,8 @@ def main(config: ZoningConfig):
         case _:
             raise ValueError(f"Extractor {ocr_config.method} not implemented")
 
-    ocr.process_files_and_write_output(global_config)
+    ocr.process_files_and_write_output(global_config.pdf_dir, global_config.ocr_dir)
+
 
 if __name__ == "__main__":
     main()
