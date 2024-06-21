@@ -436,14 +436,23 @@ class NormalizedLLMInferenceResult(BaseModel):
 class DistrictEvalResult(BaseModel):
     place: Place
     eval_term: str
-    normalized_llm_inference_result: NormalizedLLMInferenceResult
+    search_result: SearchResult
+    normalized_llm_outputs: List[NormalizedLLMOutput]
     ground_truth: str | None
     ground_truth_orig: str | None
     ground_truth_page: str | None
     answer_correct: bool | None
     page_in_range: bool | None
 
-
+    def model_post_init(self, __context):
+        if isinstance(self.place, dict):
+            self.place = Place(**self.place)
+        if isinstance(self.search_result, dict):
+            self.search_result = SearchResult(**self.search_result)
+        if isinstance(self.normalized_llm_outputs[0], dict):
+            self.normalized_llm_outputs = [
+                NormalizedLLMOutput(**d) for d in self.normalized_llm_outputs
+            ]
 # class EvalQuery(BaseModel):
 #     place: Place
 #     eval_term: str

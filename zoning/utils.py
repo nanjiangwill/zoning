@@ -43,13 +43,9 @@ def process(
 
             output_result = fn(inp, target)
 
-            if output:
-                if mode == "ocr":
-                    with open(target_name(target, output_dir), "w") as f:
-                        json.dump(output_result, f)
-                else:
-                    with open(target_name(target, output_dir), "w") as f:
-                        json.dump(output_result.model_dump(), f)
+            if output and output_result is not None:
+                with open(target_name(target, output_dir), "w") as f:
+                    json.dump(output_result.model_dump(), f)
         except Exception as e:
             print(f"Error processing {target}")
             print(e)

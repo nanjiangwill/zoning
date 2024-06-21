@@ -46,7 +46,8 @@ def eval_fn(d, gt, target) -> DistrictEvalResult:
     return DistrictEvalResult(
         place=d.place,
         eval_term=d.eval_term,
-        normalized_llm_inference_result=d,
+        search_result=d.search_result,
+        normalized_llm_outputs=d.normalized_llm_outputs,
         ground_truth=ground_truth,
         ground_truth_orig=ground_truth_orig,
         ground_truth_page=ground_truth_page,

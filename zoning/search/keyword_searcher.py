@@ -88,7 +88,7 @@ class KeywordSearcher(Searcher):
         )
         return units_query
 
-    def search(self, search_query: SearchQuery, target: str) -> SearchResult:
+    def search(self, search_query: SearchQuery, target: str) -> SearchResult | None:
         try:
             s = Search(using=self.es_client, index=search_query.place.town)
 
@@ -115,6 +115,7 @@ class KeywordSearcher(Searcher):
             res = s.execute()
             if len(res) == 0:
                 print(f"No results found for {target}")
+                return None
 
             search_matches = [
                 SearchMatch(
