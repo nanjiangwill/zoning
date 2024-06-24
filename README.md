@@ -109,11 +109,27 @@ Run `python -m zoning.search --config-name <state_name>`
 
 Default: `data/<state_name>/search`
 
-## Stage 5: LLM Infernence
+## Stage 5: Prompt
 
 ### Input Data Location
 
 Default: `data/<state_name>/search`
+
+### Command
+
+Run `python -m zoning.prompt --config-name <state_name>`
+
+
+
+### Output Data Location
+
+Default: `data/<state_name>/prompt`
+
+## Stage 6: LLM Infernence
+
+### Input Data Location
+
+Default: `data/<state_name>/prompt`
 
 ### Command
 
@@ -127,7 +143,7 @@ because `Typer` does not work well with `omegaconf`
 
 Default: `data/<state_name>/llm`
 
-## Stage 6: Normalization
+## Stage 7: Normalization
 
 ### Input Data Location
 
@@ -141,7 +157,7 @@ Run `python -m zoning.normalization --config-name <state_name>`
 
 Default: `data/<state_name>/normalization`
 
-## Stage 7: Eval
+## Stage 8: Eval
 
 ### Input Data Location
 
@@ -155,7 +171,7 @@ Default: `data/<state_name>/normalization`
 
 Default: `data/<state_name>/eval`
 
-## Stage 8 Visulization / Error Analysis
+## Stage 9 Visulization / Error Analysis
 
 ### Input Data Location
 
