@@ -43,6 +43,9 @@ Run `python -m zoning.ocr --config-name <state_name>`
 
 Default: `data/<state_name>/ocr`
 
+### Notes
+To skip this stage, ask for ocr results and put them in `data/<state_name>/ocr`
+
 ## Stage 2 - Format OCR
 
 ### Input Data Location

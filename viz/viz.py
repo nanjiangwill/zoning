@@ -10,11 +10,14 @@ PDF_DIR = "data/connecticut/pdfs"
 
 
 def display_pdf_page(doc, page_num):
+    print("asdf")
     if 1 <= page_num <= len(doc):
         page = doc.load_page(page_num - 1)
         pix = page.get_pixmap()
         img_bytes = pix.pil_tobytes(format="PNG")
+        print("herwearsfsda")
         st.session_state.pdf_viewer.image(img_bytes, caption=f"Page {page_num}", use_column_width=True)
+        print("herwearsfsdaasdfasfasfsd")
     else:
         st.session_state.pdf_viewer.warning(f"Page {page_num} is out of range.")
 
@@ -63,13 +66,14 @@ def generating_checked_data_view():
         st.write(f"Ground Truth Page: :orange-background[{ground_truth_page}]")
         
         cols = st.columns(len(jump_pages))
+        print("ajhsfhjasdhjfjhasdfhjhashjhfjhadshf")
         for i, page_num in enumerate(jump_pages):
             if cols[i].button(str(page_num), key=f"btn_{page_num}"):
+                print("ajhsfhjasdhjfjhasdfhjhashjhfjhadshf")
                 display_pdf_page(doc, page_num)
 
     with col4:
         st.subheader("Search & Inference Stats")
-        print(entire_search_page_range)
         st.write(
             f"entire_search_results_page_range: :orange-background[{sorted(entire_search_page_range)}]"
         )
