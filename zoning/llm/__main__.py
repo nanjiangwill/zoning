@@ -18,7 +18,7 @@ def main(config_name: str = typer.Argument("base")):
         - llm_config: LLMConfig
 
     Input File Format:
-        SearchResult
+        PromptResult
         config.prompt_dir
 
     Output File Format:
