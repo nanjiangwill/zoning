@@ -10,17 +10,29 @@ PDF_DIR = "data/connecticut/pdfs"
 
 
 def display_pdf_page(doc, page_num):
-    print("asdf")
+    print("inside")
+    print(len(doc))
+    print(page_num)
     if 1 <= page_num <= len(doc):
         page = doc.load_page(page_num - 1)
         pix = page.get_pixmap()
         img_bytes = pix.pil_tobytes(format="PNG")
-        print("herwearsfsda")
         st.session_state.pdf_viewer.image(img_bytes, caption=f"Page {page_num}", use_column_width=True)
-        print("herwearsfsdaasdfasfasfsd")
     else:
         st.session_state.pdf_viewer.warning(f"Page {page_num} is out of range.")
 
+def click(doc, key):
+    print("in")
+    print(st.session_state.current_page)
+    st.session_state.current_page = int(key)
+    print(st.session_state.current_page)
+    page = doc.load_page(st.session_state.current_page - 1)
+    pix = page.get_pixmap()
+    img_bytes = pix.pil_tobytes(format="PNG")
+    st.session_state.pdf_viewer.image(img_bytes, caption=f"Page {st.session_state.current_page}", use_column_width=True)
+
+def unclick(key):
+    st.session_state.clicked_page[key] = False
 
 def generating_checked_data_view():
     checked_data = st.session_state.selected_data[
@@ -42,8 +54,7 @@ def generating_checked_data_view():
         f"{place.town}-zoning-code.pdf",
     )
 
-    if 'doc' not in st.session_state or st.session_state.doc is None:
-        st.session_state.doc = fitz.open(pdf_file)
+    st.session_state.doc = fitz.open(pdf_file)
     
     doc = st.session_state.doc
 
@@ -64,13 +75,19 @@ def generating_checked_data_view():
         st.write(f"Ground Truth Answer: :orange-background[{ground_truth}]")
         st.write(f"Ground Truth Orig: :orange-background[{ground_truth_orig}]")
         st.write(f"Ground Truth Page: :orange-background[{ground_truth_page}]")
-        
+        print(st.session_state.current_page)
         cols = st.columns(len(jump_pages))
-        print("ajhsfhjasdhjfjhasdfhjhashjhfjhadshf")
         for i, page_num in enumerate(jump_pages):
-            if cols[i].button(str(page_num), key=f"btn_{page_num}"):
-                print("ajhsfhjasdhjfjhasdfhjhashjhfjhadshf")
-                display_pdf_page(doc, page_num)
+            cols[i].button(str(page_num), on_click=click, args=(doc, f'{page_num}',))
+                
+        # if st.session_state.clicked_page.get(f'button{i}', False):
+            
+            # st.session_state.current_page = page_num
+            # if cols[i].button(str(page_num), key=f"btn_{page_num}"):
+            #     print("aushfhasjkfhjkasdf")
+            #     st.session_state.current_page = page_num
+        print(st.session_state.current_page)
+        # display_pdf_page(doc, st.session_state.current_page)
 
     with col4:
         st.subheader("Search & Inference Stats")
@@ -179,8 +196,8 @@ def get_selected_data():
 
 st.set_page_config(layout="wide")
 
-# if "doc" not in st.session_state:
-#     st.session_state.doc = None
+if "doc" not in st.session_state:
+    st.session_state.doc = None
 # if "clicked_page" not in st.session_state:
 #     st.session_state.clicked_page = None
 
@@ -198,6 +215,11 @@ if "num_selected_data" not in st.session_state:
     st.session_state.num_selected_data = 0
 if 'pdf_viewer' not in st.session_state:
     st.session_state.pdf_viewer = st.empty()
+if 'current_page' not in st.session_state:
+    st.session_state.current_page = 1
+if 'clicked_page' not in st.session_state:
+    st.session_state['clicked_page'] = {}
+    
 # Sidebar config
 with st.sidebar:
     # Step 1: upload file
