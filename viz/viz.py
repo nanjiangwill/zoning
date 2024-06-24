@@ -9,8 +9,12 @@ from zoning.class_types import DistrictEvalResult
 PDF_DIR = "data/connecticut/pdfs"
 
 
-def click(doc, key):
+def jump_page(key):
     st.session_state.current_page = int(key)
+    generating_checked_data_view()
+
+def jump_page_from_slider():
+    st.session_state.current_page = st.session_state.page_slider
     generating_checked_data_view()
 
 
@@ -58,16 +62,14 @@ def generating_checked_data_view():
         st.write(f"Answer Correct: :orange-background[{answer_correct}]")
         st.write(f"Page In Range: :orange-background[{page_in_range}]")
 
-        cols = st.columns(len(jump_pages))
-        for i, page_num in enumerate(jump_pages):
-            cols[i].button(
-                str(page_num),
-                on_click=click,
-                args=(
-                    doc,
-                    f"{page_num}",
-                ),
-            )
+        st.slider(
+            "Select page",
+            min_value=1,
+            max_value=len(doc),
+            key="page_slider", 
+            value=st.session_state.current_page,
+            on_change=jump_page_from_slider,
+        )
         page = doc.load_page(st.session_state.current_page - 1)
         pix = page.get_pixmap()
         img_bytes = pix.pil_tobytes(format="PNG")
@@ -84,6 +86,13 @@ def generating_checked_data_view():
         st.write(
             f"entire_search_results_page_range: :orange-background[{sorted(entire_search_page_range)}]"
         )
+        cols = st.columns(len(jump_pages))
+        for i, page_num in enumerate(jump_pages):
+            cols[i].button(
+                str(page_num),
+                on_click=jump_page,
+                args=(f"{page_num}",),
+            )
 
         st.subheader("Search Results")
         col5, col6 = st.columns(2)
@@ -202,9 +211,9 @@ if "num_selected_data" not in st.session_state:
     st.session_state.num_selected_data = 0
 if "current_page" not in st.session_state:
     st.session_state.current_page = 1
-if "clicked_page" not in st.session_state:
-    st.session_state["clicked_page"] = {}
-
+# if "page_slider" not in st.session_state:
+#     st.session_state.page_slider = 1
+    
 # Sidebar config
 with st.sidebar:
     # Step 1: upload file
