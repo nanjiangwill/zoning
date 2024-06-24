@@ -41,7 +41,6 @@ def main(config: ZoningConfig):
     Output File Format:
         PromptResult
         config.prompt_dir
-        
     """
     # Parse the config
     config = OmegaConf.to_object(config)
@@ -61,7 +60,6 @@ def main(config: ZoningConfig):
     # Load the searcher
     prompt_generator = PromptGenerator(prompt_config)
 
-
     process(
         global_config.target_eval_file,
         global_config.search_dir,
@@ -69,6 +67,7 @@ def main(config: ZoningConfig):
         prompt_generator.generate_prompt,
         converter=lambda x: SearchResult.model_construct(**x),
     )
+
 
 if __name__ == "__main__":
     main()
