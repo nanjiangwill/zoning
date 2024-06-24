@@ -110,32 +110,6 @@ class ZoningConfig(BaseModel):
         self.eval_config = EvalConfig(**self.config["eval_config"])
 
 
-# class OCREntity(BaseModel):
-#     name: str
-#     pdf_file: str
-#     ocr_results_file: str
-
-
-# class OCREntities(BaseModel):
-#     target_names_file: str
-#     pdf_dir: str
-#     ocr_results_dir: str
-#     ocr_entities: List[OCREntity] = []
-
-#     def model_post_init(self, __context):
-#         target_names = json.load(open(self.target_names_file))
-#         self.ocr_entities = [
-#             OCREntity(
-#                 name=name,
-#                 pdf_file=os.path.join(self.pdf_dir, f"{name}.pdf"),
-#                 ocr_results_file=os.path.join(self.ocr_results_dir, f"{name}.json"),
-#             )
-#             for name in target_names
-#         ]
-#         os.makedirs(self.pdf_dir, exist_ok=True)
-#         os.makedirs(self.ocr_results_dir, exist_ok=True)
-
-
 # =================
 # Format OCR
 # =================
@@ -204,9 +178,6 @@ class FormatOCR(BaseModel):
     town_name: str
 
 
-# ==================
-
-
 # =================
 # Index
 # =================
@@ -217,15 +188,6 @@ class ElasticSearchIndexData(BaseModel):
     id: str
     document: Dict[str, str]
     request_timeout: int = 30
-
-
-# class IndexEntity(BaseModel):
-#     name: str
-#     page_data: List[Dict[str, str | int]]
-
-
-# class IndexEntities(BaseModel):
-#     index_entities: List[IndexEntity]
 
 
 # =================
@@ -263,55 +225,6 @@ class SearchQuery(BaseModel):
         return f"{self.eval_term}__{self.place}"
 
 
-# class SearchQueries(BaseModel):
-#     query_file: str
-
-#     search_queries: List[SearchQuery] = []
-#     search_queries_by_eval_term: Dict[str, List[SearchQuery]] = {}
-
-#     def model_post_init(self, __context):
-#         query_data = json.load(open(self.query_file))
-
-#         all_eval_terms = [
-#             i.replace("_page_gt", "")
-#             for i in query_data[0].keys()
-#             if i.endswith("_page_gt")
-#         ]
-
-#         self.search_queries = [
-#             SearchQuery(
-#                 place=Place(
-#                     town=d["town"],
-#                     district_full_name=d["district"],
-#                     district_short_name=d["district_abb"],
-#                 ),
-#                 eval_term=eval_term,
-#             )
-#             for d in query_data
-#             for eval_term in all_eval_terms
-#         ]
-#         self.search_queries_by_eval_term = {
-#             eval_term: [q for q in self.search_queries if q.eval_term == eval_term]
-#             for eval_term in all_eval_terms
-#         }
-
-#     def get_test_data_search_queries(
-#         self, eval_terms: List[str], random_seed: int, test_size_per_term: int
-#     ) -> None:
-#         random.seed(random_seed)
-#         test_data_search_queries = []
-#         for eval_term in eval_terms:
-#             search_queries = self.search_queries_by_eval_term[eval_term]
-#             test_data_search_queries += random.sample(
-#                 search_queries, test_size_per_term
-#             )
-#         self.search_queries = test_data_search_queries
-#         self.search_queries_by_eval_term = {
-#             eval_term: [q for q in self.search_queries if q.eval_term == eval_term]
-#             for eval_term in set([q.eval_term for q in self.search_queries])
-#         }
-
-
 class SearchMatch(BaseModel):
     text: str
     page_number: int
@@ -339,14 +252,6 @@ class SearchResult(BaseModel):
             set(flatten(page_coverage([m.text for m in self.search_matches])))
         )
         self.entire_search_page_range.sort()
-
-
-# class SearchResults(BaseModel):
-#     search_results: List[SearchResult]
-
-#     def model_post_init(self, __context):
-#         if isinstance(type(self.search_results[0]), dict):
-#             self.search_results = [SearchResult(**d) for d in self.search_results]
 
 
 # =================
@@ -380,12 +285,6 @@ class PromptResult(BaseModel):
 # =================
 
 
-# class LLMQuery(BaseModel):
-#     place: Place
-#     eval_term: str
-#     context: str
-
-
 class LLMOutput(BaseModel):
     place: Place
     eval_term: str
@@ -413,25 +312,12 @@ class LLMInferenceResult(BaseModel):
     def model_post_init(self, __context):
         if isinstance(self.place, dict):
             self.place = Place(**self.place)
+        if isinstance(self.search_result, dict):
+            self.search_result = SearchResult(**self.search_result)
+        if isinstance(self.input_prompts[0], dict):
+            self.input_prompts = [Prompt(**d) for d in self.input_prompts]
         if isinstance(self.llm_outputs[0], dict):
             self.llm_outputs = [LLMOutput(**d) for d in self.llm_outputs]
-
-
-# class LLMInferenceResults(BaseModel):
-#     llm_inference_results: List[LLMInferenceResult]
-#     llm_inference_results_by_eval_term: Dict[str, List[LLMInferenceResult]] = {}
-
-#     def model_post_init(self, __context):
-#         if isinstance(self.llm_inference_results[0], dict):
-#             self.llm_inference_results = [
-#                 LLMInferenceResult(**d) for d in self.llm_inference_results
-#             ]
-#         self.llm_inference_results_by_eval_term = {
-#             eval_term: [
-#                 r for r in self.llm_inference_results if r.eval_term == eval_term
-#             ]
-#             for eval_term in set([r.eval_term for r in self.llm_inference_results])
-#         }
 
 
 # =================
@@ -454,14 +340,11 @@ class NormalizedLLMInferenceResult(BaseModel):
     def model_post_init(self, __context):
         if isinstance(self.place, dict):
             self.place = Place(**self.place)
-
         if isinstance(self.search_result, dict):
             self.search_result = SearchResult(**self.search_result)
-        if self.input_prompts and isinstance(self.input_prompts[0], dict):
+        if isinstance(self.input_prompts[0], dict):
             self.input_prompts = [Prompt(**d) for d in self.input_prompts]
-        if self.normalized_llm_outputs and isinstance(
-            self.normalized_llm_outputs[0], dict
-        ):
+        if isinstance(self.normalized_llm_outputs[0], dict):
             self.normalized_llm_outputs = [
                 NormalizedLLMOutput(**d) for d in self.normalized_llm_outputs
             ]
@@ -495,27 +378,3 @@ class DistrictEvalResult(BaseModel):
             self.normalized_llm_outputs = [
                 NormalizedLLMOutput(**d) for d in self.normalized_llm_outputs
             ]
-
-
-# class EvalQuery(BaseModel):
-#     place: Place
-#     eval_term: str
-#     search_result: SearchResult
-#     llm_inference_result: LLMInferenceResult
-#     ground_truth: str | None
-#     ground_truth_orig: str | None
-#     ground_truth_page: str | None
-
-
-# class EvalQueries(BaseModel):
-#     eval_queries: List[EvalQuery]
-
-#     def model_post_init(self, __context):
-#         if isinstance(self.eval_queries[0], dict):
-#             self.eval_queries = [EvalQuery(**d) for d in self.eval_queries]
-
-
-# class EvalMetricByTerm(BaseModel):
-#     eval_term: str
-#     answer_accuracy: float
-#     page_precision: float

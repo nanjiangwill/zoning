@@ -13,6 +13,7 @@ def jump_page(key):
     st.session_state.current_page = int(key)
     generating_checked_data_view()
 
+
 def jump_page_from_slider():
     st.session_state.current_page = st.session_state.page_slider
     generating_checked_data_view()
@@ -66,7 +67,7 @@ def generating_checked_data_view():
             "Select page",
             min_value=1,
             max_value=len(doc),
-            key="page_slider", 
+            key="page_slider",
             value=st.session_state.current_page,
             on_change=jump_page_from_slider,
         )
@@ -211,9 +212,7 @@ if "num_selected_data" not in st.session_state:
     st.session_state.num_selected_data = 0
 if "current_page" not in st.session_state:
     st.session_state.current_page = 1
-# if "page_slider" not in st.session_state:
-#     st.session_state.page_slider = 1
-    
+
 # Sidebar config
 with st.sidebar:
     # Step 1: upload file
@@ -288,45 +287,3 @@ with st.sidebar:
         step=1,
         on_change=generating_checked_data_view,
     )
-
-
-# if __name__ == "__main__":
-#     main()
-
-
-# import base64
-
-# import streamlit as st
-# from streamlit.components.v1 import html
-
-
-# def load_pdf(pdf_file: str):
-#     with open(pdf_file, "rb") as f:
-#         return base64.b64encode(f.read()).decode("utf-8")
-
-
-# if "base64_pdf" not in st.session_state:
-#     st.session_state.base64_pdf = load_pdf(
-#         "data/connecticut/pdfs/east-hartford-zoning-code.pdf"
-#     )
-
-# if "page" not in st.session_state:
-#     st.session_state.page = 0
-
-# if "display_pdf" not in st.session_state:
-#     st.session_state.display_pdf = f"""
-#     <embed src="data:application/pdf;base64,{st.session_state.base64_pdf}#page={st.session_state.page}" width="550" height="900" type="application/pdf"></iframe>
-# """
-
-# # placeholder = st.empty()
-
-# # with placeholder.container():
-# html(st.session_state.display_pdf, height=900)
-
-# # if st.button("Go to page **5**"):
-# #     st.session_state.page = 5
-# #     st.session_state.display_pdf = f"""
-# #     <embed src="data:application/pdf;base64,{st.session_state.base64_pdf}#page={st.session_state.page}" width="550" height="900" type="application/pdf"></iframe>
-# #     """
-# #     with placeholder.container():
-# #         html(st.session_state.display_pdf, height=900)

@@ -78,12 +78,6 @@ def main(config: ZoningConfig):
     global_config = ZoningConfig(config=config).global_config
     # eval_config = ZoningConfig(config=config).eval_config
 
-    # Read the input data and read ground truth
-    # llm_inference_results = LLMInferenceResults.model_construct(
-    #     **json.load(open(global_config.data_flow_llm_file))
-    # )
-    # test_data = json.load(open(global_config.test_data_file))
-
     process(
         global_config.target_eval_file,
         global_config.normalization_dir,

@@ -93,6 +93,10 @@ docker  compose  up
 
 The initial startup may take some time.
 
+To all clear existing entries, use
+
+`curl -X DELETE 'http://localhost:9200/_all'`
+
 ### Input Data Location
 
 Default: `data/<state_name>/format_ocr`

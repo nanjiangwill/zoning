@@ -23,11 +23,11 @@ OCROutput = List[Dict[str, Any]]
 def process_ocr_result(data: OCROutput, town_name: str) -> FormatOCR:
     extract_blocks = [b for d in data for b in d["Blocks"]]
 
-    page = OCRPage()
+    ocr_page = OCRPage()
     formatted_ocr = FormatOCR(pages=[], town_name=town_name)
     for w in tqdm.tqdm(extract_blocks):
         if w["BlockType"] in ["LINE", "WORD", "CELL", "MERGED_CELL"]:
-            e = OCRBlock(
+            ocr_block = OCRBlock(
                 id=w["Id"],
                 text=w.get("Text", ""),
                 typ=w["BlockType"],
@@ -38,38 +38,25 @@ def process_ocr_result(data: OCROutput, town_name: str) -> FormatOCR:
                     else (-1, -1)
                 ),
             )
-            page.add(e)
+            ocr_page.add(ocr_block)
         elif w["BlockType"] == "PAGE":
-            if len(page.ents) > 0:
+            if len(ocr_page.ents) > 0:
 
                 # since the key name is not unique, we are unable to use a BaseModel for it
                 # so here, we did not use a type hint for the key name
-                page.page = w["Page"] - 1
-                formatted_ocr.pages.append(page.make_string())
-                #     {
-                #         self.index_config.index_key: f"{ocr_entity.name}",
-                #         "Page": w["Page"] - 1,
-                #         "Text": str(entities),
-                #     }
-                # )
-            entities = OCRPage()
+                ocr_page.page = w["Page"] - 1
+                formatted_ocr.pages.append(ocr_page.make_string())
+            ocr_page = OCRPage()
         elif w["BlockType"] == "TABLE":
             pass
         else:
             continue
 
-    if len(entities.ents) > 0:
-
+    if len(ocr_page.ents) > 0:
         # since the key name is not unique, we are unable to use a BaseModel for it
         # so here, we did not use a type hint for the key name
-        page.page = w["Page"]
-        formatted_ocr.pages.append(page.make_string())
-        #     {
-        #         self.index_config.index_key: f"{ocr_entity.name}",
-        #         "Page": w["Page"],
-        #         "Text": str(entities),
-        #     }
-        # )
+        ocr_page.page = w["Page"]
+        formatted_ocr.pages.append(ocr_page.make_string())
     return formatted_ocr
 
 
