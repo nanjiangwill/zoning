@@ -9,8 +9,9 @@ matplotlib
 omegaconf
 openai
 pre-commit
+PyMuPDF # for visualization
 python-dotenv
-streamlit
+streamlit # for visualization
 typer
 wandb
 watchdog

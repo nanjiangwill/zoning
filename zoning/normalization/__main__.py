@@ -14,7 +14,7 @@ from zoning.utils import process
 
 
 def subtract_numerical_values(answer: str) -> List[str] | None:
-    number_pattern = r"-?(?:\d{1,3}(?:,\d{3})*|\d+)(?:\.\d+)?"
+    number_pattern = r"\b-?(?:\d{1,3}(?:,\d{3})*|\d+)(?:\.\d+)?\b"
     numbers_str = re.findall(number_pattern, answer)
     numbers_str = [num.replace(",", "") for num in numbers_str]
 

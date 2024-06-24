@@ -1,7 +1,7 @@
-import base64
 import json
 import os
 
+import fitz  # PyMuPDF
 import streamlit as st
 
 from zoning.class_types import DistrictEvalResult
@@ -9,19 +9,14 @@ from zoning.class_types import DistrictEvalResult
 PDF_DIR = "data/connecticut/pdfs"
 
 
-# @st.cache_data
-def load_pdf(pdf_file: str):
-    with open(pdf_file, "rb") as f:
-        return base64.b64encode(f.read()).decode("utf-8")
-
-
-# @st.cache_data
-def go_to_pdf_page():
-    print("inside go_to_pdf_page")
-    st.session_state.selected_pdf_page = 40
-    st.session_state.display_pdf = f"""
-    <iframe src="data:application/pdf;base64,{st.session_state.base64_pdf}#page=40" width="550" height="900" type="application/pdf"></iframe>
-"""
+def display_pdf_page(doc, page_num):
+    if 1 <= page_num <= len(doc):
+        page = doc.load_page(page_num - 1)
+        pix = page.get_pixmap()
+        img_bytes = pix.pil_tobytes(format="PNG")
+        st.session_state.pdf_viewer.image(img_bytes, caption=f"Page {page_num}", use_column_width=True)
+    else:
+        st.session_state.pdf_viewer.warning(f"Page {page_num} is out of range.")
 
 
 def generating_checked_data_view():
@@ -31,6 +26,7 @@ def generating_checked_data_view():
     place = checked_data.place
     eval_term = checked_data.eval_term
     search_result = checked_data.search_result
+    entire_search_page_range = search_result.entire_search_page_range
     normalized_llm_outputs = checked_data.normalized_llm_outputs
     ground_truth = checked_data.ground_truth
     ground_truth_orig = checked_data.ground_truth_orig
@@ -42,19 +38,16 @@ def generating_checked_data_view():
         PDF_DIR,
         f"{place.town}-zoning-code.pdf",
     )
-    if "selected_pdf_page" not in st.session_state:
-        st.session_state.selected_pdf_page = 0
-    if "base64_pdf" not in st.session_state:
-        st.session_state.base64_pdf = load_pdf(pdf_file)
 
-    if "display_pdf" not in st.session_state:
-        st.session_state.display_pdf = f"""
-    <iframe src="data:application/pdf;base64,{st.session_state.base64_pdf}" width="550" height="900" type="application/pdf"></iframe>
-"""
-    elif st.session_state.selected_pdf_page != 0:
-        st.session_state.display_pdf = f"""
-    <iframe src="data:application/pdf;base64,{st.session_state.base64_pdf}#page={st.session_state.selected_pdf_page}" width="550" height="900" type="application/pdf"></iframe>
-"""
+    if 'doc' not in st.session_state or st.session_state.doc is None:
+        st.session_state.doc = fitz.open(pdf_file)
+    
+    doc = st.session_state.doc
+
+    jump_pages = entire_search_page_range
+    if ground_truth_page:
+        jump_pages.append(ground_truth_page)
+    jump_pages = sorted(set(jump_pages))  # Remove duplicates and sort
 
     # show
     st.subheader(f"Place: :orange-background[{place.town}-{place.district_full_name}]")
@@ -67,11 +60,16 @@ def generating_checked_data_view():
         st.write(f"Ground Truth Answer: :orange-background[{ground_truth}]")
         st.write(f"Ground Truth Orig: :orange-background[{ground_truth_orig}]")
         st.write(f"Ground Truth Page: :orange-background[{ground_truth_page}]")
-        st.markdown(st.session_state.display_pdf, unsafe_allow_html=True)
+        
+        cols = st.columns(len(jump_pages))
+        for i, page_num in enumerate(jump_pages):
+            if cols[i].button(str(page_num), key=f"btn_{page_num}"):
+                display_pdf_page(doc, page_num)
+
     with col4:
         st.subheader("Search & Inference Stats")
         st.write(
-            f"entire_search_results_page_range: :orange-background[{sorted(search_result.entire_search_results_page_range)}]"
+            f"entire_search_results_page_range: :orange-background[{sorted(entire_search_page_range)}]"
         )
 
         st.subheader("Search Results")
@@ -117,21 +115,22 @@ def generating_checked_data_view():
                     # print(llm_inference_result.keys)
                     st.write(
                         "Search Page: :orange-background[{}]".format(
-                            llm_inference_result.search_page_range
+                            llm_inference_result.llm_output.search_page_range
                         )
                     )
                     st.json(
                         {
-                            "extracted_text": llm_inference_result.extracted_text,
-                            "rationale": llm_inference_result.rationale,
-                            "answer": llm_inference_result.answer,
+                            "extracted_text": llm_inference_result.llm_output.extracted_text,
+                            "rationale": llm_inference_result.llm_output.rationale,
+                            "answer": llm_inference_result.llm_output.answer,
+                            "normalized_answer": llm_inference_result.normalized_answer,
                         }
                     )
                 with col8:
                     st.json(
                         {
-                            "input_prompt": llm_inference_result.input_prompt,
-                            "raw_model_response": llm_inference_result.raw_model_response,
+                            "input_prompt": llm_inference_result.llm_output.input_prompt,
+                            "raw_model_response": llm_inference_result.llm_output.raw_model_response,
                         },
                         expanded=False,
                     )
@@ -141,38 +140,6 @@ def generating_checked_data_view():
 def reset():
     for key in st.session_state.keys():
         del st.session_state[key]
-
-
-def process_evaluation_results():
-    assert (
-        st.session_state.all_evaluation_results
-        and st.session_state.num_all_evaluation_data > 0
-    )
-    assert st.session_state.evaluation_type in [
-        "all",
-        "correct",
-        "only_wrong_answer",
-        "only_wrong_page",
-        "wrong_answer_and_page",
-    ], "Invalid evaluation type"
-
-    st.session_state.current_evaluation_results = (
-        st.session_state.all_evaluation_results
-    )
-    if st.session_state.not_including_gt_is_none:
-
-        st.session_state.current_evaluation_results = [
-            i
-            for i in st.session_state.all_evaluation_results
-            if i.ground_truth is not None
-        ]
-
-    if st.session_state.evaluation_type == "all":
-        st.session_state.num_current_evaluation_data = len(
-            st.session_state.current_evaluation_results
-        )
-    else:
-        raise NotImplementedError("Not implemented yet")
 
 
 def get_selected_data():
@@ -204,152 +171,105 @@ def get_selected_data():
     st.session_state.num_selected_data = len(st.session_state.selected_data)
 
 
-def main():
-    st.set_page_config(layout="wide")
+st.set_page_config(layout="wide")
 
-    if "all_eval_terms" not in st.session_state:
-        st.session_state.all_eval_terms = []
-    if "district_eval_results" not in st.session_state:
-        st.session_state.district_eval_results = None
-    if "num_district_eval_results" not in st.session_state:
-        st.session_state.num_district_eval_results = 0
-    if "district_eval_results_by_eval_term" not in st.session_state:
-        st.session_state.district_eval_results_by_eval_term = {}
-    if "selected_data" not in st.session_state:
-        st.session_state.selected_data = []
-    if "num_selected_data" not in st.session_state:
-        st.session_state.num_selected_data = 0
+# if "doc" not in st.session_state:
+#     st.session_state.doc = None
+# if "clicked_page" not in st.session_state:
+#     st.session_state.clicked_page = None
 
-    # Sidebar config
-    with st.sidebar:
-        # Step 1: upload file
-        st.subheader(
-            "Step 1: Select files in eval folder",
-            divider="rainbow",
-        )
-        uploaded_files = st.file_uploader(
-            "You can find this file under *data/<state>/eval*",
-            type="json",
-            on_change=reset,
-            accept_multiple_files=True,
-        )
-        if uploaded_files is not None:
-            district_eval_results = [
-                DistrictEvalResult.model_construct(**json.load(uploaded_file))
-                for uploaded_file in uploaded_files
-            ]
+if "all_eval_terms" not in st.session_state:
+    st.session_state.all_eval_terms = []
+if "district_eval_results" not in st.session_state:
+    st.session_state.district_eval_results = None
+if "num_district_eval_results" not in st.session_state:
+    st.session_state.num_district_eval_results = 0
+if "district_eval_results_by_eval_term" not in st.session_state:
+    st.session_state.district_eval_results_by_eval_term = {}
+if "selected_data" not in st.session_state:
+    st.session_state.selected_data = []
+if "num_selected_data" not in st.session_state:
+    st.session_state.num_selected_data = 0
+if 'pdf_viewer' not in st.session_state:
+    st.session_state.pdf_viewer = st.empty()
+# Sidebar config
+with st.sidebar:
+    # Step 1: upload file
+    st.subheader(
+        "Step 1: Select files in eval folder",
+        divider="rainbow",
+    )
+    uploaded_files = st.file_uploader(
+        "You can find this file under *data/<state>/eval*",
+        type="json",
+        on_change=reset,
+        accept_multiple_files=True,
+    )
+    if uploaded_files is not None:
+        district_eval_results = [
+            DistrictEvalResult.model_construct(**json.load(uploaded_file))
+            for uploaded_file in uploaded_files
+        ]
 
-            st.session_state.district_eval_results = district_eval_results
-            st.session_state.num_district_eval_results = len(district_eval_results)
-            st.write(
-                "Number of :orange-background[all] selected data: ",
-                st.session_state.num_district_eval_results,
-            )
-
-        # Step 2: Config
-        st.divider()
-        st.subheader("Step 2: Config", divider="rainbow")
-        st.session_state.all_eval_terms = list(
-            set([i.eval_term for i in district_eval_results])
-        )
-        st.session_state.district_eval_results_by_eval_term = {
-            eval_term: [i for i in district_eval_results if i.eval_term == eval_term]
-            for eval_term in st.session_state.all_eval_terms
-        }
-
-        st.radio(
-            "Choosing :orange-background[Eval Term] you want to check",
-            st.session_state.all_eval_terms,
-            key="eval_term",
-            index=0,
-            on_change=get_selected_data,
-        )
-
-        st.radio(
-            "Choosing :orange-background[Data Result Type] you want to check",
-            (
-                "all",
-                "correct",
-                "only_wrong_answer",
-                "only_wrong_page",
-                "wrong_answer_and_page",
-            ),
-            key="eval_type",
-            index=0,
-            on_change=get_selected_data,
-        )
-
-        # Step 3: Select one data to check
-
-        st.divider()
-        st.subheader("Step 3: Select one data to check", divider="rainbow")
+        st.session_state.district_eval_results = district_eval_results
+        st.session_state.num_district_eval_results = len(district_eval_results)
         st.write(
-            f"There are total :orange-background[{st.session_state.num_selected_data} selected] evaluation data"
-        )
-        st.number_input(
-            "Which evaluation datum to check?",
-            key="selected_data_index",
-            min_value=0,
-            max_value=st.session_state.num_selected_data,
-            value=None,
-            step=1,
-            on_change=generating_checked_data_view,
+            "Number of :orange-background[all] selected data: ",
+            st.session_state.num_district_eval_results,
         )
 
-        # if uploaded_file is not None:
-        #     all_evaluation_results = json.load(uploaded_file)
-        #     print(all_evaluation_results)
+    # Step 2: Config
+    st.divider()
+    st.subheader("Step 2: Config", divider="rainbow")
+    st.session_state.all_eval_terms = list(
+        set([i.eval_term for i in district_eval_results])
+    )
+    st.session_state.district_eval_results_by_eval_term = {
+        eval_term: [i for i in district_eval_results if i.eval_term == eval_term]
+        for eval_term in st.session_state.all_eval_terms
+    }
 
-        #     all_evaluation_results = [
-        #         EvaluationDatumResult(**json.loads(i)) for i in all_evaluation_results
-        #     ]
-        #     st.session_state.all_evaluation_results = all_evaluation_results
-        #     st.session_state.num_all_evaluation_data = len(all_evaluation_results)
-        #     st.write(
-        #         "Number of :orange-background[all] evaluation data: ",
-        #         st.session_state.num_all_evaluation_data,
-        #     )
+    st.radio(
+        "Choosing :orange-background[Eval Term] you want to check",
+        st.session_state.all_eval_terms,
+        key="eval_term",
+        index=0,
+        on_change=get_selected_data,
+    )
 
-        # # Step 2: Config
-        # st.divider()
-        # st.subheader("Step 2: Config", divider="rainbow")
-        # st.radio(
-        #     "Choosing :orange-background[Evaluation Datum Category] you want to check",
-        #     (
-        #         "all",
-        #         "correct",
-        #         "only_wrong_answer",
-        #         "only_wrong_page",
-        #         "wrong_answer_and_page",
-        #     ),
-        #     key="evaluation_type",
-        #     index=0,
-        # )
-        # st.toggle(
-        #     "Not including ground truth which is None", key="not_including_gt_is_none"
-        # )
+    st.radio(
+        "Choosing :orange-background[Data Result Type] you want to check",
+        (
+            "all",
+            "correct",
+            "only_wrong_answer",
+            "only_wrong_page",
+            "wrong_answer_and_page",
+        ),
+        key="eval_type",
+        index=None,
+        on_change=get_selected_data,
+    )
 
-        # st.button("Apply Changes", on_click=process_evaluation_results)
-
-        # # Step 3: Select one evaluation datum to check
-        # st.divider()
-        # st.subheader("Step 3: Select one evaluation datum to check", divider="rainbow")
-        # st.write(
-        #     f"There are total :orange-background[{st.session_state.num_current_evaluation_data} selected] evaluation data"
-        # )
-        # st.number_input(
-        #     "Which evaluation datum to check?",
-        #     key="evaluation_datum_index",
-        #     min_value=0,
-        #     max_value=st.session_state.num_current_evaluation_data,
-        #     value=None,
-        #     step=1,
-        #     on_change=generating_evaluation_datum_view,
-        # )
+    # Step 3: Select one data to check
+    st.divider()
+    st.subheader("Step 3: Select one data to check", divider="rainbow")
+    st.write(
+        f"There are total :orange-background[{st.session_state.num_selected_data} selected] evaluation data"
+    )
+    st.number_input(
+        "Which evaluation datum to check?",
+        key="selected_data_index",
+        min_value=0,
+        max_value=st.session_state.num_selected_data,
+        value=None,
+        step=1,
+        on_change=generating_checked_data_view,
+    )
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
 
 
 # import base64
