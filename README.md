@@ -29,6 +29,12 @@ Fill `.env` with corresponding API keys.
 
 dotenv will not override the env variable if it's already set.
 
+## Run all stages
+
+### Command
+
+`sh run.sh`
+
 ## Stage 1 - OCR
 
 ### Input Data Location
@@ -44,6 +50,7 @@ Run `python -m zoning.ocr --config-name <state_name>`
 Default: `data/<state_name>/ocr`
 
 ### Notes
+
 To skip this stage, ask for ocr results and put them in `data/<state_name>/ocr`
 
 ## Stage 2 - Format OCR
@@ -121,8 +128,6 @@ Default: `data/<state_name>/search`
 ### Command
 
 Run `python -m zoning.prompt --config-name <state_name>`
-
-
 
 ### Output Data Location
 

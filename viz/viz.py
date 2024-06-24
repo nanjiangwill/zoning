@@ -17,9 +17,12 @@ def display_pdf_page(doc, page_num):
         page = doc.load_page(page_num - 1)
         pix = page.get_pixmap()
         img_bytes = pix.pil_tobytes(format="PNG")
-        st.session_state.pdf_viewer.image(img_bytes, caption=f"Page {page_num}", use_column_width=True)
+        st.session_state.pdf_viewer.image(
+            img_bytes, caption=f"Page {page_num}", use_column_width=True
+        )
     else:
         st.session_state.pdf_viewer.warning(f"Page {page_num} is out of range.")
+
 
 def click(doc, key):
     print("in")
@@ -29,10 +32,16 @@ def click(doc, key):
     page = doc.load_page(st.session_state.current_page - 1)
     pix = page.get_pixmap()
     img_bytes = pix.pil_tobytes(format="PNG")
-    st.session_state.pdf_viewer.image(img_bytes, caption=f"Page {st.session_state.current_page}", use_column_width=True)
+    st.session_state.pdf_viewer.image(
+        img_bytes,
+        caption=f"Page {st.session_state.current_page}",
+        use_column_width=True,
+    )
+
 
 def unclick(key):
     st.session_state.clicked_page[key] = False
+
 
 def generating_checked_data_view():
     checked_data = st.session_state.selected_data[
@@ -55,7 +64,7 @@ def generating_checked_data_view():
     )
 
     st.session_state.doc = fitz.open(pdf_file)
-    
+
     doc = st.session_state.doc
 
     jump_pages = entire_search_page_range.copy()
@@ -78,14 +87,21 @@ def generating_checked_data_view():
         print(st.session_state.current_page)
         cols = st.columns(len(jump_pages))
         for i, page_num in enumerate(jump_pages):
-            cols[i].button(str(page_num), on_click=click, args=(doc, f'{page_num}',))
-                
+            cols[i].button(
+                str(page_num),
+                on_click=click,
+                args=(
+                    doc,
+                    f"{page_num}",
+                ),
+            )
+
         # if st.session_state.clicked_page.get(f'button{i}', False):
-            
-            # st.session_state.current_page = page_num
-            # if cols[i].button(str(page_num), key=f"btn_{page_num}"):
-            #     print("aushfhasjkfhjkasdf")
-            #     st.session_state.current_page = page_num
+
+        # st.session_state.current_page = page_num
+        # if cols[i].button(str(page_num), key=f"btn_{page_num}"):
+        #     print("aushfhasjkfhjkasdf")
+        #     st.session_state.current_page = page_num
         print(st.session_state.current_page)
         # display_pdf_page(doc, st.session_state.current_page)
 
@@ -213,13 +229,13 @@ if "selected_data" not in st.session_state:
     st.session_state.selected_data = []
 if "num_selected_data" not in st.session_state:
     st.session_state.num_selected_data = 0
-if 'pdf_viewer' not in st.session_state:
+if "pdf_viewer" not in st.session_state:
     st.session_state.pdf_viewer = st.empty()
-if 'current_page' not in st.session_state:
+if "current_page" not in st.session_state:
     st.session_state.current_page = 1
-if 'clicked_page' not in st.session_state:
-    st.session_state['clicked_page'] = {}
-    
+if "clicked_page" not in st.session_state:
+    st.session_state["clicked_page"] = {}
+
 # Sidebar config
 with st.sidebar:
     # Step 1: upload file

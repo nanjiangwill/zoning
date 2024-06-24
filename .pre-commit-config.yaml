@@ -36,10 +36,10 @@ repos:
     rev: 'v1.7.5'
     hooks:
     -   id: docformatter
--   repo: https://github.com/lovesegfault/beautysh
-    rev: 'v6.2.1'
+-   repo: https://github.com/openstack/bashate
+    rev: ''
     hooks:
-    -   id: beautysh
+    -   id: bashate
 -   repo: https://github.com/PyCQA/flake8
     rev: '7.0.0'
     hooks:

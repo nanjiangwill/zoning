@@ -27,5 +27,3 @@ python -m zoning.normalization --config-name $CONFIG_NAME
 
 # Stage 8: Evaluation
 python -m zoning.eval --config-name $CONFIG_NAME
-
-

@@ -1,9 +1,10 @@
 import asyncio
 import inspect
 import json
+import os
 from functools import partial, wraps
 from typing import Iterable, List, TypeVar
-import os
+
 import tqdm
 from tqdm.contrib.concurrent import thread_map
 from typer import Typer
@@ -34,7 +35,7 @@ def process(
 ):
     targets = json.load(open(target_name_file))
     os.makedirs(output_dir, exist_ok=True)
-    
+
     def process_target(target):
         # try:
         inp = converter(read_fn(target, input_dir))
@@ -61,7 +62,7 @@ async def process_async(
 ):
     targets = json.load(open(target_name_file))
     os.makedirs(output_dir, exist_ok=True)
-    
+
     async def process_target(target):
         try:
             inp = converter(read_fn(target, input_dir))
