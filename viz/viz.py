@@ -44,9 +44,10 @@ def generating_checked_data_view():
     
     doc = st.session_state.doc
 
-    jump_pages = entire_search_page_range
+    jump_pages = entire_search_page_range.copy()
     if ground_truth_page:
         jump_pages.append(ground_truth_page)
+    jump_pages = [int(i) for i in jump_pages]
     jump_pages = sorted(set(jump_pages))  # Remove duplicates and sort
 
     # show
@@ -68,6 +69,7 @@ def generating_checked_data_view():
 
     with col4:
         st.subheader("Search & Inference Stats")
+        print(entire_search_page_range)
         st.write(
             f"entire_search_results_page_range: :orange-background[{sorted(entire_search_page_range)}]"
         )

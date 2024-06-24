@@ -49,6 +49,16 @@ Default: `data/<state_name>/ocr`
 
 Default: `data/<state_name>/ocr`
 
+### Command
+
+Run `python -m zoning.format_ocr --config-name <state_name>`
+
+### Output Data Location
+
+Default: `data/<state_name>/format_ocr`
+
+## Stage 3: Indexing
+
 ### Running an ElasticSearch Cluster locally
 
 A Docker Compose setup for running a full ElasticSearch stack with Logstash and
@@ -72,16 +82,6 @@ docker  compose  up
 ```
 
 The initial startup may take some time.
-
-### Command
-
-Run `python -m zoning.format_ocr --config-name <state_name>`
-
-### Output Data Location
-
-Default: `data/<state_name>/format_ocr`
-
-## Stage 3: Indexing
 
 ### Input Data Location
 
