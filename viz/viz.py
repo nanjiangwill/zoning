@@ -213,7 +213,7 @@ with st.sidebar:
         divider="rainbow",
     )
     uploaded_files = st.file_uploader(
-        "You can find this file under *data/<state>/eval*",
+        "You can find files needed under *data/<state>/eval*",
         type="json",
         on_change=reset,
         accept_multiple_files=True,
