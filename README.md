@@ -141,7 +141,7 @@ Default: `data/<state_name>/prompt`
 
 ### Command
 
-Run `python -m zoning.search  <state_name>`
+Run `python -m zoning.llm  <state_name>`
 
 Warning: this is different to `--config-name <state_name>` in previous code
 
