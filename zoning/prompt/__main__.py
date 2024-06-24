@@ -3,8 +3,8 @@ import json
 import hydra
 from omegaconf import OmegaConf
 
-from zoning.class_types import SearchQuery, ZoningConfig
-from zoning.search.keyword_searcher import KeywordSearcher
+from zoning.class_types import SearchResult, ZoningConfig
+from zoning.prompt.prompt_generator import PromptGenerator
 from zoning.utils import process
 
 
@@ -35,17 +35,18 @@ def main(config: ZoningConfig):
         - search_config: SearchConfig
 
     Input File Format:
-        None
-        Need to construct the target with `preprocess_search_target`
-
-    Output File Format:
         SearchResult
         config.search_dir
+
+    Output File Format:
+        PromptResult
+        config.prompt_dir
+        
     """
     # Parse the config
     config = OmegaConf.to_object(config)
     global_config = ZoningConfig(config=config).global_config
-    search_config = ZoningConfig(config=config).search_config
+    prompt_config = ZoningConfig(config=config).prompt_config
 
     # # Construct the entire search query with all possible eval terms
     # search_queries = SearchQueries(query_file=global_config.test_data_file)
@@ -58,35 +59,16 @@ def main(config: ZoningConfig):
     # )
 
     # Load the searcher
-    match search_config.method:
-        case "keyword":
-            searcher = KeywordSearcher(search_config)
-        case "embedding":
-            raise NotImplementedError("Embedding searcher is not implemented yet")
-        case _:
-            raise ValueError(f"Search method {search_config.method} is not supported")
+    prompt_generator = PromptGenerator(prompt_config)
 
-    # search_results = searcher.search(search_queries)
-    preprocess_search_target(
-        global_config.target_town_file,
-        global_config.target_district_file,
-        global_config.eval_terms,
-        global_config.target_eval_file,
-    )
 
     process(
         global_config.target_eval_file,
-        None,
         global_config.search_dir,
-        searcher.search,
-        read_fn=lambda x, y: x,
-        converter=lambda x: SearchQuery(raw_query_str=x),
+        global_config.prompt_dir,
+        prompt_generator.generate_prompt,
+        converter=lambda x: SearchResult.model_construct(**x),
     )
-
-    # Write the output data, data type is SearchResults
-    # with open(global_config.data_flow_search_file, "w") as f:
-    #     json.dump(search_results.model_dump(), f)
-
 
 if __name__ == "__main__":
     main()

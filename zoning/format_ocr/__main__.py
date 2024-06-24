@@ -101,7 +101,6 @@ def main(config: ZoningConfig):
         global_config.ocr_dir,
         global_config.format_ocr_dir,
         process_ocr_result,
-        mode="format_ocr",
     )
 
 

@@ -35,16 +35,16 @@ def process(
     targets = json.load(open(target_name_file))
 
     def process_target(target):
-        try:
-            inp = converter(read_fn(target, input_dir))
-            output_result = fn(inp, target)
+        # try:
+        inp = converter(read_fn(target, input_dir))
+        output_result = fn(inp, target)
 
-            if output:
-                with open(target_name(target, output_dir), "w") as f:
-                    json.dump(output_result.model_dump(), f)
-        except Exception as e:
-            print(f"Error processing {target}")
-            print(e)
+        if output:
+            with open(target_name(target, output_dir), "w") as f:
+                json.dump(output_result.model_dump(), f)
+        # except Exception as e:
+        #     print(f"Error processing {target}")
+        #     print(e)
 
     thread_map(process_target, targets)
 
@@ -86,6 +86,10 @@ async def process_async(
                 f"Processing {async_result.place} {async_result.eval_term}"
             )
     pbar.close()
+
+
+def prompt_file(prompt_name: str):
+    return f"{prompt_name}.pmpt.tpl"
 
 
 # Copied from https://github.com/tiangolo/typer/issues/88

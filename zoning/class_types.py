@@ -22,6 +22,7 @@ class GlobalConfig(BaseModel):
     format_ocr_dir: str
     index_dir: str
     search_dir: str
+    prompt_dir: str
     llm_dir: str
     normalization_dir: str
     eval_dir: str
@@ -61,15 +62,17 @@ class SearchConfig(BaseModel):
     thesaurus_file: str
 
 
-class LLMConfig(BaseModel):
-
+class PromptConfig(BaseModel):
     method: str
+    templates_dir: str
+    thesaurus_file: str
+
+
+class LLMConfig(BaseModel):
     llm_name: str
     max_tokens: int
-    templates_dir: str
     formatted_response: bool
     cache_dir: str
-    thesaurus_file: str
 
 
 class NormalizationConfig(BaseModel):
@@ -88,6 +91,7 @@ class ZoningConfig(BaseModel):
     format_ocr_config: OCRConfig = None
     index_config: IndexConfig = None
     search_config: SearchConfig = None
+    prompt_config: PromptConfig = None
     llm_config: LLMConfig = None
     normalization_config: NormalizationConfig | None = None
     eval_config: EvalConfig | None = None
@@ -98,6 +102,7 @@ class ZoningConfig(BaseModel):
         self.format_ocr_config = FormatOCRConfig(**self.config["format_ocr_config"])
         self.index_config = IndexConfig(**self.config["index_config"])
         self.search_config = SearchConfig(**self.config["search_config"])
+        self.prompt_config = PromptConfig(**self.config["prompt_config"])
         self.llm_config = LLMConfig(**self.config["llm_config"])
         self.normalization_config = NormalizationConfig(
             **self.config["normalization_config"]
@@ -345,14 +350,40 @@ class SearchResult(BaseModel):
 
 
 # =================
+# Prompt
+# =================
+
+
+class Prompt(BaseModel):
+    system_prompt: str
+    user_prompt: str
+
+
+class PromptResult(BaseModel):
+    place: Place
+    eval_term: str
+    search_result: SearchResult
+
+    input_prompts: List[Prompt]
+
+    def model_post_init(self, __context):
+        if isinstance(self.place, dict):
+            self.place = Place(**self.place)
+        if isinstance(self.search_result, dict):
+            self.search_result = SearchResult(**self.search_result)
+        if isinstance(self.input_prompts[0], dict):
+            self.input_prompts = [Prompt(**d) for d in self.input_prompts]
+
+
+# =================
 # LLM Inference
 # =================
 
 
-class LLMQuery(BaseModel):
-    place: Place
-    eval_term: str
-    context: str
+# class LLMQuery(BaseModel):
+#     place: Place
+#     eval_term: str
+#     context: str
 
 
 class LLMOutput(BaseModel):
@@ -376,9 +407,12 @@ class LLMInferenceResult(BaseModel):
     place: Place
     eval_term: str
     search_result: SearchResult
+    input_prompts: List[Prompt]
     llm_outputs: List[LLMOutput]
 
     def model_post_init(self, __context):
+        if isinstance(self.place, dict):
+            self.place = Place(**self.place)
         if isinstance(self.llm_outputs[0], dict):
             self.llm_outputs = [LLMOutput(**d) for d in self.llm_outputs]
 
@@ -414,6 +448,7 @@ class NormalizedLLMInferenceResult(BaseModel):
     place: Place
     eval_term: str
     search_result: SearchResult
+    input_prompts: List[Prompt]
     normalized_llm_outputs: List[NormalizedLLMOutput]
 
     def model_post_init(self, __context):
@@ -422,7 +457,11 @@ class NormalizedLLMInferenceResult(BaseModel):
 
         if isinstance(self.search_result, dict):
             self.search_result = SearchResult(**self.search_result)
-        if isinstance(self.normalized_llm_outputs[0], dict):
+        if self.input_prompts and isinstance(self.input_prompts[0], dict):
+            self.input_prompts = [Prompt(**d) for d in self.input_prompts]
+        if self.normalized_llm_outputs and isinstance(
+            self.normalized_llm_outputs[0], dict
+        ):
             self.normalized_llm_outputs = [
                 NormalizedLLMOutput(**d) for d in self.normalized_llm_outputs
             ]
@@ -437,6 +476,7 @@ class DistrictEvalResult(BaseModel):
     place: Place
     eval_term: str
     search_result: SearchResult
+    input_prompts: List[Prompt]
     normalized_llm_outputs: List[NormalizedLLMOutput]
     ground_truth: str | None
     ground_truth_orig: str | None
@@ -449,6 +489,8 @@ class DistrictEvalResult(BaseModel):
             self.place = Place(**self.place)
         if isinstance(self.search_result, dict):
             self.search_result = SearchResult(**self.search_result)
+        if isinstance(self.input_prompts[0], dict):
+            self.input_prompts = [Prompt(**d) for d in self.input_prompts]
         if isinstance(self.normalized_llm_outputs[0], dict):
             self.normalized_llm_outputs = [
                 NormalizedLLMOutput(**d) for d in self.normalized_llm_outputs

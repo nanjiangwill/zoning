@@ -5,8 +5,8 @@ from hydra import compose, initialize
 from omegaconf import OmegaConf
 from typer import Typer
 
-from zoning.class_types import SearchResult, ZoningConfig
-from zoning.llm.vanilla_llm import VanillaLLM
+from zoning.class_types import PromptResult, ZoningConfig
+from zoning.llm.base_llm import LLM
 from zoning.utils import process_async
 
 
@@ -19,11 +19,11 @@ def main(config_name: str = typer.Argument("base")):
 
     Input File Format:
         SearchResult
-        config.search_dir
+        config.prompt_dir
 
     Output File Format:
-        NormalizedLLMInferenceResult
-        config.normalization_dir
+        LLMInferenceResult
+        config.llm_dir
     """
 
     async def _main():
@@ -44,20 +44,14 @@ def main(config_name: str = typer.Argument("base")):
         # )
 
         # Load the searcher
-        match llm_config.method:
-            case "vanilla":
-                llm = VanillaLLM(llm_config)
-            case "few-shot":
-                raise NotImplementedError("Few-shot LLM is not implemented yet")
-            case _:
-                raise ValueError(f"LLM method {llm_config.method} is not supported")
+        llm = LLM(llm_config)
 
         await process_async(
             global_config.target_eval_file,
-            global_config.search_dir,
+            global_config.prompt_dir,
             global_config.llm_dir,
             llm.query,
-            converter=lambda x: SearchResult.model_construct(**x),
+            converter=lambda x: PromptResult.model_construct(**x),
         )
 
         # # Run the async inference and show the progress bar
