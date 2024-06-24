@@ -33,7 +33,7 @@ dotenv will not override the env variable if it's already set.
 
 ### Command
 
-`sh run.sh`
+`sh run.sh <state_name>`
 
 ## Stage 1 - OCR
 
