@@ -36,12 +36,12 @@ repos:
     rev: 'v1.7.5'
     hooks:
     -   id: docformatter
--   repo: https://github.com/lovesegfault/beautysh
-    rev: 'v6.2.1'
+-   repo: https://github.com/openstack/bashate
+    rev: '2.1.1'
     hooks:
-    -   id: beautysh
+    -   id: bashate
 -   repo: https://github.com/PyCQA/flake8
-    rev: '7.0.0'
+    rev: '7.1.0'
     hooks:
     -   id: flake8
         args: ['--ignore=E501,W503', "--per-file-ignores='__init__.py:F401"] # ignore length limit = 82

@@ -29,6 +29,12 @@ Fill `.env` with corresponding API keys.
 
 dotenv will not override the env variable if it's already set.
 
+## Run all stages
+
+### Command
+
+`sh run.sh <state_name>`
+
 ## Stage 1 - OCR
 
 ### Input Data Location
@@ -43,11 +49,25 @@ Run `python -m zoning.ocr --config-name <state_name>`
 
 Default: `data/<state_name>/ocr`
 
+### Notes
+
+To skip this stage, ask for ocr results and put them in `data/<state_name>/ocr`
+
 ## Stage 2 - Format OCR
 
 ### Input Data Location
 
 Default: `data/<state_name>/ocr`
+
+### Command
+
+Run `python -m zoning.format_ocr --config-name <state_name>`
+
+### Output Data Location
+
+Default: `data/<state_name>/format_ocr`
+
+## Stage 3: Indexing
 
 ### Running an ElasticSearch Cluster locally
 
@@ -73,15 +93,9 @@ docker  compose  up
 
 The initial startup may take some time.
 
-### Command
+To all clear existing entries, use
 
-Run `python -m zoning.format_ocr --config-name <state_name>`
-
-### Output Data Location
-
-Default: `data/<state_name>/format_ocr`
-
-## Stage 3: Indexing
+`curl -X DELETE 'http://localhost:9200/_all'`
 
 ### Input Data Location
 
@@ -109,7 +123,7 @@ Run `python -m zoning.search --config-name <state_name>`
 
 Default: `data/<state_name>/search`
 
-## Stage 5: LLM Infernence
+## Stage 5: Prompt
 
 ### Input Data Location
 
@@ -117,7 +131,21 @@ Default: `data/<state_name>/search`
 
 ### Command
 
-Run `python -m zoning.search  <state_name>`
+Run `python -m zoning.prompt --config-name <state_name>`
+
+### Output Data Location
+
+Default: `data/<state_name>/prompt`
+
+## Stage 6: LLM Infernence
+
+### Input Data Location
+
+Default: `data/<state_name>/prompt`
+
+### Command
+
+Run `python -m zoning.llm  <state_name>`
 
 Warning: this is different to `--config-name <state_name>` in previous code
 
@@ -127,7 +155,7 @@ because `Typer` does not work well with `omegaconf`
 
 Default: `data/<state_name>/llm`
 
-## Stage 6: Normalization
+## Stage 7: Normalization
 
 ### Input Data Location
 
@@ -141,7 +169,7 @@ Run `python -m zoning.normalization --config-name <state_name>`
 
 Default: `data/<state_name>/normalization`
 
-## Stage 7: Eval
+## Stage 8: Eval
 
 ### Input Data Location
 
@@ -155,7 +183,7 @@ Default: `data/<state_name>/normalization`
 
 Default: `data/<state_name>/eval`
 
-## Stage 8 Visulization / Error Analysis
+## Stage 9 Visulization / Error Analysis
 
 ### Input Data Location
 

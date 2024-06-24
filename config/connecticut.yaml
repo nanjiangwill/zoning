@@ -20,6 +20,7 @@ global_config:
   format_ocr_dir: ${global_config.data_output_dir}/format_ocr
   index_dir: ${global_config.data_output_dir}/index
   search_dir: ${global_config.data_output_dir}/search
+  prompt_dir: ${global_config.data_output_dir}/prompt
   llm_dir: ${global_config.data_output_dir}/llm
   normalization_dir: ${global_config.data_output_dir}/normalization
   eval_dir: ${global_config.data_output_dir}/eval
@@ -55,14 +56,18 @@ search_config:
   is_eval_term_fuzzy: false
   thesaurus_file: ${global_config.thesaurus_file}
 
+prompt_config:
+  method: few_shot
+  templates_dir: zoning/prompt/templates
+  thesaurus_file: ${global_config.thesaurus_file}
+
 llm_config:
-  method: vanilla
   llm_name: gpt-4-1106-preview
   max_tokens: 256
   formatted_response: false
   cache_dir: .diskcache
-  templates_dir: zoning/llm/templates
-  thesaurus_file: ${global_config.thesaurus_file}
+
+
 
 normalization_config:
   method: todo

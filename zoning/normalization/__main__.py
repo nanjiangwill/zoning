@@ -14,7 +14,7 @@ from zoning.utils import process
 
 
 def subtract_numerical_values(answer: str) -> List[str] | None:
-    number_pattern = r"-?(?:\d{1,3}(?:,\d{3})*|\d+)(?:\.\d+)?"
+    number_pattern = r"\b-?(?:\d{1,3}(?:,\d{3})*|\d+)(?:\.\d+)?\b"
     numbers_str = re.findall(number_pattern, answer)
     numbers_str = [num.replace(",", "") for num in numbers_str]
 
@@ -37,6 +37,7 @@ def normalize(data: LLMInferenceResult, target: str) -> NormalizedLLMInferenceRe
         place=data.place,
         eval_term=data.eval_term,
         search_result=data.search_result,
+        input_prompts=data.input_prompts,
         normalized_llm_outputs=normalized_llm_outputs,
     )
 
@@ -55,16 +56,13 @@ def main(config: ZoningConfig):
         config.llm_dir
 
     Output File Format:
+        NormalizedLLMInferenceResult
+        config.normalization_dir
     """
     # Parse the config
     config = OmegaConf.to_object(config)
     global_config = ZoningConfig(config=config).global_config
     # normalization_config = ZoningConfig(config=config).normalization_config
-
-    # Load the indexer
-    # match normalization_config.method:
-    #     case "tool":
-    #         normalizer = ToolNormalizer(normalization_config)
 
     process(
         global_config.target_eval_file,

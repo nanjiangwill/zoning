@@ -3,10 +3,12 @@
 .mypy_cache
 data/*/eval
 data/*/format_ocr
+data/*/index
 data/*/llm
 data/*/normalization
 data/*/ocr
 data/*/pdfs
+data/*/prompt
 data/*/search
 data/.DS_Store
 hydra_outputs
@@ -16,4 +18,5 @@ zoning.egg-info
 zoning.egg-info/
 zoning/*/__pycache__
 zoning/__pycache__
+zoning/prompt/old_templates
 zoning/~*

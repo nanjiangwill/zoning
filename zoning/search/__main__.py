@@ -34,11 +34,11 @@ def main(config: ZoningConfig):
         - global_config: GlobalConfig.
         - search_config: SearchConfig
 
-    Search Input File Format:
+    Input File Format:
         None
         Need to construct the target with `preprocess_search_target`
 
-    Search Output File Format:
+    Output File Format:
         SearchResult
         config.search_dir
     """
@@ -46,16 +46,6 @@ def main(config: ZoningConfig):
     config = OmegaConf.to_object(config)
     global_config = ZoningConfig(config=config).global_config
     search_config = ZoningConfig(config=config).search_config
-
-    # # Construct the entire search query with all possible eval terms
-    # search_queries = SearchQueries(query_file=global_config.test_data_file)
-
-    # # filter the search queries based on the eval terms we need and the test size
-    # search_queries.get_test_data_search_queries(
-    #     global_config.eval_terms,
-    #     global_config.random_seed,
-    #     global_config.test_size_per_term,
-    # )
 
     # Load the searcher
     match search_config.method:
@@ -66,7 +56,7 @@ def main(config: ZoningConfig):
         case _:
             raise ValueError(f"Search method {search_config.method} is not supported")
 
-    # search_results = searcher.search(search_queries)
+    # Construct the entire search query with all possible eval terms
     preprocess_search_target(
         global_config.target_town_file,
         global_config.target_district_file,
@@ -81,12 +71,7 @@ def main(config: ZoningConfig):
         searcher.search,
         read_fn=lambda x, y: x,
         converter=lambda x: SearchQuery(raw_query_str=x),
-        mode="search",
     )
-
-    # Write the output data, data type is SearchResults
-    # with open(global_config.data_flow_search_file, "w") as f:
-    #     json.dump(search_results.model_dump(), f)
 
 
 if __name__ == "__main__":

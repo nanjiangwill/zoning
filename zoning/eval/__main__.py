@@ -36,17 +36,17 @@ def eval_fn(d, gt, target) -> DistrictEvalResult:
         page_in_range = ground_truth_page in d.search_result.entire_search_page_range
         answer_correct = False
         for o in d.normalized_llm_outputs:
-            if (
+            if o.normalized_answer and (
                 ground_truth in o.normalized_answer
                 or ground_truth_orig in o.normalized_answer
             ):
                 answer_correct = True
                 break
-
     return DistrictEvalResult(
         place=d.place,
         eval_term=d.eval_term,
         search_result=d.search_result,
+        input_prompts=d.input_prompts,
         normalized_llm_outputs=d.normalized_llm_outputs,
         ground_truth=ground_truth,
         ground_truth_orig=ground_truth_orig,
@@ -78,12 +78,6 @@ def main(config: ZoningConfig):
     global_config = ZoningConfig(config=config).global_config
     # eval_config = ZoningConfig(config=config).eval_config
 
-    # Read the input data and read ground truth
-    # llm_inference_results = LLMInferenceResults.model_construct(
-    #     **json.load(open(global_config.data_flow_llm_file))
-    # )
-    # test_data = json.load(open(global_config.test_data_file))
-
     process(
         global_config.target_eval_file,
         global_config.normalization_dir,
@@ -100,7 +94,8 @@ def main(config: ZoningConfig):
             if f.startswith(term)
         ]
         eval_term_data = [
-            DistrictEvalResult(**json.load(open(f))) for f in eval_term_files
+            DistrictEvalResult.model_construct(**json.load(open(f)))
+            for f in eval_term_files
         ]
         accuracy = sum([1 for d in eval_term_data if d.answer_correct]) / len(
             eval_term_data
@@ -112,42 +107,6 @@ def main(config: ZoningConfig):
         print(f"Evaluated term: {term}")
         print(f"Accuracy: {accuracy}")
         print(f"Page Precision: {page_precision}")
-
-    # for term in global_config.eval_terms:
-    #     accuracy, page_precision = eval_term(
-    #         term,
-    #         global_config.normalization_dir,
-    #         global_config.ground_truth_file,
-    #         converter=lambda x: NormalizedLLMInferenceResult.model_construct(**x),
-    #     )
-    #     print(f"Evaluated term: {term}")
-    #     print(f"Accuracy: {accuracy}")
-    #     print(f"Page Precision: {page_precision}")
-
-    # Run the evaluation
-    # eval_term_metric_results = [
-    #     evaluator.eval_term_metric(
-    #         eval_term,
-    #         test_data,
-    #         llm_inference_results.llm_inference_results_by_eval_term[eval_term],
-    #     )
-    #     for eval_term in llm_inference_results.llm_inference_results_by_eval_term
-    # ]
-
-    # # Write the output data
-    # with open(global_config.data_flow_eval_file, "w") as f:
-    #     json.dump(
-    #         [eval_queries.model_dump() for eval_queries, _ in eval_term_metric_results],
-    #         f,
-    #     )
-    # with open(global_config.data_flow_eval_result_file, "w") as f:
-    #     json.dump(
-    #         [
-    #             eval_metric_by_term.model_dump()
-    #             for _, eval_metric_by_term in eval_term_metric_results
-    #         ],
-    #         f,
-    #     )
 
 
 if __name__ == "__main__":

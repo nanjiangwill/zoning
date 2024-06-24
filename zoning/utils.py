@@ -1,6 +1,7 @@
 import asyncio
 import inspect
 import json
+import os
 from functools import partial, wraps
 from typing import Iterable, List, TypeVar
 
@@ -23,10 +24,20 @@ def target_pdf(target, dir):
     return f"{dir}/{target}.pdf"
 
 
+def prompt_file(prompt_name: str):
+    return f"{prompt_name}.pmpt.tpl"
+
+
+def get_thesaurus(thesarus_file) -> dict:
+    with open(thesarus_file, "r", encoding="utf-8") as f:
+        thesaurus = json.load(f)
+    return thesaurus
+
+
 def process(
     target_name_file: str,
     input_dir: str | None,
-    output_dir: str,
+    output_dir: str | None,
     fn,
     read_fn=lambda x, y: json.load(open(target_name(x, y))),
     converter=lambda x: x,
@@ -40,6 +51,7 @@ def process(
             output_result = fn(inp, target)
 
             if output:
+                os.makedirs(output_dir, exist_ok=True)
                 with open(target_name(target, output_dir), "w") as f:
                     json.dump(output_result.model_dump(), f)
         except Exception as e:
@@ -54,6 +66,7 @@ async def process_async(
     input_dir: str,
     output_dir: str,
     fn,
+    read_fn=lambda x, y: json.load(open(target_name(x, y))),
     converter=lambda x: x,
     output=True,
 ):
@@ -61,12 +74,12 @@ async def process_async(
 
     async def process_target(target):
         try:
-            if input_dir:
-                inp = converter(json.load(open(target_name(target, input_dir))))
+            inp = converter(read_fn(target, input_dir))
 
             output_result = await fn(inp, target)
 
             if output:
+                os.makedirs(output_dir, exist_ok=True)
                 with open(target_name(target, output_dir), "w") as f:
                     json.dump(output_result.model_dump(), f)
 
@@ -86,6 +99,22 @@ async def process_async(
                 f"Processing {async_result.place} {async_result.eval_term}"
             )
     pbar.close()
+
+
+def page_coverage(searched_text: List[str]) -> List[List[int]]:
+    pages_covered = []
+    for text in searched_text:
+        chunks = text.split("NEW PAGE ")
+        pages = []
+        for chunk in chunks[1:]:
+            page = chunk.split("\n")[0]
+            pages.append(int(page))
+        pages_covered.append(pages)
+    return pages_covered
+
+
+def flatten(t: Iterable[Iterable[T]]) -> List[T]:
+    return [item for sublist in t for item in sublist]
 
 
 # Copied from https://github.com/tiangolo/typer/issues/88
@@ -110,28 +139,6 @@ class AsyncTyper(Typer):
     def command(self, *args, **kwargs):
         decorator = super().command(*args, **kwargs)
         return partial(self.maybe_run_async, decorator)
-
-
-def get_thesaurus(thesarus_file) -> dict:
-    with open(thesarus_file, "r", encoding="utf-8") as f:
-        thesaurus = json.load(f)
-    return thesaurus
-
-
-def page_coverage(searched_text: List[str]) -> List[List[int]]:
-    pages_covered = []
-    for text in searched_text:
-        chunks = text.split("NEW PAGE ")
-        pages = []
-        for chunk in chunks[1:]:
-            page = chunk.split("\n")[0]
-            pages.append(int(page))
-        pages_covered.append(pages)
-    return pages_covered
-
-
-def flatten(t: Iterable[Iterable[T]]) -> List[T]:
-    return [item for sublist in t for item in sublist]
 
 
 # cache = dc.Cache(get_project_root() / ".diskcache")

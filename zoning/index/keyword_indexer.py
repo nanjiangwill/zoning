@@ -35,12 +35,3 @@ class KeywordIndexer(Indexer):
                 document=index_data.document,
                 request_timeout=index_data.request_timeout,
             )
-
-        # self._index(formatted_ocr, town)
-
-        # index_entities = thread_map(self.process_ocr_result, ocr_entities.ocr_entities)
-        # # removing None values
-        # index_entities = [i for i in index_entities if i is not None]
-
-        # print(f"Indexing {len(index_entities)} entities")
-        # thread_map(self._index, index_entities)

@@ -1,23 +1,16 @@
 import json
 import os
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import Dict, List, Tuple
 
 import diskcache as dc
 from dotenv import find_dotenv, load_dotenv
-from jinja2 import Environment, FileSystemLoader
 from openai import AsyncOpenAI, OpenAI
 from pydantic import ValidationError
 from tenacity import retry, wait_random_exponential
 
-from zoning.class_types import (
-    LLMConfig,
-    LLMInferenceResult,
-    LLMQuery,
-    Place,
-    SearchResult,
-)
-from zoning.utils import cached, get_thesaurus, limit_global_concurrency
+from zoning.class_types import LLMConfig, LLMInferenceResult, LLMOutput, PromptResult
+from zoning.utils import cached, limit_global_concurrency
 
 # dotenv will not override the env var if it's already set
 load_dotenv(find_dotenv())
@@ -26,79 +19,27 @@ load_dotenv(find_dotenv())
 class LLM(ABC):
     def __init__(self, llm_config: LLMConfig):
         self.llm_config = llm_config
-        self.prompt_env = Environment(loader=FileSystemLoader(llm_config.templates_dir))
         self.cache_dir = dc.Cache(llm_config.cache_dir)
-        extraction_chat_completion_tmpl = self.prompt_env.get_template(
-            "extraction_chat_completion.pmpt.tpl"
-        )
-        extraction_completion_tmpl = self.prompt_env.get_template(
-            "extraction_completion.pmpt.tpl"
-        )
 
-        # extract_chat_completion_tmpl = self.prompt_env.get_template(
-        #     "extract_chat_completion.pmpt.tpl"
-        # )
-
-        self.TEMPLATE_MAPPING = {
-            "text-davinci-003": extraction_completion_tmpl,
-            "gpt-3.5-turbo": extraction_chat_completion_tmpl,
-            "gpt-4": extraction_chat_completion_tmpl,
-            "gpt-4-1106-preview": extraction_chat_completion_tmpl,
-            "gpt-4-turbo": extraction_chat_completion_tmpl,
-        }
         # Only support OPENAI for now
         self.aclient = AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
         self.client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
     def get_prompt(
-        self, place: Place, eval_term: str, searched_text: str
+        self, system_prompt: str, user_prompt: str
     ) -> List[Dict[str, str]] | str:
-        synonyms = ", ".join(
-            get_thesaurus(self.llm_config.thesaurus_file).get(eval_term, [])
-        )
         match self.llm_config.llm_name:
             case "text-davinci-003":
-                return self.TEMPLATE_MAPPING[self.llm_config.llm_name].render(
-                    passage=searched_text,
-                    term=eval_term,
-                    synonyms=synonyms,
-                    zone_name=place.district_full_name,
-                    zone_abbreviation=place.district_short_name,
-                )
-            case "gpt-3.5-turbo" | "gpt-4":
+                return f"{system_prompt}\n\n{user_prompt}"
+            case "gpt-3.5-turbo" | "gpt-4" | "gpt-4-1106-preview" | "gpt-4-turbo":
                 return [
                     {
                         "role": "system",
-                        "content": self.TEMPLATE_MAPPING[
-                            self.llm_config.llm_name
-                        ].render(
-                            term=eval_term,
-                            synonyms=synonyms,
-                            zone_name=place.district_full_name,
-                            zone_abbreviation=place.district_short_name,
-                        ),
+                        "content": system_prompt,
                     },
                     {
                         "role": "user",
-                        "content": f"Input: \n\n {searched_text}\n\n Output:",
-                    },
-                ]
-            case "gpt-4-1106-preview" | "gpt-4-turbo":
-                return [
-                    {
-                        "role": "system",
-                        "content": self.TEMPLATE_MAPPING[
-                            self.llm_config.llm_name
-                        ].render(
-                            term=eval_term,
-                            synonyms=synonyms,
-                            zone_name=place.district_full_name,
-                            zone_abbreviation=place.district_short_name,
-                        ),
-                    },
-                    {
-                        "role": "user",
-                        "content": f"Input: \n\n {searched_text}\n\n Output:",
+                        "content": user_prompt,
                     },
                 ]
             case _:
@@ -113,11 +54,8 @@ class LLM(ABC):
     @limit_global_concurrency(100)
     @retry(wait=wait_random_exponential(min=1, max=60))
     async def call_llm(
-        self, llm_query: LLMQuery
+        self, input_prompt: List[Dict[str, str]] | str
     ) -> Tuple[List[Dict[str, str]], str | None]:
-        input_prompt = self.get_prompt(
-            llm_query.place, llm_query.eval_term, llm_query.context
-        )
         base_params = {
             "model": self.llm_config.llm_name,
             "max_tokens": self.llm_config.max_tokens,
@@ -177,6 +115,34 @@ class LLM(ABC):
             print(f"Response: {model_response}")
             return None
 
-    @abstractmethod
-    async def query(self, search_result: SearchResult) -> LLMInferenceResult:
-        pass
+    async def query(
+        self, prompt_result: PromptResult, target: str
+    ) -> LLMInferenceResult:
+        llm_outputs = []
+        # we query the llm for each search match
+        for ip_idx in range(len(prompt_result.input_prompts)):
+            system_prompt = prompt_result.input_prompts[ip_idx].system_prompt
+            user_prompt = prompt_result.input_prompts[ip_idx].user_prompt
+
+            # we query the llm
+            input_prompt, raw_model_response = await self.call_llm(
+                self.get_prompt(system_prompt, user_prompt)
+            )
+            parsed_model_response = self.parse_llm_output(raw_model_response)
+            llm_output = LLMOutput(
+                place=prompt_result.place,
+                eval_term=prompt_result.eval_term,
+                search_match=prompt_result.search_result.search_matches[ip_idx],
+                input_prompt=input_prompt,
+                raw_model_response=raw_model_response,
+                **parsed_model_response if parsed_model_response else {},
+            )
+            llm_outputs.append(llm_output)
+
+        return LLMInferenceResult(
+            place=prompt_result.place,
+            eval_term=prompt_result.eval_term,
+            search_result=prompt_result.search_result,
+            input_prompts=prompt_result.input_prompts,
+            llm_outputs=llm_outputs,
+        )

@@ -39,7 +39,7 @@ def main(config: ZoningConfig):
     process(
         global_config.target_town_file,
         global_config.format_ocr_dir,
-        global_config.index_dir,
+        None,
         indexer.index,
         converter=lambda x: FormatOCR.model_construct(**x),
         output=False,

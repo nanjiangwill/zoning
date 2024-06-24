@@ -129,7 +129,6 @@ class KeywordSearcher(Searcher):
             ]
 
             search_matches = sorted(search_matches, key=lambda x: x.score, reverse=True)
-            print(search_matches)
             return SearchResult(
                 place=search_query.place,
                 eval_term=search_query.eval_term,
