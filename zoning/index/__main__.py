@@ -36,7 +36,7 @@ def main(config: ZoningConfig):
         case _:
             raise ValueError(f"Extractor {index_config.name} not implemented")
 
-    process(
+    num_targets = process(
         global_config.target_town_file,
         global_config.format_ocr_dir,
         None,
@@ -44,6 +44,8 @@ def main(config: ZoningConfig):
         converter=lambda x: FormatOCR.model_construct(**x),
         output=False,
     )
+    print()
+    print(f"Stage Index Completed. Processed {num_targets} targets. Data saved indexer.")
 
 
 if __name__ == "__main__":

@@ -83,3 +83,5 @@ if __name__ == "__main__":
     app = Typer(add_completion=False)
     app.command()(main)
     app()
+    print()
+    print(f"Stage LLM Completed. Data saved.")

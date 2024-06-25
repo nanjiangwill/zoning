@@ -64,13 +64,15 @@ def main(config: ZoningConfig):
     global_config = ZoningConfig(config=config).global_config
     # normalization_config = ZoningConfig(config=config).normalization_config
 
-    process(
+    num_targets = process(
         global_config.target_eval_file,
         global_config.llm_dir,
         global_config.normalization_dir,
         normalize,
         converter=lambda x: LLMInferenceResult.model_construct(**x),
     )
+    print()
+    print(f"Stage Normalization Completed. Processed {num_targets} targets. Data saved to {global_config.normalization_dir}.")
 
 
 if __name__ == "__main__":

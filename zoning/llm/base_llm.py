@@ -64,12 +64,6 @@ class LLM(ABC):
 
         try:
             match self.llm_config.llm_name:
-                case "text-davinci-003":
-                    resp = await self.aclient.completions.create(
-                        **base_params, prompt=input_prompt
-                    )
-                    top_choice = resp.choices[0]  # type: ignore
-                    return input_prompt, top_choice.text
                 case "gpt-3.5-turbo" | "gpt-4" | "gpt-4-turbo-preview" | "gpt-4-turbo":
                     resp = await self.aclient.chat.completions.create(
                         **base_params, messages=input_prompt

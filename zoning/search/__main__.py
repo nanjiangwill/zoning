@@ -64,7 +64,7 @@ def main(config: ZoningConfig):
         global_config.target_eval_file,
     )
 
-    process(
+    num_targets = process(
         global_config.target_eval_file,
         None,
         global_config.search_dir,
@@ -72,6 +72,8 @@ def main(config: ZoningConfig):
         read_fn=lambda x, y: x,
         converter=lambda x: SearchQuery(raw_query_str=x),
     )
+    print()
+    print(f"Stage Search Completed. Processed {num_targets} targets. Data saved to {global_config.search_dir}.")
 
 
 if __name__ == "__main__":

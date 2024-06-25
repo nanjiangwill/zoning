@@ -80,16 +80,17 @@ def main(config: ZoningConfig):
     # Parse the config
     config = OmegaConf.to_object(config)
     global_config = ZoningConfig(config=config).global_config
-    # format_ocr_config = ZoningConfig(config=config).format_ocr_config
 
     # Construct the input data
-    process(
+    num_targets = process(
         global_config.target_town_file,
         global_config.ocr_dir,
         global_config.format_ocr_dir,
         process_ocr_result,
     )
 
+    print()
+    print(f"Stage Format OCR Completed. Processed {num_targets} targets. Data saved to {global_config.format_ocr_dir}")
 
 if __name__ == "__main__":
     main()

@@ -31,13 +31,17 @@ def main(config: ZoningConfig):
     # Load the searcher
     prompt_generator = PromptGenerator(prompt_config)
 
-    process(
+    num_targets = process(
         global_config.target_eval_file,
         global_config.search_dir,
         global_config.prompt_dir,
         prompt_generator.generate_prompt,
         converter=lambda x: SearchResult.model_construct(**x),
     )
+
+    print()
+    print(f"Stage Prompt Completed. Processed {num_targets} targets. Data saved to {global_config.prompt_dir}.")
+
 
 
 if __name__ == "__main__":

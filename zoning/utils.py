@@ -59,7 +59,7 @@ def process(
             print(e)
 
     thread_map(process_target, targets)
-
+    return len(targets)
 
 async def process_async(
     target_name_file: str,
