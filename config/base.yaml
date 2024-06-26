@@ -1,58 +1,83 @@
 defaults:
   - _self_
 
-experiment_name: <REPLACE>
+global_config:
+  experiment_name: <REPLACE>
+  target_state: connecticut
+  eval_terms: ["min_lot_size"] #, "min_unit_size", "max_height"] # all available eval terms ['floor_to_area_ratio', 'max_height', 'max_lot_coverage', 'max_lot_coverage_pavement', 'min_lot_size', 'min_parking_spaces', 'min_unit_size']
 
-target_state: <REPLACE>
-eval_terms: ["min_lot_size", "min_unit_size", "max_height"]
-thesaurus_file: data/thesaurus.json
+  data_dir: data/${global_config.target_state}
+  target_town_file: ${global_config.data_dir}/target_towns_names.json
+  target_district_file: ${global_config.data_dir}/target_districts_names.json
+  target_eval_file: ${global_config.data_dir}/target_eval_data.json
+  ground_truth_file: ${global_config.data_dir}/ground_truth.json
+  thesaurus_file: data/thesaurus.json
 
-num_workers: 4
-random_seed: 13
-test_size_per_term: 30
+  data_output_dir: results/${global_config.experiment_name} # helper variable, just used to parse
+  result_output_dir: results/${global_config.target_state}/${global_config.experiment_name} # helper variable, just used to parse
 
-data_output_dir: data/${target_state}
-result_output_dir: results/${target_state}/${experiment_name}
-ground_truth_file: ${data_output_dir}/ground_truth.csv
-town_district_file: ${data_output_dir}/town_district.csv
-target_names_file: ${data_output_dir}/all_towns_names.json
-pdf_dir: ${data_output_dir}/pdfs
-ocr_result_dir: ${data_output_dir}/extract_dataset
-dataset_dir: ${data_output_dir}/extract_page_dataset
+  pdf_dir: ${global_config.data_dir}/pdfs   # normally we dont redo pdf collection, we just save them in data
+  ocr_dir: ${global_config.data_dir}/ocr    # normally we dont redo ocr collection, we just save them in data, not in experiment results
+
+  format_ocr_dir: ${global_config.data_output_dir}/format_ocr
+  index_dir: ${global_config.data_output_dir}/index
+  search_dir: ${global_config.data_output_dir}/search
+  prompt_dir: ${global_config.data_output_dir}/prompt
+  llm_dir: ${global_config.data_output_dir}/llm
+  normalization_dir: ${global_config.data_output_dir}/normalization
+  eval_dir: ${global_config.data_output_dir}/eval
 
 
+  es_endpoint: http://localhost:9200
 
-extract:
-  name: textract
+  random_seed: 13
+  test_size_per_term: 30
+
+
+ocr_config:
+  method: textract
   run_ocr: false
   input_document_s3_bucket:
-  pdf_name_prefix_in_s3_bucket: zoning/${target_state}/
+  pdf_name_prefix_in_s3_bucket: zoning/${global_config.target_state}/
   feature_types: ["TABLES"]  # allowed ["TABLES", "FORMS", "QUERIES", "SIGNATURES", "LAYOUT"]
-  hf_dataset:
-    name: ${extract.name}-${target_state}
-    publish_dataset: false
-    private: true
 
+format_ocr_config:
+  temp: x
 
-index:
+index_config:
   method: keyword # allowed keyword/embedding
   index_key: town
-  es_endpoint: http://localhost:9200
+  es_endpoint: ${global_config.es_endpoint}
   index_range: 5
 
-search:
-  method: ${index.method}
+search_config:
+  method: ${index_config.method}
+  es_endpoint: ${global_config.es_endpoint}
   num_results: 5
   is_district_fuzzy: false
   is_eval_term_fuzzy: false
+  thesaurus_file: ${global_config.thesaurus_file}
 
-llm:
-  method: vanilla
+prompt_config:
+  method: few_shot
+  templates_dir: config/templates
+  merge_search_matches: true
+  thesaurus_file: ${global_config.thesaurus_file}
+
+llm_config:
   llm_name: gpt-4-1106-preview
   max_tokens: 256
   formatted_response: false
   cache_dir: .diskcache
-  templates_dir: zoning/llm/templates
+
+
+# WIP, no need to change
+normalization_config:
+  method: todo
+
+# WIP, no need to change
+eval_config:
+  template_dir: todo
 
 hydra:
   run:

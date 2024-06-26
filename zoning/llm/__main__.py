@@ -4,6 +4,7 @@ import typer
 from hydra import compose, initialize
 from omegaconf import OmegaConf
 from typer import Typer
+from hydra.core.global_hydra import GlobalHydra
 
 from zoning.class_types import PromptResult, ZoningConfig
 from zoning.llm.base_llm import LLM
@@ -29,6 +30,7 @@ def main(config_name: str = typer.Argument("base")):
     async def _main():
         # Parse the config
         # async function does not work well with hydra, so we use the initialize function
+        GlobalHydra.instance().clear() 
         with initialize(
             version_base=None, config_path="../../config", job_name="test_app"
         ):

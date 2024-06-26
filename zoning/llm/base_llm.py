@@ -132,7 +132,7 @@ class LLM(ABC):
             llm_output = LLMOutput(
                 place=prompt_result.place,
                 eval_term=prompt_result.eval_term,
-                search_match=prompt_result.search_result.search_matches[ip_idx],
+                search_match=prompt_result.search_result.search_matches if prompt_result.merge_text else prompt_result.search_result.search_matches[ip_idx],
                 input_prompt=input_prompt,
                 raw_model_response=raw_model_response,
                 **parsed_model_response if parsed_model_response else {},

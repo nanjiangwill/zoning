@@ -65,6 +65,7 @@ class SearchConfig(BaseModel):
 class PromptConfig(BaseModel):
     method: str
     templates_dir: str
+    merge_search_matches: bool
     thesaurus_file: str
 
 
@@ -86,6 +87,7 @@ class EvalConfig(BaseModel):
 class ZoningConfig(BaseModel):
     config: Dict[str, Dict[str, str | int | bool | List[str] | None]]
 
+    config_name: str = None
     global_config: GlobalConfig = None
     ocr_config: OCRConfig = None
     format_ocr_config: OCRConfig = None
@@ -97,6 +99,7 @@ class ZoningConfig(BaseModel):
     eval_config: EvalConfig | None = None
 
     def model_post_init(self, __context):
+        self.config_name = self.config["global_config"]['experiment_name']
         self.global_config = GlobalConfig(**self.config["global_config"])
         self.ocr_config = OCRConfig(**self.config["ocr_config"])
         self.format_ocr_config = FormatOCRConfig(**self.config["format_ocr_config"])
@@ -242,6 +245,7 @@ class SearchResult(BaseModel):
     eval_term: str
     search_matches: List[SearchMatch]
     entire_search_page_range: List[int] = []
+    entire_search_page_text: str = ""
 
     def model_post_init(self, __context):
         if isinstance(self.place, dict):
@@ -252,6 +256,7 @@ class SearchResult(BaseModel):
             set(flatten(page_coverage([m.text for m in self.search_matches])))
         )
         self.entire_search_page_range.sort()
+        self.entire_search_page_text
 
 
 # =================
@@ -270,6 +275,7 @@ class PromptResult(BaseModel):
     search_result: SearchResult
 
     input_prompts: List[Prompt]
+    merge_text: bool
 
     def model_post_init(self, __context):
         if isinstance(self.place, dict):
@@ -288,7 +294,7 @@ class PromptResult(BaseModel):
 class LLMOutput(BaseModel):
     place: Place
     eval_term: str
-    search_match: SearchMatch | None
+    search_match: SearchMatch | List[SearchMatch] | None
     input_prompt: List[Dict[str, str]] | str
     search_page_range: List[int] | None = []
     raw_model_response: str | None = None
@@ -297,9 +303,18 @@ class LLMOutput(BaseModel):
     answer: Optional[str | None] = None
 
     def model_post_init(self, __context):
-        self.search_page_range = sorted(
-            flatten(page_coverage([self.search_match.text]))
-        )
+        if isinstance(self.place, dict):
+            self.place = Place(**self.place)
+        if isinstance(self.search_match, dict):
+            self.search_match = SearchMatch(**self.search_match)
+        if isinstance(self.search_match, SearchMatch):
+            self.search_page_range = sorted(list(set(
+                flatten(page_coverage([self.search_match.text]))
+            )))
+        if isinstance(self.search_match, List):
+            self.search_page_range = sorted(list(set(
+                flatten(page_coverage([m.text for m in self.search_match]))
+            )))
 
 
 class LLMInferenceResult(BaseModel):

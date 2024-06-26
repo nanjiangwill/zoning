@@ -20,3 +20,4 @@ zoning/*/__pycache__
 zoning/__pycache__
 zoning/prompt/old_templates
 zoning/~*
+wandb/

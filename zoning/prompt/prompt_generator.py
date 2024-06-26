@@ -3,7 +3,7 @@ from abc import ABC
 from jinja2 import Environment, FileSystemLoader
 
 from zoning.class_types import Prompt, PromptResult, SearchResult
-from zoning.utils import get_thesaurus, prompt_file
+from zoning.utils import get_thesaurus, prompt_file, page_coverage_text
 
 
 class PromptGenerator(ABC):
@@ -31,18 +31,26 @@ class PromptGenerator(ABC):
         )
 
         # we construct the user prompt for each search match
-        user_prompts = [
-            f"Input: \n\n {i.text}\n\n Output:" for i in search_result.search_matches
-        ]
+        if self.prompt_config.merge_search_matches:
+            # print(inininin)
+            merged_text = page_coverage_text([i.text for i in search_result.search_matches])
+            all_prompts = [
+                Prompt(system_prompt=system_prompt, user_prompt=merged_text)
+            ]
+        else:
+            user_prompts = [
+                f"Input: \n\n {i.text}\n\n Output:" for i in search_result.search_matches
+            ]
 
-        all_prompts = [
-            Prompt(system_prompt=system_prompt, user_prompt=user_prompts[i])
-            for i in range(len(search_result.search_matches))
-        ]
+            all_prompts = [
+                Prompt(system_prompt=system_prompt, user_prompt=user_prompts[i])
+                for i in range(len(search_result.search_matches))
+            ]
 
         return PromptResult(
             place=search_result.place,
             eval_term=search_result.eval_term,
             search_result=search_result,
             input_prompts=all_prompts,
+            merge_text=self.prompt_config.merge_search_matches,
         )

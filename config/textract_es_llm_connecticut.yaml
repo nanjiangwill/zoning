@@ -2,21 +2,23 @@ defaults:
   - _self_
 
 global_config:
-  experiment_name: textract_es_vanilla_llm
+  experiment_name: textract_es_llm_connecticut
   target_state: connecticut
   eval_terms: ["min_lot_size"] #, "min_unit_size", "max_height"] # all available eval terms ['floor_to_area_ratio', 'max_height', 'max_lot_coverage', 'max_lot_coverage_pavement', 'min_lot_size', 'min_parking_spaces', 'min_unit_size']
 
-  target_town_file: ${global_config.data_output_dir}/target_towns_names.json
-  target_district_file: ${global_config.data_output_dir}/target_districts_names.json
-  target_eval_file: ${global_config.data_output_dir}/target_eval_data.json
-  ground_truth_file: ${global_config.data_output_dir}/ground_truth.json
+  data_dir: data/${global_config.target_state}
+  target_town_file: ${global_config.data_dir}/target_towns_names.json
+  target_district_file: ${global_config.data_dir}/target_districts_names.json
+  target_eval_file: ${global_config.data_dir}/target_eval_data.json
+  ground_truth_file: ${global_config.data_dir}/ground_truth.json
   thesaurus_file: data/thesaurus.json
 
-  data_output_dir: data/${global_config.target_state} # helper variable, just used to parse
+  data_output_dir: results/${global_config.experiment_name} # helper variable, just used to parse
   result_output_dir: results/${global_config.target_state}/${global_config.experiment_name} # helper variable, just used to parse
 
-  pdf_dir: ${global_config.data_output_dir}/pdfs
-  ocr_dir: ${global_config.data_output_dir}/ocr
+  pdf_dir: ${global_config.data_dir}/pdfs   # normally we dont redo pdf collection, we just save them in data
+  ocr_dir: ${global_config.data_dir}/ocr    # normally we dont redo ocr collection, we just save them in data, not in experiment results
+
   format_ocr_dir: ${global_config.data_output_dir}/format_ocr
   index_dir: ${global_config.data_output_dir}/index
   search_dir: ${global_config.data_output_dir}/search
@@ -58,7 +60,8 @@ search_config:
 
 prompt_config:
   method: few_shot
-  templates_dir: zoning/prompt/templates
+  templates_dir: config/templates
+  merge_search_matches: true
   thesaurus_file: ${global_config.thesaurus_file}
 
 llm_config:

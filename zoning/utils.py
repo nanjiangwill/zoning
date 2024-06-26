@@ -60,7 +60,6 @@ def process(
 
     thread_map(process_target, targets)
 
-
 async def process_async(
     target_name_file: str,
     input_dir: str,
@@ -101,6 +100,16 @@ async def process_async(
     pbar.close()
 
 
+def page_coverage_text(searched_text: List[str]) -> str:
+    page_text_dict = {}
+    for text in searched_text:
+        chunks = text.split("NEW PAGE ")
+        for chunk in chunks[1:]:
+            page, text = chunk.split("\n", 1)
+            page_text_dict[int(page)] = text
+    all_pages = sorted(page_text_dict.keys())
+    return "\n".join([f"NEW PAGE {page}\n{page_text_dict[page]}" for page in all_pages])
+
 def page_coverage(searched_text: List[str]) -> List[List[int]]:
     pages_covered = []
     for text in searched_text:
@@ -111,7 +120,6 @@ def page_coverage(searched_text: List[str]) -> List[List[int]]:
             pages.append(int(page))
         pages_covered.append(pages)
     return pages_covered
-
 
 def flatten(t: Iterable[Iterable[T]]) -> List[T]:
     return [item for sublist in t for item in sublist]
