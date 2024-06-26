@@ -57,6 +57,7 @@ search_config:
   is_district_fuzzy: false
   is_eval_term_fuzzy: false
   thesaurus_file: ${global_config.thesaurus_file}
+  preprocess_search_target: false
 
 prompt_config:
   method: few_shot

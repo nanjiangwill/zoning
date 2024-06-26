@@ -10,20 +10,19 @@ from zoning.utils import process
 
 
 def preprocess_search_target(town_file, district_file, eval_terms, output_file):
-    if not os.path.exists(output_file):
-        town = json.load(open(town_file))
-        districts = json.load(open(district_file))
-        search_targets = []
-        for district in districts:
-            if district.split("__")[0] not in town:
-                continue
-            town, district_short_name, district_full_name = district.split("__")
-            for term in eval_terms:
-                search_targets.append(
-                    f"{term}__{town}__{district_short_name}__{district_full_name}"
-                )
-        with open(output_file, "w") as f:
-            json.dump(search_targets, f, indent=4)
+    town = json.load(open(town_file))
+    districts = json.load(open(district_file))
+    search_targets = []
+    for district in districts:
+        if district.split("__")[0] not in town:
+            continue
+        town, district_short_name, district_full_name = district.split("__")
+        for term in eval_terms:
+            search_targets.append(
+                f"{term}__{town}__{district_short_name}__{district_full_name}"
+            )
+    with open(output_file, "w") as f:
+        json.dump(search_targets, f, indent=4)
 
 
 @hydra.main(version_base=None, config_path="../../config", config_name="base")
@@ -59,12 +58,13 @@ def main(config: ZoningConfig):
 
     # Construct the entire search query with all possible eval terms
 
-    preprocess_search_target(
-        global_config.target_town_file,
-        global_config.target_district_file,
-        global_config.eval_terms,
-        global_config.target_eval_file,
-    )
+    if search_config.preprocess_search_target:
+        preprocess_search_target(
+            global_config.target_town_file,
+            global_config.target_district_file,
+            global_config.eval_terms,
+            global_config.target_eval_file,
+        )
 
     process(
         global_config.target_eval_file,

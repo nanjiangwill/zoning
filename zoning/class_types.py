@@ -60,6 +60,7 @@ class SearchConfig(BaseModel):
     is_district_fuzzy: bool
     is_eval_term_fuzzy: bool
     thesaurus_file: str
+    preprocess_search_target: bool
 
 
 class PromptConfig(BaseModel):
