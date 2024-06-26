@@ -19,28 +19,28 @@ def run_all(config: ZoningConfig):
     wandb.init(project="zoning", name=config["global_config"]['experiment_name'], config=OmegaConf.to_object(config))
     
     # print("Running OCR module:")
-    # # ocr_main(config)
+    # ocr_main(config)
 
-    # print("Running Format OCR module:")
-    # format_ocr_main(config)
+    print("Running Format OCR module:")
+    format_ocr_main(config)
     
-    # print("Running Index module:")
-    # index_main(config)
+    print("Running Index module:")
+    index_main(config)
     
-    # print("Running Search module:")
-    # search_main(config)
+    print("Running Search module:")
+    search_main(config)
     
-    # print("Running Prompt module:")
-    # prompt_main(config)
+    print("Running Prompt module:")
+    prompt_main(config)
     
-    # print("Running LLM module:")
-    # llm_main(config["global_config"]['experiment_name'])
+    print("Running LLM module:")
+    llm_main(config["global_config"]['experiment_name'])
     
-    # print("Running Normalization module:")
-    # normalization_main(config)
+    print("Running Normalization module:")
+    normalization_main(config)
     
-    # print("Running Evaluation module:")
-    # eval_main(config)
+    print("Running Evaluation module:")
+    eval_main(config)
 
 if __name__ == "__main__":
     run_all()
