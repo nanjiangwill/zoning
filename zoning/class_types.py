@@ -99,7 +99,7 @@ class ZoningConfig(BaseModel):
     eval_config: EvalConfig | None = None
 
     def model_post_init(self, __context):
-        self.config_name = self.config["global_config"]['experiment_name']
+        self.config_name = self.config["global_config"]["experiment_name"]
         self.global_config = GlobalConfig(**self.config["global_config"])
         self.ocr_config = OCRConfig(**self.config["ocr_config"])
         self.format_ocr_config = FormatOCRConfig(**self.config["format_ocr_config"])
@@ -308,13 +308,13 @@ class LLMOutput(BaseModel):
         if isinstance(self.search_match, dict):
             self.search_match = SearchMatch(**self.search_match)
         if isinstance(self.search_match, SearchMatch):
-            self.search_page_range = sorted(list(set(
-                flatten(page_coverage([self.search_match.text]))
-            )))
+            self.search_page_range = sorted(
+                list(set(flatten(page_coverage([self.search_match.text]))))
+            )
         if isinstance(self.search_match, List):
-            self.search_page_range = sorted(list(set(
-                flatten(page_coverage([m.text for m in self.search_match]))
-            )))
+            self.search_page_range = sorted(
+                list(set(flatten(page_coverage([m.text for m in self.search_match]))))
+            )
 
 
 class LLMInferenceResult(BaseModel):

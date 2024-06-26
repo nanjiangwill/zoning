@@ -1,5 +1,5 @@
-import os
 import json
+import os
 
 import hydra
 from omegaconf import OmegaConf
@@ -58,7 +58,7 @@ def main(config: ZoningConfig):
             raise ValueError(f"Search method {search_config.method} is not supported")
 
     # Construct the entire search query with all possible eval terms
-    
+
     preprocess_search_target(
         global_config.target_town_file,
         global_config.target_district_file,
