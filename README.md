@@ -17,7 +17,7 @@ check [Supported Config below](#supported-config) for available configs
 
 ```bash
 
-cp  config/base.yaml  config/<state_name>.yaml
+cp  config/base.yaml  config/<experiment_name>.yaml
 
 cp  .env.example  .env
 
@@ -33,13 +33,13 @@ dotenv will not override the env variable if it's already set.
 
 ### Command
 
-`sh run.sh <state_name>`
+`python run.py <experiment_name>`
 
 ## Stage 1 - OCR
 
 ### Input Data Location
 
-Default: `data/<state_name>/pdfs`
+Default: `data/<state_name>/pdf`
 
 ### Command
 
@@ -65,7 +65,7 @@ Run `python -m zoning.format_ocr --config-name <state_name>`
 
 ### Output Data Location
 
-Default: `data/<state_name>/format_ocr`
+Default: `results/<experiment_name>/format_ocr`
 
 ## Stage 3: Indexing
 

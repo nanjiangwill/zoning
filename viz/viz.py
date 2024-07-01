@@ -5,6 +5,7 @@ import fitz  # PyMuPDF
 import streamlit as st
 
 from zoning.class_types import DistrictEvalResult
+from zoning.utils import flatten
 
 PDF_DIR = "data/connecticut/pdfs"
 
@@ -45,7 +46,11 @@ def generating_checked_data_view():
 
     jump_pages = entire_search_page_range.copy()
     if ground_truth_page:
-        jump_pages.append(ground_truth_page)
+        if "," in ground_truth_page:
+            ground_truth_pages = [int(i) for i in ground_truth_page.split(",")]
+            jump_pages.extend(ground_truth_pages)
+        else:
+            jump_pages.append(ground_truth_page)
     jump_pages = [int(i) for i in jump_pages]
     jump_pages = sorted(set(jump_pages))  # Remove duplicates and sort
 
@@ -86,6 +91,9 @@ def generating_checked_data_view():
         st.subheader("Search & Inference Stats")
         st.write(
             f"entire_search_results_page_range: :orange-background[{sorted(entire_search_page_range)}]"
+        )
+        st.write(
+            f"Normalized LLM answer: :orange-background[{flatten([i.normalized_answer for i in normalized_llm_outputs if i.normalized_answer])}]"
         )
         cols = st.columns(len(jump_pages))
         for i, page_num in enumerate(jump_pages):
@@ -139,6 +147,11 @@ def generating_checked_data_view():
                     st.write(
                         "Search Page: :orange-background[{}]".format(
                             llm_inference_result.llm_output.search_page_range
+                        )
+                    )
+                    st.write(
+                        "Normalized LLM Answer: :orange-background[{}]".format(
+                            llm_inference_result.normalized_answer
                         )
                     )
                     st.json(

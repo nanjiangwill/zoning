@@ -9,7 +9,7 @@ from zoning.class_types import (
     NormalizedLLMInferenceResult,
     ZoningConfig,
 )
-from zoning.utils import process
+from zoning.utils import flatten, process
 
 
 def eval_fn(d, gt, target) -> DistrictEvalResult:
@@ -33,7 +33,15 @@ def eval_fn(d, gt, target) -> DistrictEvalResult:
         ground_truth = gt_info[f"{d.eval_term}_gt"]
         ground_truth_orig = gt_info[f"{d.eval_term}_gt_orig"]
         ground_truth_page = gt_info[f"{d.eval_term}_page_gt"]
-        page_in_range = ground_truth_page in d.search_result.entire_search_page_range
+        ground_truth_page_int = (
+            [int(ground_truth_page)]
+            if "," not in ground_truth_page
+            else [int(x) for x in ground_truth_page.split(",")]
+        )
+        search_range = flatten(
+            [lo.llm_output.search_page_range for lo in d.normalized_llm_outputs]
+        )
+        page_in_range = any(i in search_range for i in ground_truth_page_int)
         answer_correct = False
         for o in d.normalized_llm_outputs:
             if o.normalized_answer and (
@@ -42,6 +50,7 @@ def eval_fn(d, gt, target) -> DistrictEvalResult:
             ):
                 answer_correct = True
                 break
+
     return DistrictEvalResult(
         place=d.place,
         eval_term=d.eval_term,

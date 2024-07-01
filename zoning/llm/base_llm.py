@@ -5,7 +5,8 @@ from typing import Dict, List, Tuple
 
 import diskcache as dc
 from dotenv import find_dotenv, load_dotenv
-from openai import AsyncOpenAI, OpenAI
+from openai import AsyncOpenAI
+from anthropic import AsyncAnthropic
 from pydantic import ValidationError
 from tenacity import retry, wait_random_exponential
 
@@ -21,9 +22,11 @@ class LLM(ABC):
         self.llm_config = llm_config
         self.cache_dir = dc.Cache(llm_config.cache_dir)
 
-        # Only support OPENAI for now
-        self.aclient = AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-        self.client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        if self.llm_config.llm_name in ["gpt-4-1106-preview", "gpt-4-turbo", "text-davinci-003"]:
+            self.aclient = AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        elif self.llm_config.llm_name in ["claude-3-5-sonnet-20240620", "claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"]:
+            self.aclient = AsyncAnthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+        
 
     def get_prompt(
         self, system_prompt: str, user_prompt: str
@@ -41,6 +44,13 @@ class LLM(ABC):
                         "role": "user",
                         "content": user_prompt,
                     },
+                ]
+            case "claude-3-5-sonnet-20240620" | "claude-3-opus-20240229" | "claude-3-sonnet-20240229" | "claude-3-haiku-20240307":
+                return [
+                    {
+                        "role": "user",
+                        "content": f"{system_prompt}\n\n{user_prompt}",
+                    }
                 ]
             case _:
                 raise ValueError(f"Unknown model name: {self.llm_config.llm_name}")
@@ -91,6 +101,12 @@ class LLM(ABC):
                         )
                         top_choice = resp.choices[0]  # type: ignore
                         return input_prompt, top_choice.message.content
+                case "claude-3-5-sonnet-20240620" | "claude-3-opus-20240229" | "claude-3-sonnet-20240229" | "claude-3-haiku-20240307":
+                    resp = await self.aclient.messages.create(
+                        **base_params, messages=input_prompt
+                    )
+                    top_choice = resp.content[0]  # type: ignore
+                    return input_prompt, top_choice.text
                 case _:
                     raise ValueError(f"Unknown model name: {self.llm_config.llm_name}")
         except Exception as exc:
@@ -132,7 +148,11 @@ class LLM(ABC):
             llm_output = LLMOutput(
                 place=prompt_result.place,
                 eval_term=prompt_result.eval_term,
-                search_match=prompt_result.search_result.search_matches[ip_idx],
+                search_match=(
+                    prompt_result.search_result.search_matches
+                    if prompt_result.merge_text
+                    else prompt_result.search_result.search_matches[ip_idx]
+                ),
                 input_prompt=input_prompt,
                 raw_model_response=raw_model_response,
                 **parsed_model_response if parsed_model_response else {},
