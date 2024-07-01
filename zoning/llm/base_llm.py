@@ -24,7 +24,7 @@ class LLM(ABC):
 
         if self.llm_config.llm_name in ["gpt-4-1106-preview", "gpt-4-turbo", "text-davinci-003"]:
             self.aclient = AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-        elif self.llm_config.llm_name in ["claude-3-5-sonnet-20240620", "claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"]
+        elif self.llm_config.llm_name in ["claude-3-5-sonnet-20240620", "claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"]:
             self.aclient = AsyncAnthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
         
 
@@ -49,12 +49,8 @@ class LLM(ABC):
                 return [
                     {
                         "role": "user",
-                        "content": system_prompt,
-                    },
-                    {
-                        "role": "user",
-                        "content": user_prompt,
-                    },
+                        "content": f"{system_prompt}\n\n{user_prompt}",
+                    }
                 ]
             case _:
                 raise ValueError(f"Unknown model name: {self.llm_config.llm_name}")

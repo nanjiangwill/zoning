@@ -36,7 +36,7 @@ class PromptGenerator(ABC):
             merged_text = page_coverage_text(
                 [i.text for i in search_result.search_matches]
             )
-            all_prompts = [Prompt(system_prompt=system_prompt, user_prompt=merged_text)]
+            all_prompts = [Prompt(system_prompt=system_prompt, user_prompt=f"Input: \n\n {merged_text}\n\n Output:")]
         else:
             user_prompts = [
                 f"Input: \n\n {i.text}\n\n Output:"
