@@ -10,11 +10,11 @@ from zoning.utils import process
 
 
 def preprocess_search_target(town_file, district_file, eval_terms, output_file):
-    town = json.load(open(town_file))
+    all_town = json.load(open(town_file))
     districts = json.load(open(district_file))
     search_targets = []
     for district in districts:
-        if district.split("__")[0] not in town:
+        if district.split("__")[0] not in all_town:
             continue
         town, district_short_name, district_full_name = district.split("__")
         for term in eval_terms:

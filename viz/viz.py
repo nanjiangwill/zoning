@@ -7,7 +7,7 @@ import streamlit as st
 from zoning.class_types import DistrictEvalResult
 from zoning.utils import flatten
 
-PDF_DIR = "data/connecticut/pdfs"
+PDF_DIR = "data/texas/pdfs"
 
 
 def jump_page(key):
@@ -21,6 +21,8 @@ def jump_page_from_slider():
 
 
 def generating_checked_data_view():
+    if len(st.session_state.selected_data) == 0:
+        return
     checked_data = st.session_state.selected_data[
         st.session_state.selected_data_index - 1
     ]
