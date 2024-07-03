@@ -7,7 +7,7 @@ import streamlit as st
 from zoning.class_types import DistrictEvalResult
 from zoning.utils import flatten
 
-PDF_DIR = "data/texas/pdfs"
+PDF_DIR = "data/connecticut/pdfs"
 
 
 def jump_page(key):
