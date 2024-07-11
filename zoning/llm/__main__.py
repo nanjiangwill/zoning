@@ -50,7 +50,7 @@ def main(config_name: str = typer.Argument("base")):
             llm.query,
             converter=lambda x: PromptResult.model_construct(**x),
         )
-        
+
     aiorun(_main())
 
 
