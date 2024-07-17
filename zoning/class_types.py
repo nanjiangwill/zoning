@@ -246,18 +246,16 @@ class SearchResult(BaseModel):
     eval_term: str
     search_matches: List[SearchMatch]
     entire_search_page_range: List[int] = []
-    entire_search_page_text: str = ""
 
     def model_post_init(self, __context):
         if isinstance(self.place, dict):
             self.place = Place(**self.place)
-        if isinstance(self.search_matches[0], dict):
+        if len(self.search_matches) > 0 and isinstance(self.search_matches[0], dict):
             self.search_matches = [SearchMatch(**d) for d in self.search_matches]
         self.entire_search_page_range = list(
             set(flatten(page_coverage([m.text for m in self.search_matches])))
         )
         self.entire_search_page_range.sort()
-        self.entire_search_page_text
 
 
 # =================
@@ -276,14 +274,16 @@ class PromptResult(BaseModel):
     search_result: SearchResult
 
     input_prompts: List[Prompt]
+
     merge_text: bool
+    merge_text_matches: List[List[SearchMatch]] | None = None
 
     def model_post_init(self, __context):
         if isinstance(self.place, dict):
             self.place = Place(**self.place)
         if isinstance(self.search_result, dict):
             self.search_result = SearchResult(**self.search_result)
-        if isinstance(self.input_prompts[0], dict):
+        if len(self.input_prompts) > 0 and isinstance(self.input_prompts[0], dict):
             self.input_prompts = [Prompt(**d) for d in self.input_prompts]
 
 
@@ -295,7 +295,7 @@ class PromptResult(BaseModel):
 class LLMOutput(BaseModel):
     place: Place
     eval_term: str
-    search_match: SearchMatch | List[SearchMatch] | None
+    search_match: List[SearchMatch] | None
     input_prompt: List[Dict[str, str]] | str
     search_page_range: List[int] | None = []
     raw_model_response: str | None = None
@@ -330,9 +330,9 @@ class LLMInferenceResult(BaseModel):
             self.place = Place(**self.place)
         if isinstance(self.search_result, dict):
             self.search_result = SearchResult(**self.search_result)
-        if isinstance(self.input_prompts[0], dict):
+        if len(self.input_prompts) > 0 and isinstance(self.input_prompts[0], dict):
             self.input_prompts = [Prompt(**d) for d in self.input_prompts]
-        if isinstance(self.llm_outputs[0], dict):
+        if len(self.llm_outputs) > 0 and isinstance(self.llm_outputs[0], dict):
             self.llm_outputs = [LLMOutput(**d) for d in self.llm_outputs]
 
 
@@ -358,9 +358,11 @@ class NormalizedLLMInferenceResult(BaseModel):
             self.place = Place(**self.place)
         if isinstance(self.search_result, dict):
             self.search_result = SearchResult(**self.search_result)
-        if isinstance(self.input_prompts[0], dict):
+        if len(self.input_prompts) > 0 and isinstance(self.input_prompts[0], dict):
             self.input_prompts = [Prompt(**d) for d in self.input_prompts]
-        if isinstance(self.normalized_llm_outputs[0], dict):
+        if len(self.normalized_llm_outputs) > 0 and isinstance(
+            self.normalized_llm_outputs[0], dict
+        ):
             self.normalized_llm_outputs = [
                 NormalizedLLMOutput(**d) for d in self.normalized_llm_outputs
             ]
@@ -380,17 +382,19 @@ class DistrictEvalResult(BaseModel):
     ground_truth: str | None
     ground_truth_orig: str | None
     ground_truth_page: str | None
-    answer_correct: bool | None
-    page_in_range: bool | None
+    answer_correct: List[bool] | None
+    page_in_range: List[bool] | None
 
     def model_post_init(self, __context):
         if isinstance(self.place, dict):
             self.place = Place(**self.place)
         if isinstance(self.search_result, dict):
             self.search_result = SearchResult(**self.search_result)
-        if isinstance(self.input_prompts[0], dict):
+        if len(self.input_prompts) > 0 and isinstance(self.input_prompts[0], dict):
             self.input_prompts = [Prompt(**d) for d in self.input_prompts]
-        if isinstance(self.normalized_llm_outputs[0], dict):
+        if len(self.normalized_llm_outputs) > 0 and isinstance(
+            self.normalized_llm_outputs[0], dict
+        ):
             self.normalized_llm_outputs = [
                 NormalizedLLMOutput(**d) for d in self.normalized_llm_outputs
             ]

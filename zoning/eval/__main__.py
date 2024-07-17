@@ -33,23 +33,45 @@ def eval_fn(d, gt, target) -> DistrictEvalResult:
         ground_truth = gt_info[f"{d.eval_term}_gt"]
         ground_truth_orig = gt_info[f"{d.eval_term}_gt_orig"]
         ground_truth_page = gt_info[f"{d.eval_term}_page_gt"]
-        ground_truth_page_int = (
-            [int(ground_truth_page)]
-            if "," not in ground_truth_page
-            else [int(x) for x in ground_truth_page.split(",")]
-        )
-        search_range = flatten(
-            [lo.llm_output.search_page_range for lo in d.normalized_llm_outputs]
-        )
-        page_in_range = any(i in search_range for i in ground_truth_page_int)
-        answer_correct = False
+        if ground_truth_page is not None:
+            ground_truth_page_int = (
+                [int(ground_truth_page)]
+                if "," not in ground_truth_page
+                else [int(x) for x in ground_truth_page.split(",")]
+            )
+        else:
+            ground_truth_page_int = []
+
+        search_ranges = [lo.llm_output.search_page_range for lo in d.normalized_llm_outputs]
+        page_in_range = []
+        
+        if len(ground_truth_page_int) == 0:
+            page_in_range = [False for _ in search_ranges]
+        else:
+            for sr in search_ranges:
+                if any(i in sr for i in ground_truth_page_int):
+                    page_in_range.append(True)
+                else:
+                    page_in_range.append(False)
+                    
+        answer_correct = []
+        
         for o in d.normalized_llm_outputs:
-            if o.normalized_answer and (
-                ground_truth in o.normalized_answer
-                or ground_truth_orig in o.normalized_answer
-            ):
-                answer_correct = True
-                break
+            if o.llm_output.raw_model_response is None:
+                continue
+            if ground_truth is None and ground_truth_orig is None:
+                if o.normalized_answer is None:
+                    answer_correct.append(True)
+                    continue
+            else:
+                if o.normalized_answer and (
+                    ground_truth in o.normalized_answer
+                    or ground_truth_orig in o.normalized_answer
+                ):
+                    answer_correct.append(True)
+                    continue
+            answer_correct.append(False)
+                
 
     return DistrictEvalResult(
         place=d.place,
@@ -61,7 +83,7 @@ def eval_fn(d, gt, target) -> DistrictEvalResult:
         ground_truth_orig=ground_truth_orig,
         ground_truth_page=ground_truth_page,
         answer_correct=answer_correct,
-        page_in_range=page_in_range,
+        page_in_range=page_in_range
     )
 
 
@@ -106,16 +128,27 @@ def main(config: ZoningConfig):
             DistrictEvalResult.model_construct(**json.load(open(f)))
             for f in eval_term_files
         ]
-        accuracy = sum([1 for d in eval_term_data if d.answer_correct]) / len(
-            eval_term_data
-        )
-        page_precision = sum([1 for d in eval_term_data if d.page_in_range]) / len(
-            eval_term_data
-        )
+        
+        all_accuracy_results = [d.answer_correct for d in eval_term_data]
+        
+        best_accuracy = sum([1 for d in all_accuracy_results if any(d)])/ len(all_accuracy_results)
+        avg_accuracy = sum([sum([1 for d in a if d]) for a in all_accuracy_results]) / sum([len(a) for a in all_accuracy_results])
+        
+        all_page_results = [d.page_in_range for d in eval_term_data]
+        
+        best_page_in_range = sum([1 for d in all_page_results if any(d)])/ len(all_page_results)
+        avg_page_in_range = sum([sum([1 for d in a if d]) for a in all_page_results]) / sum([len(a) for a in all_page_results])
+        
 
+        print("=============================================")
         print(f"Evaluated term: {term}")
-        print(f"Accuracy: {accuracy}")
-        print(f"Page Precision: {page_precision}")
+        print(f"Best Accuracy: {best_accuracy}")
+        print(f"Avg Accuracy: {avg_accuracy}")
+        print("\n")
+        print(f"Best Page Accuracy: {best_page_in_range}")
+        print(f"Avg Page Accuracy: {avg_page_in_range}")
+        print("=============================================")
+        print("\n")
 
 
 if __name__ == "__main__":
