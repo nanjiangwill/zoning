@@ -132,7 +132,7 @@ class LLM(ABC):
                 model_response = top_choice.text
             case _:
                 raise ValueError(f"Unknown model name: {self.llm_config.llm_name}")
-            
+
         if model_response == "null" or model_response is None:
             print("Model response is:", model_response)
             print("Retrying")

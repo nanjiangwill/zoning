@@ -50,9 +50,6 @@ class PromptGenerator(ABC):
             zone_name=search_result.place.district_full_name,
             zone_abbreviation=search_result.place.district_short_name,
         )
-        
-        print(system_prompt)
-        sdfansdfgashjfghjasghfhjasdgfhjasdgfhjsadgf
 
         # we construct the user prompt for each search match
         if self.prompt_config.merge_search_matches:

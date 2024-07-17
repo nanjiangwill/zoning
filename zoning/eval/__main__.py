@@ -9,7 +9,7 @@ from zoning.class_types import (
     NormalizedLLMInferenceResult,
     ZoningConfig,
 )
-from zoning.utils import flatten, process
+from zoning.utils import process
 
 
 def eval_fn(d, gt, target) -> DistrictEvalResult:
@@ -42,9 +42,11 @@ def eval_fn(d, gt, target) -> DistrictEvalResult:
         else:
             ground_truth_page_int = []
 
-        search_ranges = [lo.llm_output.search_page_range for lo in d.normalized_llm_outputs]
+        search_ranges = [
+            lo.llm_output.search_page_range for lo in d.normalized_llm_outputs
+        ]
         page_in_range = []
-        
+
         if len(ground_truth_page_int) == 0:
             page_in_range = [False for _ in search_ranges]
         else:
@@ -53,9 +55,9 @@ def eval_fn(d, gt, target) -> DistrictEvalResult:
                     page_in_range.append(True)
                 else:
                     page_in_range.append(False)
-                    
+
         answer_correct = []
-        
+
         for o in d.normalized_llm_outputs:
             if o.llm_output.raw_model_response is None:
                 continue
@@ -71,7 +73,6 @@ def eval_fn(d, gt, target) -> DistrictEvalResult:
                     answer_correct.append(True)
                     continue
             answer_correct.append(False)
-                
 
     return DistrictEvalResult(
         place=d.place,
@@ -83,7 +84,7 @@ def eval_fn(d, gt, target) -> DistrictEvalResult:
         ground_truth_orig=ground_truth_orig,
         ground_truth_page=ground_truth_page,
         answer_correct=answer_correct,
-        page_in_range=page_in_range
+        page_in_range=page_in_range,
     )
 
 
@@ -128,17 +129,24 @@ def main(config: ZoningConfig):
             DistrictEvalResult.model_construct(**json.load(open(f)))
             for f in eval_term_files
         ]
-        
+
         all_accuracy_results = [d.answer_correct for d in eval_term_data]
-        
-        best_accuracy = sum([1 for d in all_accuracy_results if any(d)])/ len(all_accuracy_results)
-        avg_accuracy = sum([sum([1 for d in a if d]) for a in all_accuracy_results]) / sum([len(a) for a in all_accuracy_results])
-        
+
+        best_accuracy = sum([1 for d in all_accuracy_results if any(d)]) / len(
+            all_accuracy_results
+        )
+        avg_accuracy = sum(
+            [sum([1 for d in a if d]) for a in all_accuracy_results]
+        ) / sum([len(a) for a in all_accuracy_results])
+
         all_page_results = [d.page_in_range for d in eval_term_data]
-        
-        best_page_in_range = sum([1 for d in all_page_results if any(d)])/ len(all_page_results)
-        avg_page_in_range = sum([sum([1 for d in a if d]) for a in all_page_results]) / sum([len(a) for a in all_page_results])
-        
+
+        best_page_in_range = sum([1 for d in all_page_results if any(d)]) / len(
+            all_page_results
+        )
+        avg_page_in_range = sum(
+            [sum([1 for d in a if d]) for a in all_page_results]
+        ) / sum([len(a) for a in all_page_results])
 
         print("=============================================")
         print(f"Evaluated term: {term}")

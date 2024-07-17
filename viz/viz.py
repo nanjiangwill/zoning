@@ -32,7 +32,11 @@ def generating_checked_data_view():
     entire_search_page_range = search_result.entire_search_page_range
     normalized_llm_outputs = checked_data.normalized_llm_outputs
     if search_result:
-        normalized_llm_outputs = sorted(normalized_llm_outputs, key=lambda x: len(x.llm_output.search_match), reverse=True)
+        normalized_llm_outputs = sorted(
+            normalized_llm_outputs,
+            key=lambda x: len(x.llm_output.search_match),
+            reverse=True,
+        )
     ground_truth = checked_data.ground_truth
     ground_truth_orig = checked_data.ground_truth_orig
     ground_truth_page = checked_data.ground_truth_page
@@ -73,7 +77,6 @@ def generating_checked_data_view():
         st.write(f"Answer Correct: :orange-background[{answer_correct}]")
         st.write("\n")
         st.write(f"Page In Range: :orange-background[{page_in_range}]")
-        
 
         st.slider(
             "Select page",
