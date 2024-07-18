@@ -60,11 +60,13 @@ class SearchConfig(BaseModel):
     is_district_fuzzy: bool
     is_eval_term_fuzzy: bool
     thesaurus_file: str
+    preprocess_search_target: bool
 
 
 class PromptConfig(BaseModel):
     method: str
     templates_dir: str
+    merge_search_matches: bool
     thesaurus_file: str
 
 
@@ -86,6 +88,7 @@ class EvalConfig(BaseModel):
 class ZoningConfig(BaseModel):
     config: Dict[str, Dict[str, str | int | bool | List[str] | None]]
 
+    config_name: str = None
     global_config: GlobalConfig = None
     ocr_config: OCRConfig = None
     format_ocr_config: OCRConfig = None
@@ -97,6 +100,7 @@ class ZoningConfig(BaseModel):
     eval_config: EvalConfig | None = None
 
     def model_post_init(self, __context):
+        self.config_name = self.config["global_config"]["experiment_name"]
         self.global_config = GlobalConfig(**self.config["global_config"])
         self.ocr_config = OCRConfig(**self.config["ocr_config"])
         self.format_ocr_config = FormatOCRConfig(**self.config["format_ocr_config"])
@@ -246,7 +250,7 @@ class SearchResult(BaseModel):
     def model_post_init(self, __context):
         if isinstance(self.place, dict):
             self.place = Place(**self.place)
-        if isinstance(self.search_matches[0], dict):
+        if len(self.search_matches) > 0 and isinstance(self.search_matches[0], dict):
             self.search_matches = [SearchMatch(**d) for d in self.search_matches]
         self.entire_search_page_range = list(
             set(flatten(page_coverage([m.text for m in self.search_matches])))
@@ -271,12 +275,15 @@ class PromptResult(BaseModel):
 
     input_prompts: List[Prompt]
 
+    merge_text: bool
+    merge_text_matches: List[List[SearchMatch]] | None = None
+
     def model_post_init(self, __context):
         if isinstance(self.place, dict):
             self.place = Place(**self.place)
         if isinstance(self.search_result, dict):
             self.search_result = SearchResult(**self.search_result)
-        if isinstance(self.input_prompts[0], dict):
+        if len(self.input_prompts) > 0 and isinstance(self.input_prompts[0], dict):
             self.input_prompts = [Prompt(**d) for d in self.input_prompts]
 
 
@@ -288,7 +295,7 @@ class PromptResult(BaseModel):
 class LLMOutput(BaseModel):
     place: Place
     eval_term: str
-    search_match: SearchMatch | None
+    search_match: List[SearchMatch] | None
     input_prompt: List[Dict[str, str]] | str
     search_page_range: List[int] | None = []
     raw_model_response: str | None = None
@@ -297,9 +304,18 @@ class LLMOutput(BaseModel):
     answer: Optional[str | None] = None
 
     def model_post_init(self, __context):
-        self.search_page_range = sorted(
-            flatten(page_coverage([self.search_match.text]))
-        )
+        if isinstance(self.place, dict):
+            self.place = Place(**self.place)
+        if isinstance(self.search_match, dict):
+            self.search_match = SearchMatch(**self.search_match)
+        if isinstance(self.search_match, SearchMatch):
+            self.search_page_range = sorted(
+                list(set(flatten(page_coverage([self.search_match.text]))))
+            )
+        if isinstance(self.search_match, List):
+            self.search_page_range = sorted(
+                list(set(flatten(page_coverage([m.text for m in self.search_match]))))
+            )
 
 
 class LLMInferenceResult(BaseModel):
@@ -314,9 +330,9 @@ class LLMInferenceResult(BaseModel):
             self.place = Place(**self.place)
         if isinstance(self.search_result, dict):
             self.search_result = SearchResult(**self.search_result)
-        if isinstance(self.input_prompts[0], dict):
+        if len(self.input_prompts) > 0 and isinstance(self.input_prompts[0], dict):
             self.input_prompts = [Prompt(**d) for d in self.input_prompts]
-        if isinstance(self.llm_outputs[0], dict):
+        if len(self.llm_outputs) > 0 and isinstance(self.llm_outputs[0], dict):
             self.llm_outputs = [LLMOutput(**d) for d in self.llm_outputs]
 
 
@@ -342,9 +358,11 @@ class NormalizedLLMInferenceResult(BaseModel):
             self.place = Place(**self.place)
         if isinstance(self.search_result, dict):
             self.search_result = SearchResult(**self.search_result)
-        if isinstance(self.input_prompts[0], dict):
+        if len(self.input_prompts) > 0 and isinstance(self.input_prompts[0], dict):
             self.input_prompts = [Prompt(**d) for d in self.input_prompts]
-        if isinstance(self.normalized_llm_outputs[0], dict):
+        if len(self.normalized_llm_outputs) > 0 and isinstance(
+            self.normalized_llm_outputs[0], dict
+        ):
             self.normalized_llm_outputs = [
                 NormalizedLLMOutput(**d) for d in self.normalized_llm_outputs
             ]
@@ -364,17 +382,19 @@ class DistrictEvalResult(BaseModel):
     ground_truth: str | None
     ground_truth_orig: str | None
     ground_truth_page: str | None
-    answer_correct: bool | None
-    page_in_range: bool | None
+    answer_correct: List[bool] | None
+    page_in_range: List[bool] | None
 
     def model_post_init(self, __context):
         if isinstance(self.place, dict):
             self.place = Place(**self.place)
         if isinstance(self.search_result, dict):
             self.search_result = SearchResult(**self.search_result)
-        if isinstance(self.input_prompts[0], dict):
+        if len(self.input_prompts) > 0 and isinstance(self.input_prompts[0], dict):
             self.input_prompts = [Prompt(**d) for d in self.input_prompts]
-        if isinstance(self.normalized_llm_outputs[0], dict):
+        if len(self.normalized_llm_outputs) > 0 and isinstance(
+            self.normalized_llm_outputs[0], dict
+        ):
             self.normalized_llm_outputs = [
                 NormalizedLLMOutput(**d) for d in self.normalized_llm_outputs
             ]

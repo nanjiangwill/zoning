@@ -4,8 +4,9 @@ from abc import ABC
 from typing import Dict, List, Tuple
 
 import diskcache as dc
+from anthropic import AsyncAnthropic
 from dotenv import find_dotenv, load_dotenv
-from openai import AsyncOpenAI, OpenAI
+from openai import AsyncOpenAI
 from pydantic import ValidationError
 from tenacity import retry, wait_random_exponential
 
@@ -21,9 +22,19 @@ class LLM(ABC):
         self.llm_config = llm_config
         self.cache_dir = dc.Cache(llm_config.cache_dir)
 
-        # Only support OPENAI for now
-        self.aclient = AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-        self.client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        if self.llm_config.llm_name in [
+            "gpt-4-1106-preview",
+            "gpt-4-turbo",
+            "text-davinci-003",
+        ]:
+            self.aclient = AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        elif self.llm_config.llm_name in [
+            "claude-3-5-sonnet-20240620",
+            "claude-3-opus-20240229",
+            "claude-3-sonnet-20240229",
+            "claude-3-haiku-20240307",
+        ]:
+            self.aclient = AsyncAnthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
     def get_prompt(
         self, system_prompt: str, user_prompt: str
@@ -42,6 +53,21 @@ class LLM(ABC):
                         "content": user_prompt,
                     },
                 ]
+            case (
+                "claude-3-5-sonnet-20240620"
+                | "claude-3-opus-20240229"
+                | "claude-3-sonnet-20240229"
+                | "claude-3-haiku-20240307"
+            ):
+                return {
+                    "system_prompt": system_prompt,
+                    "user_prompt": [
+                        {
+                            "role": "user",
+                            "content": user_prompt,
+                        }
+                    ],
+                }
             case _:
                 raise ValueError(f"Unknown model name: {self.llm_config.llm_name}")
 
@@ -51,7 +77,7 @@ class LLM(ABC):
     #         lambda self, *args, **kwargs:
     #             cached(self.cache_dir, lambda *args, **kwargs: json.dumps(args) + json.dumps(kwargs))(method)(*args, **kwargs)
     # )
-    @limit_global_concurrency(100)
+    # @limit_global_concurrency(100)
     @retry(wait=wait_random_exponential(min=1, max=60))
     async def call_llm(
         self, input_prompt: List[Dict[str, str]] | str
@@ -62,40 +88,57 @@ class LLM(ABC):
             "temperature": 0.0,
         }
 
-        try:
-            match self.llm_config.llm_name:
-                case "text-davinci-003":
-                    resp = await self.aclient.completions.create(
-                        **base_params, prompt=input_prompt
-                    )
-                    top_choice = resp.choices[0]  # type: ignore
-                    return input_prompt, top_choice.text
-                case "gpt-3.5-turbo" | "gpt-4" | "gpt-4-turbo-preview" | "gpt-4-turbo":
+        match self.llm_config.llm_name:
+            case "text-davinci-003":
+                resp = await self.aclient.completions.create(
+                    **base_params, prompt=input_prompt
+                )
+                top_choice = resp.choices[0]  # type: ignore
+                model_response = top_choice.text
+
+            case "gpt-3.5-turbo" | "gpt-4" | "gpt-4-turbo-preview" | "gpt-4-turbo":
+                resp = await self.aclient.chat.completions.create(
+                    **base_params, messages=input_prompt
+                )
+                top_choice = resp.choices[0]  # type: ignore
+                model_response = top_choice.message.content
+            case "gpt-4-1106-preview":
+                if not self.llm_config.formatted_response:
                     resp = await self.aclient.chat.completions.create(
                         **base_params, messages=input_prompt
                     )
                     top_choice = resp.choices[0]  # type: ignore
-                    return input_prompt, top_choice.message.content
-                case "gpt-4-1106-preview":
-                    if not self.llm_config.formatted_response:
-                        resp = await self.aclient.chat.completions.create(
-                            **base_params, messages=input_prompt
-                        )
-                        top_choice = resp.choices[0]  # type: ignore
-                        return input_prompt, top_choice.message.content
-                    else:
-                        resp = await self.aclient.chat.completions.create(
-                            **base_params,
-                            messages=input_prompt,
-                            response_format={"type": "json_object"},
-                        )
-                        top_choice = resp.choices[0]  # type: ignore
-                        return input_prompt, top_choice.message.content
-                case _:
-                    raise ValueError(f"Unknown model name: {self.llm_config.llm_name}")
-        except Exception as exc:
-            print("Error running prompt", exc)
-            # return input_prompt, None
+                    model_response = top_choice.message.content
+                else:
+                    resp = await self.aclient.chat.completions.create(
+                        **base_params,
+                        messages=input_prompt,
+                        response_format={"type": "json_object"},
+                    )
+                    top_choice = resp.choices[0]  # type: ignore
+                    model_response = top_choice.message.content
+            case (
+                "claude-3-5-sonnet-20240620"
+                | "claude-3-opus-20240229"
+                | "claude-3-sonnet-20240229"
+                | "claude-3-haiku-20240307"
+            ):
+                resp = await self.aclient.messages.create(
+                    **base_params,
+                    system=input_prompt["system_prompt"],
+                    messages=input_prompt["user_prompt"],
+                )
+                top_choice = resp.content[0]  # type: ignore
+                model_response = top_choice.text
+            case _:
+                raise ValueError(f"Unknown model name: {self.llm_config.llm_name}")
+
+        if model_response == "null" or model_response is None:
+            print("Model response is:", model_response)
+            print("Retrying")
+            raise ValueError(f"Model response is null: {model_response}")
+        else:
+            return input_prompt, model_response
 
     def parse_llm_output(self, model_response: str | None) -> dict | None:
         if model_response is None or model_response == "null":
@@ -132,7 +175,11 @@ class LLM(ABC):
             llm_output = LLMOutput(
                 place=prompt_result.place,
                 eval_term=prompt_result.eval_term,
-                search_match=prompt_result.search_result.search_matches[ip_idx],
+                search_match=(
+                    prompt_result.merge_text_matches[ip_idx]
+                    if prompt_result.merge_text
+                    else [prompt_result.search_result.search_matches[ip_idx]]
+                ),
                 input_prompt=input_prompt,
                 raw_model_response=raw_model_response,
                 **parsed_model_response if parsed_model_response else {},

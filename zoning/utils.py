@@ -54,6 +54,7 @@ def process(
                 os.makedirs(output_dir, exist_ok=True)
                 with open(target_name(target, output_dir), "w") as f:
                     json.dump(output_result.model_dump(), f)
+
         except Exception as e:
             print(f"Error processing {target}")
             print(e)
@@ -99,6 +100,17 @@ async def process_async(
                 f"Processing {async_result.place} {async_result.eval_term}"
             )
     pbar.close()
+
+
+def page_coverage_text(searched_text: List[str]) -> List[str]:
+    page_text_dict = {}
+    for text in searched_text:
+        chunks = text.split("NEW PAGE ")
+        for chunk in chunks[1:]:
+            page, text = chunk.split("\n", 1)
+            page_text_dict[int(page)] = text
+    all_pages = sorted(page_text_dict.keys())
+    return "\n".join([f"NEW PAGE {page}\n{page_text_dict[page]}" for page in all_pages])
 
 
 def page_coverage(searched_text: List[str]) -> List[List[int]]:

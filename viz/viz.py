@@ -5,8 +5,9 @@ import fitz  # PyMuPDF
 import streamlit as st
 
 from zoning.class_types import DistrictEvalResult
+from zoning.utils import flatten
 
-PDF_DIR = "data/connecticut/pdfs"
+PDF_DIR = "data/texas/pdfs"
 
 
 def jump_page(key):
@@ -20,6 +21,8 @@ def jump_page_from_slider():
 
 
 def generating_checked_data_view():
+    if len(st.session_state.selected_data) == 0:
+        return
     checked_data = st.session_state.selected_data[
         st.session_state.selected_data_index - 1
     ]
@@ -28,6 +31,12 @@ def generating_checked_data_view():
     search_result = checked_data.search_result
     entire_search_page_range = search_result.entire_search_page_range
     normalized_llm_outputs = checked_data.normalized_llm_outputs
+    if search_result:
+        normalized_llm_outputs = sorted(
+            normalized_llm_outputs,
+            key=lambda x: len(x.llm_output.search_match),
+            reverse=True,
+        )
     ground_truth = checked_data.ground_truth
     ground_truth_orig = checked_data.ground_truth_orig
     ground_truth_page = checked_data.ground_truth_page
@@ -45,7 +54,11 @@ def generating_checked_data_view():
 
     jump_pages = entire_search_page_range.copy()
     if ground_truth_page:
-        jump_pages.append(ground_truth_page)
+        if "," in ground_truth_page:
+            ground_truth_pages = [int(i) for i in ground_truth_page.split(",")]
+            jump_pages.extend(ground_truth_pages)
+        else:
+            jump_pages.append(ground_truth_page)
     jump_pages = [int(i) for i in jump_pages]
     jump_pages = sorted(set(jump_pages))  # Remove duplicates and sort
 
@@ -60,7 +73,9 @@ def generating_checked_data_view():
         st.write(f"Ground Truth Answer: :orange-background[{ground_truth}]")
         st.write(f"Ground Truth Orig: :orange-background[{ground_truth_orig}]")
         st.write(f"Ground Truth Page: :orange-background[{ground_truth_page}]")
+        st.write("\n")
         st.write(f"Answer Correct: :orange-background[{answer_correct}]")
+        st.write("\n")
         st.write(f"Page In Range: :orange-background[{page_in_range}]")
 
         st.slider(
@@ -87,7 +102,11 @@ def generating_checked_data_view():
         st.write(
             f"entire_search_results_page_range: :orange-background[{sorted(entire_search_page_range)}]"
         )
-        cols = st.columns(len(jump_pages))
+        st.write(
+            f"Normalized LLM answer: :orange-background[{flatten([i.normalized_answer for i in normalized_llm_outputs if i.normalized_answer])}]"
+        )
+        if len(jump_pages) > 0:
+            cols = st.columns(len(jump_pages))
         for i, page_num in enumerate(jump_pages):
             cols[i].button(
                 str(page_num),
@@ -139,6 +158,11 @@ def generating_checked_data_view():
                     st.write(
                         "Search Page: :orange-background[{}]".format(
                             llm_inference_result.llm_output.search_page_range
+                        )
+                    )
+                    st.write(
+                        "Normalized LLM Answer: :orange-background[{}]".format(
+                            llm_inference_result.normalized_answer
                         )
                     )
                     st.json(
@@ -221,7 +245,7 @@ with st.sidebar:
         divider="rainbow",
     )
     uploaded_files = st.file_uploader(
-        "You can find files needed under *data/<state>/eval*",
+        "You can find files needed under *results/<experiment_name>/eval*",
         type="json",
         on_change=reset,
         accept_multiple_files=True,

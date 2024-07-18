@@ -115,7 +115,11 @@ class KeywordSearcher(Searcher):
             res = s.execute()
             if len(res) == 0:
                 print(f"No results found for {target}")
-                return None
+                return SearchResult(
+                    place=search_query.place,
+                    eval_term=search_query.eval_term,
+                    search_matches=[],
+                )
 
             search_matches = [
                 SearchMatch(

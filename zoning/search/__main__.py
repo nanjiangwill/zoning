@@ -9,11 +9,11 @@ from zoning.utils import process
 
 
 def preprocess_search_target(town_file, district_file, eval_terms, output_file):
-    town = json.load(open(town_file))
+    all_town = json.load(open(town_file))
     districts = json.load(open(district_file))
     search_targets = []
     for district in districts:
-        if district.split("__")[0] not in town:
+        if district.split("__")[0] not in all_town:
             continue
         town, district_short_name, district_full_name = district.split("__")
         for term in eval_terms:
@@ -22,7 +22,6 @@ def preprocess_search_target(town_file, district_file, eval_terms, output_file):
             )
     with open(output_file, "w") as f:
         json.dump(search_targets, f, indent=4)
-    return search_targets
 
 
 @hydra.main(version_base=None, config_path="../../config", config_name="base")
@@ -57,12 +56,14 @@ def main(config: ZoningConfig):
             raise ValueError(f"Search method {search_config.method} is not supported")
 
     # Construct the entire search query with all possible eval terms
-    preprocess_search_target(
-        global_config.target_town_file,
-        global_config.target_district_file,
-        global_config.eval_terms,
-        global_config.target_eval_file,
-    )
+
+    if search_config.preprocess_search_target:
+        preprocess_search_target(
+            global_config.target_town_file,
+            global_config.target_district_file,
+            global_config.eval_terms,
+            global_config.target_eval_file,
+        )
 
     process(
         global_config.target_eval_file,

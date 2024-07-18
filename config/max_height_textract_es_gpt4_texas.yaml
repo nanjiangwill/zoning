@@ -2,9 +2,9 @@ defaults:
   - _self_
 
 global_config:
-  experiment_name: <REPLACE>
-  target_state: connecticut
-  eval_terms: ["min_lot_size"] #, "min_unit_size", "max_height"] # all available eval terms ['floor_to_area_ratio', 'max_height', 'max_lot_coverage', 'max_lot_coverage_pavement', 'min_lot_size', 'min_parking_spaces', 'min_unit_size']
+  experiment_name: max_height_textract_es_gpt4_texas
+  target_state: texas
+  eval_terms: ["max_height"] #, "min_unit_size", "max_height"] # all available eval terms ['floor_to_area_ratio', 'max_height', 'max_lot_coverage', 'max_lot_coverage_pavement', 'min_lot_size', 'min_parking_spaces', 'min_unit_size']
 
   data_dir: data/${global_config.target_state}
   target_town_file: ${global_config.data_dir}/target_towns_names.json
@@ -72,13 +72,12 @@ llm_config:
   cache_dir: .diskcache
 
 
-# WIP, no need to change
+
 normalization_config:
   method: todo
 
-# WIP, no need to change
 eval_config:
-  template_dir: todo
+  template_dir: zoning/eval/templates
 
 hydra:
   run:

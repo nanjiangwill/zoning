@@ -14,6 +14,7 @@ data/.DS_Store
 hydra_outputs
 old_eval.py
 results/
+wandb/
 zoning.egg-info
 zoning.egg-info/
 zoning/*/__pycache__
