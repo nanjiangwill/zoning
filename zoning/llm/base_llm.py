@@ -175,12 +175,6 @@ class LLM(ABC):
             llm_output = LLMOutput(
                 place=prompt_result.place,
                 eval_term=prompt_result.eval_term,
-                search_match=(
-                    prompt_result.merge_text_matches[ip_idx]
-                    if prompt_result.merge_text
-                    else [prompt_result.search_result.search_matches[ip_idx]]
-                ),
-                input_prompt=input_prompt,
                 raw_model_response=raw_model_response,
                 **parsed_model_response if parsed_model_response else {},
             )
@@ -189,7 +183,5 @@ class LLM(ABC):
         return LLMInferenceResult(
             place=prompt_result.place,
             eval_term=prompt_result.eval_term,
-            search_result=prompt_result.search_result,
-            input_prompts=prompt_result.input_prompts,
             llm_outputs=llm_outputs,
         )

@@ -36,8 +36,6 @@ def normalize(data: LLMInferenceResult, target: str) -> NormalizedLLMInferenceRe
     return NormalizedLLMInferenceResult(
         place=data.place,
         eval_term=data.eval_term,
-        search_result=data.search_result,
-        input_prompts=data.input_prompts,
         normalized_llm_outputs=normalized_llm_outputs,
     )
 
