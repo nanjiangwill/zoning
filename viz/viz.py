@@ -157,8 +157,8 @@ def generating_checked_data_view():
         )
         st.number_input(
             "Select page",
-            min_value=min(jump_pages) if jump_pages else 1,
-            max_value=max(jump_pages) if jump_pages else len(doc),
+            min_value=1,
+            max_value=len(doc),
             key="page_number_input",
             value=st.session_state.current_page,
             on_change=jump_page_from_number_input,
@@ -191,13 +191,18 @@ def generating_checked_data_view():
         )
         # print(flatten(min_max_grouped_jump_pages))
         if len(min_max_grouped_jump_pages) > 0:
-            cols = st.columns(len(min_max_grouped_jump_pages))
-        for i, page_num in enumerate(min_max_grouped_jump_pages):
-            cols[i].button(
+            cols = st.columns(2 * len(min_max_grouped_jump_pages) -1)
+            
+        for i in range(len(min_max_grouped_jump_pages)):
+            page_num = min_max_grouped_jump_pages[i]
+            
+            cols[2*i].button(
                 str(page_num),
                 on_click=jump_page,
                 args=(f"{page_num}",),
             )
+            if i < len(min_max_grouped_jump_pages) - 1:
+                cols[2*i + 1].write("__")
 
         st.subheader("LLM Inference Results")
 
