@@ -51,39 +51,45 @@ class PromptGenerator(ABC):
             zone_abbreviation=search_result.place.district_short_name,
         )
 
-        # we construct the user prompt for each search match
-        if self.prompt_config.merge_search_matches:
-            merged_searches = self.merge_overlapping_searches(
-                search_result.search_matches
-            )
-            merged_texts = [
-                page_coverage_text([i.text for i in ms]) for ms in merged_searches
-            ]
-            all_prompts = [
-                Prompt(
-                    system_prompt=system_prompt,
-                    user_prompt=f"Input: \n\n {merged_text}\n\n Output:",
-                )
-                for merged_text in merged_texts
-            ]
-        else:
-            user_prompts = [
-                f"Input: \n\n {i.text}\n\n Output:"
-                for i in search_result.search_matches
-            ]
+        # # we construct the user prompt for each search match
+        # if self.prompt_config.merge_search_matches:
+        #     merged_searches = self.merge_overlapping_searches(
+        #         search_result.search_matches
+        #     )
+        #     merged_texts = [
+        #         page_coverage_text([i.text for i in ms]) for ms in merged_searches
+        #     ]
+        #     all_prompts = [
+        #         Prompt(
+        #             system_prompt=system_prompt,
+        #             user_prompt=f"Input: \n\n {merged_text}\n\n Output:",
+        #         )
+        #         for merged_text in merged_texts
+        #     ]
+        # else:
+        #     user_prompts = [
+        #         f"Input: \n\n {i.text}\n\n Output:"
+        #         for i in search_result.search_matches
+        #     ]
 
-            all_prompts = [
-                Prompt(system_prompt=system_prompt, user_prompt=user_prompts[i])
-                for i in range(len(search_result.search_matches))
-            ]
+        #     all_prompts = [
+        #         Prompt(system_prompt=system_prompt, user_prompt=user_prompts[i])
+        #         for i in range(len(search_result.search_matches))
+        #     ]
+
+        merged_text = page_coverage_text(
+            [ms.text for ms in search_result.search_matches]
+        )
+
+        all_prompts = [
+            Prompt(
+                system_prompt=system_prompt,
+                user_prompt=f"Input: \n\n {merged_text}\n\n Output:",
+            )
+        ]
 
         return PromptResult(
             place=search_result.place,
             eval_term=search_result.eval_term,
-            search_result=search_result,
             input_prompts=all_prompts,
-            merge_text=self.prompt_config.merge_search_matches,
-            merge_text_matches=(
-                merged_searches if self.prompt_config.merge_search_matches else None
-            ),
         )

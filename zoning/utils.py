@@ -102,7 +102,7 @@ async def process_async(
     pbar.close()
 
 
-def page_coverage_text(searched_text: List[str]) -> List[str]:
+def page_coverage_text(searched_text: List[str]) -> str:
     page_text_dict = {}
     for text in searched_text:
         chunks = text.split("NEW PAGE ")

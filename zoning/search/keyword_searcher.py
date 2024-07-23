@@ -91,30 +91,42 @@ class KeywordSearcher(Searcher):
     def search(self, search_query: SearchQuery, target: str) -> SearchResult | None:
         try:
             s = Search(using=self.es_client, index=search_query.place.town)
+            is_district_fuzzy = self.search_config.is_district_fuzzy
+            is_eval_term_fuzzy = self.search_config.is_eval_term_fuzzy
 
-            district_query = self.get_district_query(
-                search_query.place.district_full_name,
-                search_query.place.district_short_name,
-                self.search_config.is_eval_term_fuzzy,
-            )
-            eval_term_query = self.get_eval_term_query(
-                search_query.eval_term,
-                self.search_config.is_eval_term_fuzzy,
-                self.search_config.thesaurus_file,
-            )
-            units_query = self.get_units_query(
-                search_query.eval_term, self.search_config.thesaurus_file
-            )
+            res = []
+            attempts = 0
+            max_attempts = 2
 
-            s.query = district_query & eval_term_query & units_query
+            while len(res) == 0 and attempts < max_attempts:
+                max_attempts += 1
+                district_query = self.get_district_query(
+                    search_query.place.district_full_name,
+                    search_query.place.district_short_name,
+                    is_district_fuzzy,
+                )
+                eval_term_query = self.get_eval_term_query(
+                    search_query.eval_term,
+                    is_eval_term_fuzzy,
+                    self.search_config.thesaurus_file,
+                )
+                units_query = self.get_units_query(
+                    search_query.eval_term, self.search_config.thesaurus_file
+                )
 
-            s = s.extra(size=self.search_config.num_results)
+                s.query = district_query & eval_term_query & units_query
 
-            s = s.highlight("Text")
+                s = s.extra(size=self.search_config.num_results)
 
-            res = s.execute()
+                s = s.highlight("Text")
+
+                res = s.execute()
+                if len(res) == 0:
+                    print(f"No results found for {target}")
+                    is_district_fuzzy = True
+                    is_eval_term_fuzzy = True
+
             if len(res) == 0:
-                print(f"No results found for {target}")
                 return SearchResult(
                     place=search_query.place,
                     eval_term=search_query.eval_term,

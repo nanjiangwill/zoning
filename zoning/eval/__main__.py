@@ -1,18 +1,15 @@
+import glob
 import json
 import os
 
 import hydra
 from omegaconf import OmegaConf
 
-from zoning.class_types import (
-    DistrictEvalResult,
-    NormalizedLLMInferenceResult,
-    ZoningConfig,
-)
+from zoning.class_types import EvalResult, NormalizedLLMInferenceResult, ZoningConfig
 from zoning.utils import process
 
 
-def eval_fn(d, gt, target) -> DistrictEvalResult:
+def eval_fn(d: NormalizedLLMInferenceResult, gt, experiment_dir, target) -> EvalResult:
     gt_info = list(
         filter(
             lambda x: x["town"] == d.place.town
@@ -42,9 +39,12 @@ def eval_fn(d, gt, target) -> DistrictEvalResult:
         else:
             ground_truth_page_int = []
 
-        search_ranges = [
-            lo.llm_output.search_page_range for lo in d.normalized_llm_outputs
-        ]
+        search_file = glob.glob(
+            f"{experiment_dir}/search/*{d.eval_term}__{d.place}.json"
+        )
+        assert len(search_file) == 1
+        search_result = json.load(open(search_file[0]))
+        search_ranges = [search_result["entire_search_page_range"]]
         page_in_range = []
 
         if len(ground_truth_page_int) == 0:
@@ -59,8 +59,6 @@ def eval_fn(d, gt, target) -> DistrictEvalResult:
         answer_correct = []
 
         for o in d.normalized_llm_outputs:
-            if o.llm_output.raw_model_response is None:
-                continue
             if ground_truth is None and ground_truth_orig is None:
                 if o.normalized_answer is None:
                     answer_correct.append(True)
@@ -74,12 +72,9 @@ def eval_fn(d, gt, target) -> DistrictEvalResult:
                     continue
             answer_correct.append(False)
 
-    return DistrictEvalResult(
+    return EvalResult(
         place=d.place,
         eval_term=d.eval_term,
-        search_result=d.search_result,
-        input_prompts=d.input_prompts,
-        normalized_llm_outputs=d.normalized_llm_outputs,
         ground_truth=ground_truth,
         ground_truth_orig=ground_truth_orig,
         ground_truth_page=ground_truth_page,
@@ -102,7 +97,7 @@ def main(config: ZoningConfig):
         config.normalization_dir
 
     Output File Format:
-        DistrictEvalResult
+        EvalResult
         config.eval_dir
     """
     # Parse the config
@@ -114,7 +109,12 @@ def main(config: ZoningConfig):
         global_config.target_eval_file,
         global_config.normalization_dir,
         global_config.eval_dir,
-        fn=lambda x, y: eval_fn(x, json.load(open(global_config.ground_truth_file)), y),
+        fn=lambda x, y: eval_fn(
+            x,
+            json.load(open(global_config.ground_truth_file)),
+            global_config.experiment_dir,
+            y,
+        ),
         converter=lambda x: NormalizedLLMInferenceResult.model_construct(**x),
     )
 
@@ -126,8 +126,7 @@ def main(config: ZoningConfig):
             if f.startswith(term)
         ]
         eval_term_data = [
-            DistrictEvalResult.model_construct(**json.load(open(f)))
-            for f in eval_term_files
+            EvalResult.model_construct(**json.load(open(f))) for f in eval_term_files
         ]
 
         all_accuracy_results = [d.answer_correct for d in eval_term_data]
