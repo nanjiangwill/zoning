@@ -1,7 +1,7 @@
 import hydra
+import wandb
 from omegaconf import OmegaConf
 
-import wandb
 from zoning.class_types import ZoningConfig
 from zoning.eval.__main__ import main as eval_main
 from zoning.format_ocr.__main__ import main as format_ocr_main

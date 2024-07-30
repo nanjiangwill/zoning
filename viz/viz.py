@@ -1,6 +1,6 @@
 import glob
 import json
-import os
+import sys
 
 import fitz  # PyMuPDF
 import streamlit as st
@@ -15,10 +15,8 @@ from zoning.class_types import (
 )
 from zoning.utils import flatten, target_pdf
 
-import sys
-
 PDF_DIR = f"data/{sys.argv[1]}/pdfs"
-EXPERIMENT_DIR = sys.argv[2]#"results/textract_es_gpt4_connecticut_search_range_3"
+EXPERIMENT_DIR = sys.argv[2]  # "results/textract_es_gpt4_connecticut_search_range_3"
 
 st.set_page_config(layout="wide")
 
@@ -27,39 +25,39 @@ st.set_page_config(layout="wide")
 with st.sidebar:
     # Step 1: upload file
 
-    all_results = { 
-        k: [X.model_construct(**json.load(open(i)))  
-            for i in sorted(glob.glob(f"{EXPERIMENT_DIR}/{k}/*.json"))]
+    all_results = {
+        k: [
+            X.model_construct(**json.load(open(i)))
+            for i in sorted(glob.glob(f"{EXPERIMENT_DIR}/{k}/*.json"))
+        ]
         for k, X in [
-            ("search", SearchResult), 
+            ("search", SearchResult),
             ("prompt", PromptResult),
-            ("llm", LLMInferenceResult), 
-            ("normalization", NormalizedLLMInferenceResult), 
-            ("eval", EvalResult)]}
+            ("llm", LLMInferenceResult),
+            ("normalization", NormalizedLLMInferenceResult),
+            ("eval", EvalResult),
+        ]
+    }
 
     all_eval_terms = list(set([i.eval_term for i in all_results["eval"]]))
     all_places = list(set(str(i.place) for i in all_results["eval"]))
 
     def filtered_by_eval(results, eval_term):
-        return {k: [result
-                    for result in results[k] if  
-                    result.eval_term == eval_term]
-                for k in results}
+        return {
+            k: [result for result in results[k] if result.eval_term == eval_term]
+            for k in results
+        }
 
     def filtered_by_place(results, place):
-        return {k: [result
-                    for result in results[k] if  
-                    str(result.place) == str(place)]
-                for k in results}
-
+        return {
+            k: [result for result in results[k] if str(result.place) == str(place)]
+            for k in results
+        }
 
     all_data_by_eval_term = {
         eval_term: {
-            place: {
-                "place": place,
-                "eval_term": eval_term
-            } | filtered_by_eval(filtered_by_place(all_results, place), eval_term)
-
+            place: {"place": place, "eval_term": eval_term}
+            | filtered_by_eval(filtered_by_place(all_results, place), eval_term)
             for place in all_places
         }
         for eval_term in all_eval_terms
@@ -78,7 +76,7 @@ with st.sidebar:
         "Choosing :orange-background[Eval Term] you want to check",
         all_eval_terms,
         key="eval_term",
-        index=0
+        index=0,
     )
 
     eval_type = st.radio(
@@ -94,13 +92,7 @@ with st.sidebar:
         index=0,
     )
 
-
-    selected_data = [
-        i
-        for _, i in sorted(all_data_by_eval_term[
-            eval_term
-        ].items())
-    ]
+    selected_data = [i for _, i in sorted(all_data_by_eval_term[eval_term].items())]
 
     if eval_type == "correct":
         selected_data = [
@@ -137,8 +129,6 @@ with st.sidebar:
             )
         ]
 
-
-
     # Step 3: Select one data to check
     st.divider()
     st.subheader("Step 3: Select one data to check", divider="rainbow")
@@ -147,13 +137,14 @@ with st.sidebar:
     # )
     print(selected_data)
     place = st.radio(
-        "Which evaluation datum to check?",
-        (term["place"] for term in selected_data)
+        "Which evaluation datum to check?", (term["place"] for term in selected_data)
     )
 
-# Load the data for the town. 
+# Load the data for the town.
 
-checked_data = all_data_by_eval_term[eval_term][place] # list([data for data in selected_data if data["place"] == place])[0]
+checked_data = all_data_by_eval_term[eval_term][
+    place
+]  # list([data for data in selected_data if data["place"] == place])[0]
 town, district_short_name, district_full_name = place.split("__")
 place = Place(
     town=town,
@@ -176,16 +167,12 @@ raw_model_response = (
     else None
 )
 extracted_text = (
-    llm_inference_result.llm_outputs[0].extracted_text
-    if llm_inference_result
-    else None
+    llm_inference_result.llm_outputs[0].extracted_text if llm_inference_result else None
 )
 rationale = (
     llm_inference_result.llm_outputs[0].rationale if llm_inference_result else None
 )
-answer = (
-    llm_inference_result.llm_outputs[0].answer if llm_inference_result else None
-)
+answer = llm_inference_result.llm_outputs[0].answer if llm_inference_result else None
 normalized_llm_inference_result = (
     normalized_llm_inference_result.normalized_llm_outputs[0].normalized_answer
     if normalized_llm_inference_result
@@ -221,6 +208,7 @@ if ground_truth_page:
 jump_pages = [int(i) for i in jump_pages]
 jump_pages = sorted(set(jump_pages))  # Remove duplicates and sort
 
+
 def group_continuous(sorted_list):
     if not sorted_list:
         return []
@@ -238,15 +226,14 @@ def group_continuous(sorted_list):
     result.append(current_group)
     return result
 
-current_page = min(jump_pages) if jump_pages else 1 
+
+current_page = min(jump_pages) if jump_pages else 1
 
 # show
 st.subheader(f"Town: {place.town}")
 st.subheader(f"District: {place.district_full_name}")
 st.subheader(f"Eval Term: {eval_term}")
 st.divider()
-
-
 
 
 summary_col, search_col = st.columns(2)
@@ -301,10 +288,10 @@ with search_col:
     # print(flatten(min_max_grouped_jump_pages))
     # if len(min_max_grouped_jump_pages) > 0:
     #     cols = st.columns(2 * len(min_max_grouped_jump_pages) -1)
-        
+
     # for i in range(len(min_max_grouped_jump_pages)):
     #     page_num = min_max_grouped_jump_pages[i]
-        
+
     #     cols[2*i].button(
     #         str(page_num),
     #         args=(f"{page_num}",),
@@ -356,9 +343,7 @@ with search_col:
         col7, col8 = st.columns(2)
         with col7:
             st.write(
-                "Search Page: :orange-background[{}]".format(
-                    entire_search_page_range
-                )
+                "Search Page: :orange-background[{}]".format(entire_search_page_range)
             )
             st.write(
                 "Normalized LLM Answer: :orange-background[{}]".format(
@@ -393,9 +378,7 @@ with search_col:
         for idx, search_result in enumerate(search_result.search_matches):
             col5, col6 = st.columns(2)
             with col5:
-                st.write(
-                    f"Relevance Score :orange-background[{search_result.score}]"
-                )
+                st.write(f"Relevance Score :orange-background[{search_result.score}]")
                 st.write(
                     f"Page Range :orange-background[{sorted(search_result.page_range)}]"
                 )
@@ -408,6 +391,3 @@ with search_col:
                     expanded=False,
                 )
             st.divider()
-
-
-

@@ -16,7 +16,9 @@ class TextractExtractor(Extractor):
     def __init__(self, ocr_config: OCRConfig):
         super().__init__(ocr_config)
         if self.ocr_config.run_ocr:
-            self.extractor = boto3.client("textract", region_name=self.ocr_config.textract_region_name)
+            self.extractor = boto3.client(
+                "textract", region_name=self.ocr_config.textract_region_name
+            )
 
     def start_job(self, pdf_file: str) -> str:
         """Runs Textract's StartDocumentAnalysis action and specifies an s3
@@ -37,7 +39,6 @@ class TextractExtractor(Extractor):
         """' Checks whether document analysis still in progress."""
         status: str = "IN_PROGRESS"
         while status == "IN_PROGRESS":
-            print(f"Job {job_id} status: {status}")
             time.sleep(5)
             response = self.extractor.get_document_analysis(JobId=job_id)
             status = response["JobStatus"]
@@ -58,30 +59,27 @@ class TextractExtractor(Extractor):
             nextToken = response.get("NextToken", None)
             yield response
 
-    def extract(self, target: str, ocr_dir: str) -> None:
+    def extract(self, ocr_dir: str, target: str) -> None:
         pdf_file = target_pdf(target, self.ocr_config.pdf_name_prefix_in_s3_bucket)
         ocr_file = target_name(target, ocr_dir)
-        # job_id = self.start_job(pdf_file)
-        job_id = "e3426e5f20ed7938deae4fcc3ec9a586857bf10d1403db6fcda54bcc34740c16"
-        # print(f"Job {job_id} on file {target}")
+
+        job_id = self.start_job(pdf_file)
+
+        print(f"Job {job_id} on town {target}")
         for s in self.get_job_status(job_id):
             status, status_message = s
             if status == "FAILED":
-                print(
-                    f"Job {job_id} on file {target} FAILED. Reason: {status_message}"
-                )
+                print(f"Job {job_id} on town {target} FAILED. Reason: {status_message}")
             elif status == "SUCCEEDED":
                 result = list(self.get_job_results(job_id))
 
-                with open("tmp.json", "w") as f:
+                with open(ocr_file, "w") as f:
                     json.dump(result, f)
-                print(f"Job {job_id} on file {target} SUCCEEDED. Write to {ocr_file}")
+                print(f"Job {job_id} on town {target} SUCCEEDED. Write to {ocr_file}")
 
-    def process_files_and_write_output(
-        self, target_towns: str, ocr_dir: str
-    ) -> None:
+    def process_files_and_write_output(self, target_towns: str, ocr_dir: str) -> None:
         if self.ocr_config.run_ocr:
-            # thread_map(partial(self.extract, ocr_dir), target_towns)
             target_towns = json.load(open(target_towns))
-            self.extract(target_towns[0], ocr_dir)
+            thread_map(partial(self.extract, ocr_dir), target_towns)
+
         assert len(os.listdir(ocr_dir)) > 0, "No OCR results found"
