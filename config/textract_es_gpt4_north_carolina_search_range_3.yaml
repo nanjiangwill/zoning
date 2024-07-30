@@ -1,0 +1,22 @@
+# @package _global_
+defaults:
+  - base
+  - _self_
+
+global_config:
+  experiment_name: textract_es_gpt4_north_carolina_search_range_3
+  target_state: north_carolina
+  eval_terms: ["min_lot_size", "min_unit_size", "max_height"]
+
+
+ocr_config:
+  run_ocr: true
+  
+index_config:
+  index_range: 3
+
+search_config:
+  num_results: 5
+  is_district_fuzzy: false
+  is_eval_term_fuzzy: false
+  preprocess_search_target: false

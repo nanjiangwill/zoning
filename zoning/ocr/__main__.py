@@ -35,7 +35,7 @@ def main(config: ZoningConfig):
             raise ValueError(f"Extractor {ocr_config.method} not implemented")
 
     ocr.process_files_and_write_output(
-        global_config.target_town_file, global_config.pdf_dir, global_config.ocr_dir
+        global_config.target_town_file, global_config.ocr_dir
     )
 
 

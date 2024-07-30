@@ -13,7 +13,7 @@ from zoning.class_types import (
     PromptResult,
     SearchResult,
 )
-from zoning.utils import flatten
+from zoning.utils import flatten, target_pdf
 
 import sys
 
@@ -203,10 +203,11 @@ ground_truth_page = eval_result.ground_truth_page if eval_result else None
 answer_correct = eval_result.answer_correct if eval_result else None
 page_in_range = eval_result.page_in_range if eval_result else None
 
-pdf_file = os.path.join(
-    PDF_DIR,
-    f"{place.town}-zoning-code.pdf",
-)
+pdf_file = target_pdf(place.town, PDF_DIR)
+# os.path.join(
+#     PDF_DIR,
+#     f"{place.town}-zoning-code.pdf",
+# )
 doc = fitz.open(pdf_file)
 
 jump_pages = entire_search_page_range.copy()

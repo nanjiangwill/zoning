@@ -40,8 +40,9 @@ global_config:
 ocr_config:
   method: textract
   run_ocr: false
-  input_document_s3_bucket:
-  pdf_name_prefix_in_s3_bucket: zoning/${global_config.target_state}/
+  textract_region_name: us-east-2
+  input_document_s3_bucket: zoning-nan
+  pdf_name_prefix_in_s3_bucket: ${global_config.target_state}
   feature_types: ["TABLES"]  # allowed ["TABLES", "FORMS", "QUERIES", "SIGNATURES", "LAYOUT"]
 
 format_ocr_config:

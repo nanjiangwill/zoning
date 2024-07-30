@@ -40,6 +40,7 @@ class OCRConfig(BaseModel):
 
     method: str
     run_ocr: bool
+    textract_region_name: str
     input_document_s3_bucket: str | None
     pdf_name_prefix_in_s3_bucket: str | None
     feature_types: List[str]

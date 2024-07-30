@@ -21,7 +21,7 @@ def target_name(target, dir):
 def target_pdf(target, dir):
     """Target can be town or term_district."""
 
-    return f"{dir}/{target}.pdf"
+    return f"{dir}/{target}-zoning-code.pdf"
 
 
 def prompt_file(prompt_name: str):
