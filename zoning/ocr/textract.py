@@ -5,6 +5,7 @@ from functools import partial
 from typing import Generator, Tuple
 
 import boto3
+import tqdm
 from tqdm.contrib.concurrent import thread_map
 
 from zoning.class_types import OCRConfig
@@ -80,6 +81,12 @@ class TextractExtractor(Extractor):
     def process_files_and_write_output(self, target_towns: str, ocr_dir: str) -> None:
         if self.ocr_config.run_ocr:
             target_towns = json.load(open(target_towns))
-            thread_map(partial(self.extract, ocr_dir), target_towns)
+
+            # Textract only allows 10 concurrent jobs
+            thread_map(partial(self.extract, ocr_dir), target_towns, max_workers=10)
+
+            # for target in tqdm.tqdm(target_towns):
+            #     print("Running Textract on town: ", target)
+            #     self.extract(ocr_dir, target)
 
         assert len(os.listdir(ocr_dir)) > 0, "No OCR results found"
