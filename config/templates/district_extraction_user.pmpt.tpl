@@ -56,7 +56,7 @@ Output:
 
 [{"T": "Residence AAA",  "Z": "AAA"}, {"T": "Residence B",  "Z": "B"}, {"T": "Historic Design",  "Z": "HDD"}]
 
-Passage: 
+Passage:
 
 {% macro showdocs(docs) -%}
 {% for doc in docs %}

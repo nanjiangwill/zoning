@@ -5,7 +5,6 @@ from functools import partial
 from typing import Generator, Tuple
 
 import boto3
-import tqdm
 from tqdm.contrib.concurrent import thread_map
 
 from zoning.class_types import OCRConfig
