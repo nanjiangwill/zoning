@@ -21,6 +21,8 @@ class GlobalConfig(BaseModel):
     pdf_dir: str
     ocr_dir: str
     format_ocr_dir: str
+    page_embedding_dir: str
+    district_extraction_dir: str
     index_dir: str
     search_dir: str
     prompt_dir: str
@@ -48,6 +50,15 @@ class OCRConfig(BaseModel):
 
 class FormatOCRConfig(BaseModel):
     temp: str
+
+
+class DistrictExtractionConfig(BaseModel):
+    run_page_embedding: bool
+    embedding_model: str
+    llm_model: str
+    templates_dir: str
+    system_prompt_file: str
+    user_prompt_file: str
 
 
 class IndexConfig(BaseModel):
@@ -96,6 +107,7 @@ class ZoningConfig(BaseModel):
     global_config: GlobalConfig = None
     ocr_config: OCRConfig = None
     format_ocr_config: OCRConfig = None
+    district_extraction_config: DistrictExtractionConfig = None
     index_config: IndexConfig = None
     search_config: SearchConfig = None
     prompt_config: PromptConfig = None
@@ -108,6 +120,9 @@ class ZoningConfig(BaseModel):
         self.global_config = GlobalConfig(**self.config["global_config"])
         self.ocr_config = OCRConfig(**self.config["ocr_config"])
         self.format_ocr_config = FormatOCRConfig(**self.config["format_ocr_config"])
+        self.district_extraction_config = DistrictExtractionConfig(
+            **self.config["district_extraction_config"]
+        )
         self.index_config = IndexConfig(**self.config["index_config"])
         self.search_config = SearchConfig(**self.config["search_config"])
         self.prompt_config = PromptConfig(**self.config["prompt_config"])
@@ -146,7 +161,7 @@ class OCRPage(BaseModel):
             self.relations.setdefault(r, [])
             self.relations[r].append(entity)
 
-    def make_string(self) -> str:
+    def make_dict(self) -> Dict[str, str]:
         out = ""
         for e in self.ents:
             if e.typ == "LINE":
@@ -173,7 +188,7 @@ class OCRPage(BaseModel):
                         continue
                     seen.add(o.id)
                     out += o.text + "\n"
-        return out
+        return {"page": str(self.page), "text": out}
 
 
 class FormatOCR(BaseModel):
@@ -182,8 +197,27 @@ class FormatOCR(BaseModel):
     Linked to format_ocr.
     """
 
-    pages: List[str]
+    pages: List[Dict[str, str]]
     town_name: str
+
+
+# =================
+# Page Embedding and District Extraction
+# =================
+class PageEmbeddingResult(BaseModel):
+    """Page embedding of a page in pdf.
+
+    linked to district_extraction
+    """
+
+    town_name: str
+    embedded_pages: List[Dict[str, str | List[float]]]
+
+
+class DistrictExtractionResult(BaseModel):
+    town_name: str
+    districts: List[Dict[str, str]]
+    districts_info_page: List[int]
 
 
 # =================

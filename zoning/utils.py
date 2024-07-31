@@ -6,6 +6,7 @@ from functools import partial, wraps
 from typing import Iterable, List, TypeVar
 
 import tqdm
+from pydantic import ValidationError
 from tqdm.contrib.concurrent import thread_map
 from typer import Typer
 
@@ -127,6 +128,25 @@ def page_coverage(searched_text: List[str]) -> List[List[int]]:
 
 def flatten(t: Iterable[Iterable[T]]) -> List[T]:
     return [item for sublist in t for item in sublist]
+
+
+def post_processing_llm_output(model_response: str | None) -> dict | None:
+    if model_response is None or model_response == "null":
+        return None
+    try:
+        # TODO: this is something that came with new gpt update. This is a bandaid solution that i'll look into later
+        if model_response[:7] == "```json":
+            model_response = model_response[7:-4]
+        json_body = json.loads(model_response)
+        if json_body is None:
+            # The model is allowed to return null if it cannot find the answer,
+            # so just pass this onwards.
+            return None
+        return json_body
+    except (ValidationError, TypeError, json.JSONDecodeError) as exc:
+        print("Error parsing response from model during extraction:", exc)
+        print(f"Response: {model_response}")
+        return None
 
 
 # Copied from https://github.com/tiangolo/typer/issues/88

@@ -21,6 +21,8 @@ global_config:
   ocr_dir: ${global_config.data_dir}/ocr    # normally we dont redo ocr collection, we just save them in data, not in experiment results
 
   format_ocr_dir: ${global_config.experiment_dir}/format_ocr
+  page_embedding_dir: ${global_config.experiment_dir}/page_embedding
+  district_extraction_dir: ${global_config.experiment_dir}/district_extraction
   index_dir: ${global_config.experiment_dir}/index
   search_dir: ${global_config.experiment_dir}/search
   prompt_dir: ${global_config.experiment_dir}/prompt
@@ -47,6 +49,14 @@ ocr_config:
 
 format_ocr_config:
   temp: x
+
+district_extraction_config:
+  run_page_embedding: false
+  embedding_model: text-embedding-3-small
+  llm_model: ${llm_config.llm_name}
+  templates_dir: ${prompt_config.templates_dir}
+  system_prompt_file: district_extraction_system
+  user_prompt_file: district_extraction_user
 
 index_config:
   method: keyword # allowed keyword/embedding

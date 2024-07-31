@@ -12,6 +12,9 @@ global_config:
 ocr_config:
   run_ocr: true
 
+district_extraction_config:
+  run_page_embedding: false
+
 index_config:
   index_range: 3
 

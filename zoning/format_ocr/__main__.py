@@ -45,7 +45,7 @@ def process_ocr_result(data: OCROutput, town_name: str) -> FormatOCR:
                 # since the key name is not unique, we are unable to use a BaseModel for it
                 # so here, we did not use a type hint for the key name
                 ocr_page.page = w["Page"] - 1
-                formatted_ocr.pages.append(ocr_page.make_string())
+                formatted_ocr.pages.append(ocr_page.make_dict())
             ocr_page = OCRPage()
         elif w["BlockType"] == "TABLE":
             pass
@@ -56,7 +56,7 @@ def process_ocr_result(data: OCROutput, town_name: str) -> FormatOCR:
         # since the key name is not unique, we are unable to use a BaseModel for it
         # so here, we did not use a type hint for the key name
         ocr_page.page = w["Page"]
-        formatted_ocr.pages.append(ocr_page.make_string())
+        formatted_ocr.pages.append(ocr_page.make_dict())
     return formatted_ocr
 
 

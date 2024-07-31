@@ -18,12 +18,15 @@ class KeywordIndexer(Indexer):
             for j in range(self.index_config.index_range):
                 if idx + j >= len(page_data):
                     break
-                text += f"\nNEW PAGE {idx + j + 1}\n" + page_data[idx + j]
+                text += (
+                    f"\nNEW PAGE {page_data[idx + j]['page']}\n"
+                    + page_data[idx + j]["text"]
+                )
             all_index_data.append(
                 ElasticSearchIndexData(
                     index=town_name,
-                    id=str(idx + 1),
-                    document={"Page": str(idx + 1), "Text": text},
+                    id=page_data[idx]["page"],
+                    document={"Page": str(page_data[idx]["page"]), "Text": text},
                     request_timeout=30,
                 )
             )

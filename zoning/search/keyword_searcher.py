@@ -13,6 +13,7 @@ class KeywordSearcher(Searcher):
         super().__init__(search_config)
         self.es_client = Elasticsearch(self.search_config.es_endpoint)
 
+    @staticmethod
     def get_district_query(
         self,
         district_full_name: str,
