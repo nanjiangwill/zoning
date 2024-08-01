@@ -49,22 +49,23 @@ def main(config: ZoningConfig):
             district_extractor.page_embedding,
             converter=lambda x: FormatOCR.model_construct(**x),
         )
-    process(
-        global_config.target_town_file,
-        global_config.page_embedding_dir,
-        global_config.district_extraction_dir,
-        district_extractor.district_extraction,
-        converter=lambda x: PageEmbeddingResult.model_construct(**x),
-    )
+            
+        process(
+            global_config.target_town_file,
+            global_config.page_embedding_dir,
+            global_config.district_extraction_dir,
+            district_extractor.district_extraction,
+            converter=lambda x: PageEmbeddingResult.model_construct(**x),
+        )
 
-    process(
-        global_config.target_town_file,
-        global_config.district_extraction_dir,
-        None,
-        district_extractor.district_extraction_verification,
-        converter=lambda x: DistrictExtractionResult.model_construct(**x),
-        output=False,
-    )
+        process(
+            global_config.target_town_file,
+            global_config.district_extraction_dir,
+            None,
+            district_extractor.district_extraction_verification,
+            converter=lambda x: DistrictExtractionResult.model_construct(**x),
+            output=False,
+        )
 
 
 if __name__ == "__main__":

@@ -2,6 +2,7 @@ import json
 
 import numpy as np
 from datasets import Dataset
+from elasticsearch import Elasticsearch
 from jinja2 import Environment, FileSystemLoader
 from openai import OpenAI
 
@@ -11,6 +12,7 @@ from zoning.class_types import (
     FormatOCR,
     PageEmbeddingResult,
 )
+from elasticsearch_dsl import Search
 from zoning.search.keyword_searcher import KeywordSearcher
 from zoning.utils import flatten, post_processing_llm_output, prompt_file
 
@@ -33,6 +35,8 @@ class DistrictExtractor:
         self.user_prompt_template = self.prompt_env.get_template(
             prompt_file(district_extraction_config.user_prompt_file)
         )
+        
+        self.verification_es_client = Elasticsearch(self.district_extraction_config.verification_es_endpoint)
 
     def call_llm(self, system_prompt: str, user_prompt: str):
         call_response = self.openai_client.chat.completions.create(
@@ -46,7 +50,7 @@ class DistrictExtractor:
 
     # @retry(wait=wait_random_exponential(min=1, max=60))
     def page_embedding(self, x: FormatOCR, target: str) -> PageEmbeddingResult:
-        town_name = x.town_name
+        town = x.town
         pages = x.pages
 
         y = []
@@ -58,7 +62,7 @@ class DistrictExtractor:
                 p_text = " ".join(p_text[:3000])
             y.append(p_text)
 
-        print(f"Processing {town_name}")
+        print(f"Processing {town}")
 
         emb = self.openai_client.embeddings.create(
             input=y, model=self.district_extraction_config.embedding_model
@@ -75,19 +79,19 @@ class DistrictExtractor:
         ]
 
         return PageEmbeddingResult(
-            town_name=x.town_name,
+            town=x.town,
             embedded_pages=embedded_pages,
         )
 
     def district_extraction(
         self, x: PageEmbeddingResult, target: str
     ) -> DistrictExtractionResult:
-        town_name = x.town_name
+        town = x.town
         embedded_pages = x.embedded_pages
 
         dataset = Dataset.from_list(embedded_pages)
         dataset.add_faiss_index("embedding")
-        k = 4
+        k = 2
 
         if self.QUERY_EMBEDDING is None:
             query_embedding_response = self.openai_client.embeddings.create(
@@ -101,31 +105,46 @@ class DistrictExtractor:
         nearest_pages = res.examples["page"]
         nearest_texts = res.examples["text"]
 
-        districts_per_page = []
-        for page, text in zip(nearest_pages, nearest_texts):
-            district_extraction_response = self.call_llm(
-                self.system_prompt_template.render(),
-                self.user_prompt_template.render(docs=[text]),
-            )
-            districts_per_page.append(
-                {
-                    "page": page,
-                    "districts": post_processing_llm_output(
-                        district_extraction_response
-                    ),
-                }
-            )
+        # districts_per_page = []
+        # for page, text in zip(nearest_pages, nearest_texts):
+        #     district_extraction_response = self.call_llm(
+        #         self.system_prompt_template.render(),
+        #         self.user_prompt_template.render(docs=[text]),
+        #     )
+        #     districts_per_page.append(
+        #         {
+        #             "page": page,
+        #             "districts": post_processing_llm_output(
+        #                 district_extraction_response
+        #             ),
+        #         }
+        #     )
+            
+        # districts = flatten([d["districts"] for d in districts_per_page])
 
-        districts = flatten([d["districts"] for d in districts_per_page])
+        # unique_districts = set(frozenset(d.items()) for d in districts)
+        # unique_districts = [dict(d) for d in unique_districts]
 
-        unique_districts = set(frozenset(d.items()) for d in districts)
-        unique_districts = [dict(d) for d in unique_districts]
+        # return DistrictExtractionResult(
+        #     town=town,
+        #     districts=unique_districts,
+        #     districts_info_page=nearest_pages,
+        # )
+        
+        district_extraction_response = self.call_llm(
+            self.system_prompt_template.render(),
+            self.user_prompt_template.render(docs=nearest_texts),
+        )
 
         return DistrictExtractionResult(
-            town_name=town_name,
-            districts=unique_districts,
+            town=town,
+            districts=post_processing_llm_output(
+                    district_extraction_response
+                ),
             districts_info_page=nearest_pages,
         )
+
+        
 
     def district_extraction_verification(
         self, x: DistrictExtractionResult, target: str
@@ -134,22 +153,33 @@ class DistrictExtractor:
         # how to filter  same Z todo
         # use search engine to filter?
         valid_districts = []
+
         for d in x.districts:
             district_full_name = d["T"]
             district_short_name = d["Z"]
             district_query = KeywordSearcher.get_district_query(
-                district_full_name, district_short_name, False
+                None,
+                district_full_name=district_full_name, 
+                district_short_name=district_short_name, 
+                is_district_fuzzy=False
             )
 
-            s = Search(using=self.es_client, index=search_query.place.town)
+            s = Search(using=self.verification_es_client, index=x.town)
             s.query = district_query
-            s = s.extra(size=self.search_config.num_results)
+            s = s.extra(size=1)
             s = s.highlight("Text")
             res = s.execute()
 
             if len(res) == 0:
                 print(f"No results found for {d['T']}-{d['Z']}")
             else:
-                valid_districts.append(f"{search_query.place.town}__{d['Z']}__{d['T']}")
-        with open(f"{target}/valid_districts.json", "w") as f:
-            json.dump(valid_districts, f, indent=4)
+                valid_districts.append(f"{x.town}__{d['Z']}__{d['T']}")
+                
+        valid_districts = sorted(valid_districts)
+        
+        existing_districts = json.load(open(self.district_extraction_config.target_districts_file))
+        
+        updated_districts = sorted(list(set(existing_districts + valid_districts)))
+        
+        with open(self.district_extraction_config.target_districts_file, "w") as f:
+            json.dump(updated_districts, f, indent=4)

@@ -6,7 +6,7 @@ defaults:
 global_config:
   experiment_name: textract_es_gpt4_connecticut_search_range_3
   target_state: connecticut
-  eval_terms: ["min_lot_size", "min_unit_size", "max_height"]
+  eval_terms: ['floor_to_area_ratio', 'max_height', 'max_lot_coverage', 'max_lot_coverage_pavement', 'min_lot_size', 'min_parking_spaces', 'min_unit_size']
 
 
 index_config:

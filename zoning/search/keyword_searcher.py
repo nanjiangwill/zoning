@@ -13,7 +13,6 @@ class KeywordSearcher(Searcher):
         super().__init__(search_config)
         self.es_client = Elasticsearch(self.search_config.es_endpoint)
 
-    @staticmethod
     def get_district_query(
         self,
         district_full_name: str,
@@ -100,7 +99,7 @@ class KeywordSearcher(Searcher):
             max_attempts = 2
 
             while len(res) == 0 and attempts < max_attempts:
-                max_attempts += 1
+                attempts += 1
                 district_query = self.get_district_query(
                     search_query.place.district_full_name,
                     search_query.place.district_short_name,

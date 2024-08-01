@@ -57,6 +57,8 @@ district_extraction_config:
   templates_dir: ${prompt_config.templates_dir}
   system_prompt_file: district_extraction_system
   user_prompt_file: district_extraction_user
+  verification_es_endpoint: ${global_config.es_endpoint}
+  target_districts_file: ${global_config.target_district_file}
 
 index_config:
   method: keyword # allowed keyword/embedding

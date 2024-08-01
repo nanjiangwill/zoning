@@ -135,7 +135,7 @@ with st.sidebar:
     # st.write(
     #     f"There are total :orange-background[{num_selected_data} selected] evaluation data"
     # )
-    print(selected_data)
+    # print(selected_data)
     place = st.radio(
         "Which evaluation datum to check?", (term["place"] for term in selected_data)
     )
@@ -232,6 +232,7 @@ current_page = min(jump_pages) if jump_pages else 1
 # show
 st.subheader(f"Town: {place.town}")
 st.subheader(f"District: {place.district_full_name}")
+st.subheader(f"District Abbreviation: {place.district_short_name}")
 st.subheader(f"Eval Term: {eval_term}")
 st.divider()
 

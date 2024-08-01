@@ -21,7 +21,7 @@ def preprocess_search_target(town_file, district_file, eval_terms, output_file):
                 f"{term}__{town}__{district_short_name}__{district_full_name}"
             )
     with open(output_file, "w") as f:
-        json.dump(search_targets, f, indent=4)
+        json.dump(sorted(search_targets), f, indent=4)
 
 
 @hydra.main(version_base=None, config_path="../../config", config_name="base")

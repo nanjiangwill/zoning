@@ -9,7 +9,7 @@ class KeywordIndexer(Indexer):
         super().__init__(index_config)
         self.es_client = Elasticsearch(index_config.es_endpoint)
 
-    def index(self, formatted_ocr: FormatOCR, town_name: str) -> None:
+    def index(self, formatted_ocr: FormatOCR, town: str) -> None:
         all_index_data = []
         page_data = formatted_ocr.pages
 
@@ -24,7 +24,7 @@ class KeywordIndexer(Indexer):
                 )
             all_index_data.append(
                 ElasticSearchIndexData(
-                    index=town_name,
+                    index=town,
                     id=page_data[idx]["page"],
                     document={"Page": str(page_data[idx]["page"]), "Text": text},
                     request_timeout=30,

@@ -59,6 +59,8 @@ class DistrictExtractionConfig(BaseModel):
     templates_dir: str
     system_prompt_file: str
     user_prompt_file: str
+    verification_es_endpoint: str
+    target_districts_file: str
 
 
 class IndexConfig(BaseModel):
@@ -198,7 +200,7 @@ class FormatOCR(BaseModel):
     """
 
     pages: List[Dict[str, str]]
-    town_name: str
+    town: str
 
 
 # =================
@@ -210,12 +212,12 @@ class PageEmbeddingResult(BaseModel):
     linked to district_extraction
     """
 
-    town_name: str
+    town: str
     embedded_pages: List[Dict[str, str | List[float]]]
 
 
 class DistrictExtractionResult(BaseModel):
-    town_name: str
+    town: str
     districts: List[Dict[str, str]]
     districts_info_page: List[int]
 

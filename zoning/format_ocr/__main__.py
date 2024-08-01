@@ -20,11 +20,11 @@ def collect_relations(w) -> List[str]:
 OCROutput = List[Dict[str, Any]]
 
 
-def process_ocr_result(data: OCROutput, town_name: str) -> FormatOCR:
+def process_ocr_result(data: OCROutput, town: str) -> FormatOCR:
     extract_blocks = [b for d in data for b in d["Blocks"]]
 
     ocr_page = OCRPage()
-    formatted_ocr = FormatOCR(pages=[], town_name=town_name)
+    formatted_ocr = FormatOCR(pages=[], town=town)
     for w in tqdm.tqdm(extract_blocks):
         if w["BlockType"] in ["LINE", "WORD", "CELL", "MERGED_CELL"]:
             ocr_block = OCRBlock(

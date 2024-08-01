@@ -10,14 +10,17 @@ from zoning.utils import process
 
 
 def eval_fn(d: NormalizedLLMInferenceResult, gt, experiment_dir, target) -> EvalResult:
-    gt_info = list(
-        filter(
-            lambda x: x["town"] == d.place.town
-            and x["district"] == d.place.district_full_name
-            and x["district_abb"] == d.place.district_short_name,
-            gt,
+    if gt is None:
+        gt_info = None
+    else:
+        gt_info = list(
+            filter(
+                lambda x: x["town"] == d.place.town
+                and x["district"] == d.place.district_full_name
+                and x["district_abb"] == d.place.district_short_name,
+                gt,
+            )
         )
-    )
     if gt_info is None or len(gt_info) == 0:
         ground_truth = None
         ground_truth_orig = None
@@ -111,7 +114,7 @@ def main(config: ZoningConfig):
         global_config.eval_dir,
         fn=lambda x, y: eval_fn(
             x,
-            json.load(open(global_config.ground_truth_file)),
+            json.load(open(global_config.ground_truth_file)) if os.path.exists(global_config.ground_truth_file) else None,
             global_config.experiment_dir,
             y,
         ),
