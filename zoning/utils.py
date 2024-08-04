@@ -111,6 +111,9 @@ def page_coverage_text(searched_text: List[str]) -> str:
             page, text = chunk.split("\n", 1)
             page_text_dict[int(page)] = text
     all_pages = sorted(page_text_dict.keys())
+    # print("\n".join([f"NEW PAGE {page}\n{page_text_dict[page]}" for page in all_pages]))
+    print(all_pages)
+    # adsf
     return "\n".join([f"NEW PAGE {page}\n{page_text_dict[page]}" for page in all_pages])
 
 

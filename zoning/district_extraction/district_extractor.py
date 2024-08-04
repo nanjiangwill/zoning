@@ -3,6 +3,8 @@ import json
 import numpy as np
 from datasets import Dataset
 from elasticsearch import Elasticsearch
+from elasticsearch_dsl import Search
+from elasticsearch_dsl.query import Q
 from jinja2 import Environment, FileSystemLoader
 from openai import OpenAI
 
@@ -12,8 +14,6 @@ from zoning.class_types import (
     FormatOCR,
     PageEmbeddingResult,
 )
-from elasticsearch_dsl import Search
-from zoning.search.keyword_searcher import KeywordSearcher
 from zoning.utils import flatten, post_processing_llm_output, prompt_file
 
 
@@ -35,8 +35,10 @@ class DistrictExtractor:
         self.user_prompt_template = self.prompt_env.get_template(
             prompt_file(district_extraction_config.user_prompt_file)
         )
-        
-        self.verification_es_client = Elasticsearch(self.district_extraction_config.verification_es_endpoint)
+
+        self.verification_es_client = Elasticsearch(
+            self.district_extraction_config.verification_es_endpoint
+        )
 
     def call_llm(self, system_prompt: str, user_prompt: str):
         call_response = self.openai_client.chat.completions.create(
@@ -91,7 +93,7 @@ class DistrictExtractor:
 
         dataset = Dataset.from_list(embedded_pages)
         dataset.add_faiss_index("embedding")
-        k = 2
+        k = 3
 
         if self.QUERY_EMBEDDING is None:
             query_embedding_response = self.openai_client.embeddings.create(
@@ -103,65 +105,70 @@ class DistrictExtractor:
         res = dataset.get_nearest_examples("embedding", self.QUERY_EMBEDDING, k)
 
         nearest_pages = res.examples["page"]
-        nearest_texts = res.examples["text"]
 
-        # districts_per_page = []
-        # for page, text in zip(nearest_pages, nearest_texts):
-        #     district_extraction_response = self.call_llm(
-        #         self.system_prompt_template.render(),
-        #         self.user_prompt_template.render(docs=[text]),
-        #     )
-        #     districts_per_page.append(
-        #         {
-        #             "page": page,
-        #             "districts": post_processing_llm_output(
-        #                 district_extraction_response
-        #             ),
-        #         }
-        #     )
-            
-        # districts = flatten([d["districts"] for d in districts_per_page])
+        # extend nearest_page by +- extend_range
+        extend_range = 1  # 2
+        extended_nearest_pages = flatten(
+            [
+                [i + j for j in range(-extend_range, extend_range + 1)]
+                for i in nearest_pages
+            ]
+        )
+        extended_nearest_pages = sorted(list(set(extended_nearest_pages)))
+        extended_nearest_texts = [
+            i["text"] for i in embedded_pages if i["page"] in extended_nearest_pages
+        ]
 
-        # unique_districts = set(frozenset(d.items()) for d in districts)
-        # unique_districts = [dict(d) for d in unique_districts]
-
-        # return DistrictExtractionResult(
-        #     town=town,
-        #     districts=unique_districts,
-        #     districts_info_page=nearest_pages,
-        # )
-        
         district_extraction_response = self.call_llm(
             self.system_prompt_template.render(),
-            self.user_prompt_template.render(docs=nearest_texts),
+            self.user_prompt_template.render(docs=extended_nearest_texts),
         )
 
         return DistrictExtractionResult(
             town=town,
-            districts=post_processing_llm_output(
-                    district_extraction_response
-                ),
+            districts=post_processing_llm_output(district_extraction_response),
             districts_info_page=nearest_pages,
         )
 
-        
+    def get_district_query(
+        self,
+        district_full_name: str,
+        district_short_name: str,
+        boost_value: float = 1.0,
+    ):
+        return (
+            Q("match_phrase", Text={"query": district_full_name, "boost": boost_value})
+            | Q(
+                "match_phrase",
+                Text={"query": district_short_name, "boost": boost_value},
+            )
+            | Q(
+                "match_phrase",
+                Text={
+                    "query": district_short_name.replace("-", ""),
+                    "boost": boost_value,
+                },
+            )
+            | Q(
+                "match_phrase",
+                Text={
+                    "query": district_short_name.replace(".", ""),
+                    "boost": boost_value,
+                },
+            )
+        )
 
     def district_extraction_verification(
         self, x: DistrictExtractionResult, target: str
     ) -> None:
 
-        # how to filter  same Z todo
-        # use search engine to filter?
         valid_districts = []
 
         for d in x.districts:
             district_full_name = d["T"]
             district_short_name = d["Z"]
-            district_query = KeywordSearcher.get_district_query(
-                None,
-                district_full_name=district_full_name, 
-                district_short_name=district_short_name, 
-                is_district_fuzzy=False
+            district_query = self.get_district_query(
+                district_full_name, district_short_name
             )
 
             s = Search(using=self.verification_es_client, index=x.town)
@@ -174,12 +181,15 @@ class DistrictExtractor:
                 print(f"No results found for {d['T']}-{d['Z']}")
             else:
                 valid_districts.append(f"{x.town}__{d['Z']}__{d['T']}")
-                
-        valid_districts = sorted(valid_districts)
-        
-        existing_districts = json.load(open(self.district_extraction_config.target_districts_file))
-        
+
+        existing_districts = json.load(
+            open(self.district_extraction_config.target_districts_file)
+        )
+
+        if not existing_districts:
+            existing_districts = []
+
         updated_districts = sorted(list(set(existing_districts + valid_districts)))
-        
+
         with open(self.district_extraction_config.target_districts_file, "w") as f:
             json.dump(updated_districts, f, indent=4)

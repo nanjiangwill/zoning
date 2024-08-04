@@ -6,7 +6,7 @@ global_config:
   experiment_dir: results/${global_config.experiment_name} # helper variable, just used to parse
 
   target_state: connecticut
-  eval_terms: ["min_lot_size", "min_unit_size", "max_height"] # all available eval terms ['floor_to_area_ratio', 'max_height', 'max_lot_coverage', 'max_lot_coverage_pavement', 'min_lot_size', 'min_parking_spaces', 'min_unit_size']
+  eval_terms: ["min_lot_size", "min_unit_size", "max_height"] # all available eval terms ['floor_to_area_ratio', 'max_height', 'max_lot_coverage', 'max_lot_coverage_pavement', 'min_lot_size', 'min_parking_spaces', 'min_unit_size', 'units_per_acre']
 
   data_dir: data/${global_config.target_state}
   target_town_file: ${global_config.data_dir}/target_towns_names.json
@@ -51,7 +51,7 @@ format_ocr_config:
   temp: x
 
 district_extraction_config:
-  run_page_embedding: false
+  run_district_extraction: false
   embedding_model: text-embedding-3-small
   llm_model: ${llm_config.llm_name}
   templates_dir: ${prompt_config.templates_dir}

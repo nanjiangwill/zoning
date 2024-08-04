@@ -40,8 +40,9 @@ def main(config: ZoningConfig):
     district_extractor = DistrictExtractor(
         district_extraction_config=district_extraction_config
     )
+    
     # Construct the input data
-    if district_extraction_config.run_page_embedding:
+    if district_extraction_config.run_district_extraction:
         process(
             global_config.target_town_file,
             global_config.format_ocr_dir,
@@ -49,7 +50,7 @@ def main(config: ZoningConfig):
             district_extractor.page_embedding,
             converter=lambda x: FormatOCR.model_construct(**x),
         )
-            
+
         process(
             global_config.target_town_file,
             global_config.page_embedding_dir,

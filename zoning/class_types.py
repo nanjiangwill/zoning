@@ -53,7 +53,7 @@ class FormatOCRConfig(BaseModel):
 
 
 class DistrictExtractionConfig(BaseModel):
-    run_page_embedding: bool
+    run_district_extraction: bool
     embedding_model: str
     llm_model: str
     templates_dir: str

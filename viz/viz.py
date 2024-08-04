@@ -65,7 +65,7 @@ with st.sidebar:
 
     st.write(
         "Number of :orange-background[all] selected data: ",
-        len(all_data_by_eval_term),
+        len(all_places),
     )
 
     # Step 2: Config
@@ -183,6 +183,21 @@ entire_search_page_range = (
     search_result.entire_search_page_range if search_result else [0]
 )
 
+highlight_text_pages = []
+if extracted_text is not None:
+    for i in extracted_text:
+        x = repr(i)
+        # print(i)
+        # print(repr(x))
+        page = int(
+            prompt_result[0]
+            .user_prompt.split(x)[0]
+            .split("NEW PAGE ")[-1]
+            .split("\n")[0]
+        )
+        highlight_text_pages.append(page)
+
+    highlight_text_pages = sorted(list(set(highlight_text_pages)))
 
 ground_truth = eval_result.ground_truth if eval_result else None
 ground_truth_orig = eval_result.ground_truth_orig if eval_result else None
@@ -345,6 +360,9 @@ with search_col:
         with col7:
             st.write(
                 "Search Page: :orange-background[{}]".format(entire_search_page_range)
+            )
+            st.write(
+                "Highlighted Pages: :orange-background[{}]".format(highlight_text_pages)
             )
             st.write(
                 "Normalized LLM Answer: :orange-background[{}]".format(

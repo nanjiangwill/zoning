@@ -104,9 +104,9 @@ def main(config: ZoningConfig):
         config.eval_dir
     """
     # Parse the config
-    config = OmegaConf.to_object(config)
-    global_config = ZoningConfig(config=config).global_config
-    # eval_config = ZoningConfig(config=config).eval_config
+    config = ZoningConfig(config=OmegaConf.to_object(config))
+    global_config = config.global_config
+    # eval_config = config.eval_config
 
     process(
         global_config.target_eval_file,
@@ -114,7 +114,11 @@ def main(config: ZoningConfig):
         global_config.eval_dir,
         fn=lambda x, y: eval_fn(
             x,
-            json.load(open(global_config.ground_truth_file)) if os.path.exists(global_config.ground_truth_file) else None,
+            (
+                json.load(open(global_config.ground_truth_file))
+                if os.path.exists(global_config.ground_truth_file)
+                else None
+            ),
             global_config.experiment_dir,
             y,
         ),

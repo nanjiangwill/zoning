@@ -23,9 +23,9 @@ def main(config: ZoningConfig):
     """
 
     # Parse the config
-    config = OmegaConf.to_object(config)
-    global_config = ZoningConfig(config=config).global_config
-    ocr_config = ZoningConfig(config=config).ocr_config
+    config = ZoningConfig(config=OmegaConf.to_object(config))
+    global_config = config.global_config
+    ocr_config = config.ocr_config
 
     # Extract the data
     match ocr_config.method:

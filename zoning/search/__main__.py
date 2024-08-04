@@ -42,9 +42,9 @@ def main(config: ZoningConfig):
         config.search_dir
     """
     # Parse the config
-    config = OmegaConf.to_object(config)
-    global_config = ZoningConfig(config=config).global_config
-    search_config = ZoningConfig(config=config).search_config
+    config = ZoningConfig(config=OmegaConf.to_object(config))
+    global_config = config.global_config
+    search_config = config.search_config
 
     # Load the searcher
     match search_config.method:

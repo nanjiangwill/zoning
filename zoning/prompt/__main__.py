@@ -24,9 +24,9 @@ def main(config: ZoningConfig):
         config.prompt_dir
     """
     # Parse the config
-    config = OmegaConf.to_object(config)
-    global_config = ZoningConfig(config=config).global_config
-    prompt_config = ZoningConfig(config=config).prompt_config
+    config = ZoningConfig(config=OmegaConf.to_object(config))
+    global_config = config.global_config
+    prompt_config = config.prompt_config
 
     # Load the searcher
     prompt_generator = PromptGenerator(prompt_config)

@@ -78,9 +78,9 @@ def main(config: ZoningConfig):
     """
 
     # Parse the config
-    config = OmegaConf.to_object(config)
-    global_config = ZoningConfig(config=config).global_config
-    # format_ocr_config = ZoningConfig(config=config).format_ocr_config
+    config = ZoningConfig(config=OmegaConf.to_object(config))
+    global_config = config.global_config
+    # format_ocr_config = config.format_ocr_config
 
     # Construct the input data
     process(
