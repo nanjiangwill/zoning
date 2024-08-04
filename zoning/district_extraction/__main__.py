@@ -33,8 +33,7 @@ def main(config: ZoningConfig):
     """
 
     # Parse the config
-    config = OmegaConf.to_object(config)
-    config = ZoningConfig(config=config)
+    config = ZoningConfig(config=OmegaConf.to_object(config))
     global_config = config.global_config
     district_extraction_config = config.district_extraction_config
     district_extractor = DistrictExtractor(
