@@ -10,10 +10,10 @@ global_config:
 
 
 ocr_config:
-  run_ocr: true
+  run_ocr: false
 
 district_extraction_config:
-  run_district_extraction: false
+  run_district_extraction: true
 
 index_config:
   index_range: 3

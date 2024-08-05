@@ -23,6 +23,7 @@ class GlobalConfig(BaseModel):
     format_ocr_dir: str
     page_embedding_dir: str
     district_extraction_dir: str
+    district_extraction_verification_dir: str
     index_dir: str
     search_dir: str
     prompt_dir: str
@@ -219,6 +220,12 @@ class PageEmbeddingResult(BaseModel):
 class DistrictExtractionResult(BaseModel):
     town: str
     districts: List[Dict[str, str]]
+    districts_info_page: List[int]
+
+
+class DistrictExtractionVerificationResult(BaseModel):
+    town: str
+    valid_districts: List[str]
     districts_info_page: List[int]
 
 

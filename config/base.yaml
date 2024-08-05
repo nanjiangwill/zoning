@@ -23,6 +23,7 @@ global_config:
   format_ocr_dir: ${global_config.experiment_dir}/format_ocr
   page_embedding_dir: ${global_config.experiment_dir}/page_embedding
   district_extraction_dir: ${global_config.experiment_dir}/district_extraction
+  district_extraction_verification_dir: ${global_config.experiment_dir}/district_extraction_verification
   index_dir: ${global_config.experiment_dir}/index
   search_dir: ${global_config.experiment_dir}/search
   prompt_dir: ${global_config.experiment_dir}/prompt

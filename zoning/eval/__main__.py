@@ -31,7 +31,7 @@ def eval_fn(d: NormalizedLLMInferenceResult, gt, experiment_dir, target) -> Eval
         ground_truth = gt_info[f"{d.eval_term}_gt"]
         ground_truth_orig = gt_info[f"{d.eval_term}_gt_orig"]
         ground_truth_page = gt_info[f"{d.eval_term}_page_gt"]
-        
+
     if ground_truth_page is not None:
         ground_truth_page_int = (
             [int(ground_truth_page)]
@@ -41,9 +41,7 @@ def eval_fn(d: NormalizedLLMInferenceResult, gt, experiment_dir, target) -> Eval
     else:
         ground_truth_page_int = []
 
-    search_file = glob.glob(
-        f"{experiment_dir}/search/*{d.eval_term}__{d.place}.json"
-    )
+    search_file = glob.glob(f"{experiment_dir}/search/*{d.eval_term}__{d.place}.json")
     assert len(search_file) == 1
     search_result = json.load(open(search_file[0]))
     search_ranges = search_result["entire_search_page_range"]

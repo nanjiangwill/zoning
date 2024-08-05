@@ -1,8 +1,12 @@
+import glob
+import json
+
 import hydra
 from omegaconf import OmegaConf
 
 from zoning.class_types import (
     DistrictExtractionResult,
+    DistrictExtractionVerificationResult,
     FormatOCR,
     PageEmbeddingResult,
     ZoningConfig,
@@ -61,11 +65,24 @@ def main(config: ZoningConfig):
         process(
             global_config.target_town_file,
             global_config.district_extraction_dir,
-            None,
+            global_config.district_extraction_verification_dir,
             district_extractor.district_extraction_verification,
             converter=lambda x: DistrictExtractionResult.model_construct(**x),
-            output=False,
         )
+
+        all_districts_files = glob.glob(
+            f"{global_config.district_extraction_verification_dir}/*.json"
+        )
+        districts = []
+        for district_file in all_districts_files:
+            verified_districts = DistrictExtractionVerificationResult.model_construct(
+                **json.load(open(district_file))
+            )
+            districts.extend(verified_districts.valid_districts)
+
+        districts = sorted(list(set(districts)))
+        with open(district_extraction_config.target_districts_file, "w") as f:
+            json.dump(districts, f, indent=4)
 
 
 if __name__ == "__main__":
