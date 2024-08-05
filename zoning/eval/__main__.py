@@ -25,58 +25,57 @@ def eval_fn(d: NormalizedLLMInferenceResult, gt, experiment_dir, target) -> Eval
         ground_truth = None
         ground_truth_orig = None
         ground_truth_page = None
-        answer_correct = None
-        page_in_range = None
     else:
         # there show be only one matching for each evaluation data
         gt_info = gt_info[0]
         ground_truth = gt_info[f"{d.eval_term}_gt"]
         ground_truth_orig = gt_info[f"{d.eval_term}_gt_orig"]
         ground_truth_page = gt_info[f"{d.eval_term}_page_gt"]
-        if ground_truth_page is not None:
-            ground_truth_page_int = (
-                [int(ground_truth_page)]
-                if "," not in ground_truth_page
-                else [int(x) for x in ground_truth_page.split(",")]
-            )
-        else:
-            ground_truth_page_int = []
-
-        search_file = glob.glob(
-            f"{experiment_dir}/search/*{d.eval_term}__{d.place}.json"
+        
+    if ground_truth_page is not None:
+        ground_truth_page_int = (
+            [int(ground_truth_page)]
+            if "," not in ground_truth_page
+            else [int(x) for x in ground_truth_page.split(",")]
         )
-        assert len(search_file) == 1
-        search_result = json.load(open(search_file[0]))
-        search_ranges = search_result["entire_search_page_range"]
+    else:
+        ground_truth_page_int = []
 
-        page_in_range = None
+    search_file = glob.glob(
+        f"{experiment_dir}/search/*{d.eval_term}__{d.place}.json"
+    )
+    assert len(search_file) == 1
+    search_result = json.load(open(search_file[0]))
+    search_ranges = search_result["entire_search_page_range"]
 
-        if len(ground_truth_page_int) == 0:
+    page_in_range = None
+
+    if len(ground_truth_page_int) == 0:
+        page_in_range = False
+    else:
+        if any(i in search_ranges for i in ground_truth_page_int):
+            page_in_range = True
+        else:
             page_in_range = False
+
+    answer_correct = None
+
+    assert len(d.normalized_llm_outputs) == 1
+
+    o = d.normalized_llm_outputs
+    if ground_truth is None and ground_truth_orig is None:
+        if o.normalized_answer is None:
+            answer_correct = True
         else:
-            if any(i in search_ranges for i in ground_truth_page_int):
-                page_in_range = True
-            else:
-                page_in_range = False
-
-        answer_correct = None
-
-        assert len(d.normalized_llm_outputs) == 1
-
-        o = d.normalized_llm_outputs
-        if ground_truth is None and ground_truth_orig is None:
-            if o.normalized_answer is None:
-                answer_correct = True
-            else:
-                answer_correct = False
+            answer_correct = False
+    else:
+        if o.normalized_answer and (
+            ground_truth in o.normalized_answer
+            or ground_truth_orig in o.normalized_answer
+        ):
+            answer_correct = True
         else:
-            if o.normalized_answer and (
-                ground_truth in o.normalized_answer
-                or ground_truth_orig in o.normalized_answer
-            ):
-                answer_correct = True
-            else:
-                answer_correct = False
+            answer_correct = False
 
     return EvalResult(
         place=d.place,
