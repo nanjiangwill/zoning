@@ -39,7 +39,7 @@ def main(config: ZoningConfig):
     district_extractor = DistrictExtractor(
         district_extraction_config=district_extraction_config
     )
-    
+
     # Construct the input data
     if district_extraction_config.run_district_extraction:
         process(

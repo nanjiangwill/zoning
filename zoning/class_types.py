@@ -247,6 +247,14 @@ class Place(BaseModel):
     def __str__(self) -> str:
         return f"{self.town}__{self.district_short_name}__{self.district_full_name}"
 
+    def from_str(self, place_str):
+        town, district_short_name, district_full_name = place_str.split("__")
+        return Place(
+            town=town,
+            district_short_name=district_short_name,
+            district_full_name=district_full_name,
+        )
+
 
 class SearchQuery(BaseModel):
     raw_query_str: str
@@ -389,8 +397,8 @@ class EvalResult(BaseModel):
     ground_truth: str | None
     ground_truth_orig: str | None
     ground_truth_page: str | None
-    answer_correct: List[bool] | None
-    page_in_range: List[bool] | None
+    answer_correct: bool | None
+    page_in_range: bool | None
 
     def model_post_init(self, __context):
         if isinstance(self.place, dict):

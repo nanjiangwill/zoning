@@ -23,7 +23,7 @@ st.set_page_config(layout="wide")
 
 # Sidebar config
 with st.sidebar:
-    # Step 1: upload file
+    # Step 1: load files
 
     all_results = {
         k: [
@@ -98,118 +98,72 @@ with st.sidebar:
         selected_data = [
             i
             for i in selected_data
-            if len(i["eval"]) != 0
-            and any(i["eval"][0].answer_correct)
-            and any(i["eval"][0].page_in_range)
+            if i["eval"][0].answer_correct and i["eval"][0].page_in_range
         ]
     if eval_type == "only_wrong_answer":
         selected_data = [
             i
             for i in selected_data
-            if len(i["eval"]) != 0
-            and not any(i["eval"][0].answer_correct)
-            and any(i["eval"][0].page_in_range)
+            if not i["eval"][0].answer_correct and i["eval"][0].page_in_range
         ]
     if eval_type == "only_wrong_page":
         selected_data = [
             i
             for i in selected_data
-            if len(i["eval"]) != 0
-            and any(i["eval"][0].answer_correct)
-            and not any(i["eval"][0].page_in_range)
+            if i["eval"][0].answer_correct and not i["eval"][0].page_in_range
         ]
     if eval_type == "wrong_answer_and_page":
         selected_data = [
             i
             for i in selected_data
-            if len(i["eval"]) == 0
-            or (
-                not any(i["eval"][0].answer_correct)
-                and not any(i["eval"][0].page_in_range)
-            )
+            if not i["eval"][0].answer_correct and not i["eval"][0].page_in_range
         ]
 
     # Step 3: Select one data to check
     st.divider()
     st.subheader("Step 3: Select one data to check", divider="rainbow")
-    # st.write(
-    #     f"There are total :orange-background[{num_selected_data} selected] evaluation data"
-    # )
-    # print(selected_data)
-    place = st.radio(
-        "Which evaluation datum to check?", (term["place"] for term in selected_data)
-    )
+    place = st.radio("Which data to check?", (term["place"] for term in selected_data))
 
 # Load the data for the town.
 
-checked_data = all_data_by_eval_term[eval_term][
+visualized_data = all_data_by_eval_term[eval_term][
     place
 ]  # list([data for data in selected_data if data["place"] == place])[0]
-town, district_short_name, district_full_name = place.split("__")
-place = Place(
-    town=town,
-    district_short_name=district_short_name,
-    district_full_name=district_full_name,
-)
-eval_term = checked_data["eval_term"]
-search_result = checked_data["search"][0] if checked_data["search"] else None
-prompt_result = checked_data["prompt"][0] if checked_data["prompt"] else None
-llm_inference_result = checked_data["llm"][0] if checked_data["llm"] else None
-normalized_llm_inference_result = (
-    checked_data["normalization"][0] if checked_data["normalization"] else None
-)
-eval_result = checked_data["eval"][0] if checked_data["eval"] else None
+place = Place.from_str(place)
 
-prompt_result = [prompt_result.input_prompts[0]]
-raw_model_response = (
-    llm_inference_result.llm_outputs[0].raw_model_response
-    if llm_inference_result
-    else None
-)
-extracted_text = (
-    llm_inference_result.llm_outputs[0].extracted_text if llm_inference_result else None
-)
-rationale = (
-    llm_inference_result.llm_outputs[0].rationale if llm_inference_result else None
-)
-answer = llm_inference_result.llm_outputs[0].answer if llm_inference_result else None
-normalized_llm_inference_result = (
-    normalized_llm_inference_result.normalized_llm_outputs[0].normalized_answer
-    if normalized_llm_inference_result
-    else None
-)
+# loading info
+eval_term = visualized_data["eval_term"]
+search_result = visualized_data["search"][0]
+prompt_result = visualized_data["prompt"][0]
+input_prompt = prompt_result.input_prompts[0]
+llm_inference_result = visualized_data["llm"][0]
+normalized_llm_inference_result = visualized_data["normalization"][0]
+eval_result = visualized_data["eval"][0]
 
-entire_search_page_range = (
-    search_result.entire_search_page_range if search_result else [0]
-)
+llm_output = llm_inference_result.llm_outputs[0]
+normalized_llm_output = normalized_llm_inference_result.normalized_llm_outputs[0]
+
+
+entire_search_page_range = search_result.entire_search_page_range
 
 highlight_text_pages = []
-if extracted_text is not None:
-    for i in extracted_text:
+if llm_output.extracted_text is not None:
+    for i in llm_output.extracted_text:
         x = repr(i)
-        # print(i)
-        # print(repr(x))
         page = int(
-            prompt_result[0]
-            .user_prompt.split(x)[0]
-            .split("NEW PAGE ")[-1]
-            .split("\n")[0]
+            input_prompt.user_prompt.split(x)[0].split("NEW PAGE ")[-1].split("\n")[0]
         )
         highlight_text_pages.append(page)
 
     highlight_text_pages = sorted(list(set(highlight_text_pages)))
 
-ground_truth = eval_result.ground_truth if eval_result else None
-ground_truth_orig = eval_result.ground_truth_orig if eval_result else None
-ground_truth_page = eval_result.ground_truth_page if eval_result else None
-answer_correct = eval_result.answer_correct if eval_result else None
-page_in_range = eval_result.page_in_range if eval_result else None
+ground_truth = eval_result.ground_truth
+ground_truth_orig = eval_result.ground_truth_orig
+ground_truth_page = eval_result.ground_truth_page
+answer_correct = eval_result.answer_correct
+page_in_range = eval_result.page_in_range
 
 pdf_file = target_pdf(place.town, PDF_DIR)
-# os.path.join(
-#     PDF_DIR,
-#     f"{place.town}-zoning-code.pdf",
-# )
 doc = fitz.open(pdf_file)
 
 jump_pages = entire_search_page_range.copy()
@@ -292,7 +246,7 @@ with search_col:
         f"entire_search_results_page_range: :orange-background[{sorted(entire_search_page_range)}]"
     )
     st.write(
-        f"Normalized LLM answer: :orange-background[{normalized_llm_inference_result}]"
+        f"Normalized LLM answer: :orange-background[{normalized_llm_output.normalized_answer}]"
     )
     grouped_jump_pages = group_continuous(jump_pages)
     min_max_grouped_jump_pages = flatten(
@@ -301,26 +255,13 @@ with search_col:
             for i in grouped_jump_pages
         ]
     )
-    # print(flatten(min_max_grouped_jump_pages))
-    # if len(min_max_grouped_jump_pages) > 0:
-    #     cols = st.columns(2 * len(min_max_grouped_jump_pages) -1)
-
-    # for i in range(len(min_max_grouped_jump_pages)):
-    #     page_num = min_max_grouped_jump_pages[i]
-
-    #     cols[2*i].button(
-    #         str(page_num),
-    #         args=(f"{page_num}",),
-    #     )
-    #     if i < len(min_max_grouped_jump_pages) - 1:
-    #         cols[2*i + 1].write("__")
 
     st.subheader("LLM Inference Results")
 
-    col7, col8 = st.columns(2)
-    with col7:
+    llm_answer_col, llm_response_detail_col = st.columns(2)
+    with llm_answer_col:
         st.write("*Answer*")
-    with col8:
+    with llm_response_detail_col:
         st.write("*Full Details*")
 
     with st.container(height=700, border=False):
@@ -356,8 +297,8 @@ with search_col:
         #             expanded=False,
         #         )
         #     st.divider()
-        col7, col8 = st.columns(2)
-        with col7:
+        llm_answer_col, llm_response_detail_col = st.columns(2)
+        with llm_answer_col:
             st.write(
                 "Search Page: :orange-background[{}]".format(entire_search_page_range)
             )
@@ -366,42 +307,45 @@ with search_col:
             )
             st.write(
                 "Normalized LLM Answer: :orange-background[{}]".format(
-                    normalized_llm_inference_result
+                    normalized_llm_output.normalized_answer
                 )
             )
             st.json(
                 {
-                    "extracted_text": extracted_text,
-                    "rationale": rationale,
-                    "answer": answer,
-                    "normalized_answer": normalized_llm_inference_result,
+                    "extracted_text": llm_output.extracted_text,
+                    "rationale": llm_output.rationale,
+                    "answer": llm_output.answer,
+                    "normalized_answer": normalized_llm_output.normalized_answer,
                 }
             )
-        with col8:
+        with llm_response_detail_col:
             st.json(
                 {
-                    "input_prompt": prompt_result,
-                    "raw_model_response": raw_model_response,
+                    "input_prompt": [
+                        input_prompt.system_prompt,
+                        input_prompt.user_prompt,
+                    ],
+                    "raw_model_response": llm_output.raw_model_response,
                 },
                 expanded=False,
             )
         st.divider()
 
     st.subheader("Search Results before merge")
-    col5, col6 = st.columns(2)
-    with col5:
+    search_meta_col, search_text_col = st.columns(2)
+    with search_meta_col:
         st.write("*Relevance Score & Page Range*")
-    with col6:
+    with search_text_col:
         st.write("*Text & Highlight*")
     with st.container(height=400, border=False):
         for idx, search_result in enumerate(search_result.search_matches):
-            col5, col6 = st.columns(2)
-            with col5:
+            search_meta_col, search_text_col = st.columns(2)
+            with search_meta_col:
                 st.write(f"Relevance Score :orange-background[{search_result.score}]")
                 st.write(
                     f"Page Range :orange-background[{sorted(search_result.page_range)}]"
                 )
-            with col6:
+            with search_text_col:
                 st.json(
                     {
                         "text": search_result.text,

@@ -47,33 +47,36 @@ def eval_fn(d: NormalizedLLMInferenceResult, gt, experiment_dir, target) -> Eval
         )
         assert len(search_file) == 1
         search_result = json.load(open(search_file[0]))
-        search_ranges = [search_result["entire_search_page_range"]]
-        page_in_range = []
+        search_ranges = search_result["entire_search_page_range"]
+
+        page_in_range = None
 
         if len(ground_truth_page_int) == 0:
-            page_in_range = [False for _ in search_ranges]
+            page_in_range = False
         else:
-            for sr in search_ranges:
-                if any(i in sr for i in ground_truth_page_int):
-                    page_in_range.append(True)
-                else:
-                    page_in_range.append(False)
-
-        answer_correct = []
-
-        for o in d.normalized_llm_outputs:
-            if ground_truth is None and ground_truth_orig is None:
-                if o.normalized_answer is None:
-                    answer_correct.append(True)
-                    continue
+            if any(i in search_ranges for i in ground_truth_page_int):
+                page_in_range = True
             else:
-                if o.normalized_answer and (
-                    ground_truth in o.normalized_answer
-                    or ground_truth_orig in o.normalized_answer
-                ):
-                    answer_correct.append(True)
-                    continue
-            answer_correct.append(False)
+                page_in_range = False
+
+        answer_correct = None
+
+        assert len(d.normalized_llm_outputs) == 1
+
+        o = d.normalized_llm_outputs
+        if ground_truth is None and ground_truth_orig is None:
+            if o.normalized_answer is None:
+                answer_correct = True
+            else:
+                answer_correct = False
+        else:
+            if o.normalized_answer and (
+                ground_truth in o.normalized_answer
+                or ground_truth_orig in o.normalized_answer
+            ):
+                answer_correct = True
+            else:
+                answer_correct = False
 
     return EvalResult(
         place=d.place,
