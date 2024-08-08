@@ -21,3 +21,6 @@ zoning/*/__pycache__
 zoning/__pycache__
 zoning/prompt/old_templates
 zoning/~*
+results/*/page_embedding
+results/*/district_extraction
+results/*/district_extraction_verification
