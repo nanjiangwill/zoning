@@ -6,6 +6,7 @@ from elasticsearch_dsl.query import Q
 
 from zoning.class_types import SearchConfig, SearchMatch, SearchQuery, SearchResult
 from zoning.search.base_searcher import Searcher
+from zoning.utils import expand_term
 
 
 class KeywordSearcher(Searcher):
@@ -58,7 +59,7 @@ class KeywordSearcher(Searcher):
     def get_eval_term_query(
         self, eval_term: str, is_eval_term_fuzzy: bool, thesaurus_file: str
     ) -> Q:
-        expanded_eval_term = self.expand_term(thesaurus_file, eval_term)
+        expanded_eval_term = expand_term(thesaurus_file, eval_term)
         exact_term_query = Q(
             "bool",
             should=list(Q("match_phrase", Text=t) for t in expanded_eval_term),
@@ -80,7 +81,7 @@ class KeywordSearcher(Searcher):
         return term_query
 
     def get_units_query(self, eval_term: str, thesaurus_file: str) -> Q:
-        expanded_units = self.expand_term(thesaurus_file, f"{eval_term} units")
+        expanded_units = expand_term(thesaurus_file, f"{eval_term} units")
         units_query = Q(
             "bool",
             should=list(Q("match_phrase", Text=t) for t in expanded_units),

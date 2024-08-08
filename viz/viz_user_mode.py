@@ -7,13 +7,14 @@ import streamlit as st
 
 from zoning.class_types import (
     EvalResult,
+    FormatOCR,
     LLMInferenceResult,
     NormalizedLLMInferenceResult,
     Place,
     PromptResult,
     SearchResult,
 )
-from zoning.utils import target_pdf
+from zoning.utils import expand_term, target_pdf
 
 state_experiment_map = {
     "Connecticut": "results/textract_es_gpt4_connecticut_search_range_3",
@@ -22,6 +23,8 @@ state_experiment_map = {
 }
 
 # st.set_page_config(layout="wide")
+
+thesarus_file = "data/thesaurus.json"
 
 format_eval_term = {
     "floor_to_area_ratio": "Floor to Area Ratio",
@@ -295,7 +298,91 @@ current_page = st.number_input(
     value=current_page,
 )
 
+# load pdf
 page = doc.load_page(current_page - 1)
+page_rect = page.rect
+
+format_ocr_file = glob.glob(f"{experiment_dir}/format_ocr/{place.town}.json")
+assert len(format_ocr_file) == 1
+format_ocr_file = format_ocr_file[0]
+format_ocr_result = FormatOCR.model_construct(**json.load(open(format_ocr_file)))
+page_info = [i for i in format_ocr_result.pages if i["page"] == str(current_page)]
+assert len(page_info) == 1
+page_info = page_info[0]
+
+load_ocr = False
+for i in expand_term(thesarus_file, eval_term):
+    if i in page_info["text"]:
+        load_ocr = True
+if (
+    place.town.lower() in page_info["text"].lower()
+    or place.district_full_name.lower() in page_info["text"].lower()
+    or place.district_short_name.lower() in page_info["text"].lower()
+):
+    load_ocr = True
+
+if load_ocr:
+    ocr_file = glob.glob(f"data/{format_state(selected_state)}/ocr/{place.town}.json")
+    assert len(ocr_file) == 1
+    ocr_file = ocr_file[0]
+    ocr_info = json.load(open(ocr_file))
+    extract_blocks = [b for d in ocr_info for b in d["Blocks"]]
+    page_ocr_info = [w for w in extract_blocks if w["Page"] == current_page]
+    text_boundingbox = [
+        (w["Text"], w["Geometry"]["BoundingBox"]) for w in page_ocr_info if "Text" in w
+    ]
+    district_boxs = [
+        [i[0], i[1]]
+        for i in text_boundingbox
+        if place.district_full_name.lower() in i[0].lower()
+        or place.district_short_name.lower() in i[0].lower()
+    ]
+    eval_term_boxs = [
+        [i[0], i[1]]
+        for i in text_boundingbox
+        if any(j in i[0] for j in expand_term(thesarus_file, eval_term))
+    ]
+    llm_answer_boxs = [
+        [i[0], i[1]]
+        for i in text_boundingbox
+        if any(j.split("\n")[-1] in i[0] for j in llm_output.extracted_text)
+    ]  # TODO
+
+    district_color = (1, 0, 0)  # RGB values for red (1,0,0 is full red)
+    eval_term_color = (0, 0, 1)  # RGB values for blue (0,0,1 is full blue)
+    llm_answer_color = (0, 1, 0)  # RGB values for green (0,1,0 is full green)
+
+    for _, district_box in district_boxs:
+        normalized_rect = fitz.Rect(
+            (1 - district_box["Top"] - district_box["Height"]) * page_rect.height,
+            district_box["Left"] * page_rect.width,
+            (1 - district_box["Top"]) * page_rect.height,
+            (district_box["Left"] + district_box["Width"]) * page_rect.width,
+        )
+
+        # Draw the rectangle
+        page.draw_rect(normalized_rect, color=district_color, width=1)
+
+    for _, eval_term_box in eval_term_boxs:
+        normalized_rect = fitz.Rect(
+            (1 - eval_term_box["Top"] - eval_term_box["Height"]) * page_rect.height,
+            eval_term_box["Left"] * page_rect.width,
+            (1 - eval_term_box["Top"]) * page_rect.height,
+            (eval_term_box["Left"] + eval_term_box["Width"]) * page_rect.width,
+        )
+
+        page.draw_rect(normalized_rect, color=eval_term_color, width=1)
+
+    for _, llm_answer_box in llm_answer_boxs:
+        normalized_rect = fitz.Rect(
+            (1 - llm_answer_box["Top"] - llm_answer_box["Height"]) * page_rect.height,
+            llm_answer_box["Left"] * page_rect.width,
+            (1 - llm_answer_box["Top"]) * page_rect.height,
+            (llm_answer_box["Left"] + llm_answer_box["Width"]) * page_rect.width,
+        )
+
+        page.draw_rect(normalized_rect, color=llm_answer_color, width=2)
+
 pix = page.get_pixmap()
 img_bytes = pix.pil_tobytes(format="PNG")
 pdf_viewer = st.empty()

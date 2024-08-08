@@ -256,10 +256,6 @@ with search_col:
         ]
     )
 
-    def on_click(page_num):
-        current_page = int(page_num)
-        # st.rerun()
-
     cols = st.columns(len(jump_pages))
     for i in range(len(jump_pages)):
         page_num = jump_pages[i]
