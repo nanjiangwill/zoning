@@ -13,9 +13,6 @@ data/*/search
 data/.DS_Store
 hydra_outputs
 old_eval.py
-results/*/page_embedding
-results/*/district_extraction
-results/*/district_extraction_verification
 wandb/
 zoning.egg-info
 zoning.egg-info/
