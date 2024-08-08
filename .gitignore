@@ -13,6 +13,7 @@ data/*/search
 data/.DS_Store
 hydra_outputs
 old_eval.py
+old_results
 wandb/
 zoning.egg-info
 zoning.egg-info/
@@ -20,4 +21,3 @@ zoning/*/__pycache__
 zoning/__pycache__
 zoning/prompt/old_templates
 zoning/~*
-old_results
