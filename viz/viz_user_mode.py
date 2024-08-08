@@ -322,72 +322,78 @@ if (
     load_ocr = True
 
 if load_ocr:
-    ocr_file = f"https://zoning-nan.s3.us-east-2.amazonaws.com/ocr/{format_state(selected_state)}/{place.town}.json"
-    # glob.glob(f"data/{format_state(selected_state)}/ocr/{place.town}.json")
-    ocr_info = json.load(open(ocr_file))
-    extract_blocks = [b for d in ocr_info for b in d["Blocks"]]
-    page_ocr_info = [w for w in extract_blocks if w["Page"] == current_page]
-    text_boundingbox = [
-        (w["Text"], w["Geometry"]["BoundingBox"]) for w in page_ocr_info if "Text" in w
-    ]
-    district_boxs = [
-        [i[0], i[1]]
-        for i in text_boundingbox
-        if place.district_full_name.lower() in i[0].lower()
-        or place.district_short_name in i[0]
-    ]
-    eval_term_boxs = [
-        [i[0], i[1]]
-        for i in text_boundingbox
-        if any(j in i[0] for j in expand_term(thesarus_file, eval_term))
-    ]
-    llm_answer_boxs = [
-        [i[0], i[1]]
-        for i in text_boundingbox
-        if any(j.split("\n")[-1] in i[0] for j in llm_output.extracted_text)
-    ]  # TODO
+    try:
+        ocr_file_url = f"https://zoning-nan.s3.us-east-2.amazonaws.com/ocr/{format_state(selected_state)}/{place.town}.json"
+        # glob.glob(f"data/{format_state(selected_state)}/ocr/{place.town}.json")
+        response = requests.get(ocr_file_url)
+        response.raise_for_status()
+        ocr_info = response.json()
+        
+        extract_blocks = [b for d in ocr_info for b in d["Blocks"]]
+        page_ocr_info = [w for w in extract_blocks if w["Page"] == current_page]
+        text_boundingbox = [
+            (w["Text"], w["Geometry"]["BoundingBox"]) for w in page_ocr_info if "Text" in w
+        ]
+        district_boxs = [
+            [i[0], i[1]]
+            for i in text_boundingbox
+            if place.district_full_name.lower() in i[0].lower()
+            or place.district_short_name in i[0]
+        ]
+        eval_term_boxs = [
+            [i[0], i[1]]
+            for i in text_boundingbox
+            if any(j in i[0] for j in expand_term(thesarus_file, eval_term))
+        ]
+        llm_answer_boxs = [
+            [i[0], i[1]]
+            for i in text_boundingbox
+            if any(j.split("\n")[-1] in i[0] for j in llm_output.extracted_text)
+        ]  # TODO
 
-    district_color = (1, 0, 0)  # RGB values for red (1,0,0 is full red)
-    eval_term_color = (0, 0, 1)  # RGB values for blue (0,0,1 is full blue)
-    llm_answer_color = (0, 1, 0)  # RGB values for green (0,1,0 is full green)
+        district_color = (1, 0, 0)  # RGB values for red (1,0,0 is full red)
+        eval_term_color = (0, 0, 1)  # RGB values for blue (0,0,1 is full blue)
+        llm_answer_color = (0, 1, 0)  # RGB values for green (0,1,0 is full green)
 
-    box_list = [district_boxs, eval_term_boxs, llm_answer_boxs]
-    color_list = [district_color, eval_term_color, llm_answer_color]
+        box_list = [district_boxs, eval_term_boxs, llm_answer_boxs]
+        color_list = [district_color, eval_term_color, llm_answer_color]
 
-    print("\n\n")
-    for i in district_boxs:
-        print(i)
-    print("\n\n")
-    for i in llm_answer_boxs:
-        print(i)
-    # adsf
-    for box, color in zip(box_list, color_list):
-        for _, b in box:
-            if selected_state == "Texas":
-                normalized_rect = fitz.Rect(
-                    b["Left"] * page_rect.width,
-                    (b["Top"]) * page_rect.height,
-                    (b["Left"] + b["Width"]) * page_rect.width,
-                    (b["Top"] + b["Height"]) * page_rect.height,
-                )
-            elif selected_state == "Connecticut":
-                normalized_rect = fitz.Rect(
-                    (1 - b["Top"] - b["Height"]) * page_rect.height,
-                    b["Left"] * page_rect.width,
-                    (1 - b["Top"]) * page_rect.height,
-                    (b["Left"] + b["Width"]) * page_rect.width,
-                )
-            elif selected_state == "North Carolina":
-                normalized_rect = fitz.Rect(
-                    b["Left"] * page_rect.width,
-                    (b["Top"]) * page_rect.height,
-                    (b["Left"] + b["Width"]) * page_rect.width,
-                    (b["Top"] + b["Height"]) * page_rect.height,
-                )
-            else:
-                raise ValueError("State not supported")
-            page.draw_rect(normalized_rect, color=color, width=1)
-
+        print("\n\n")
+        for i in district_boxs:
+            print(i)
+        print("\n\n")
+        for i in llm_answer_boxs:
+            print(i)
+        # adsf
+        for box, color in zip(box_list, color_list):
+            for _, b in box:
+                if selected_state == "Texas":
+                    normalized_rect = fitz.Rect(
+                        b["Left"] * page_rect.width,
+                        (b["Top"]) * page_rect.height,
+                        (b["Left"] + b["Width"]) * page_rect.width,
+                        (b["Top"] + b["Height"]) * page_rect.height,
+                    )
+                elif selected_state == "Connecticut":
+                    normalized_rect = fitz.Rect(
+                        (1 - b["Top"] - b["Height"]) * page_rect.height,
+                        b["Left"] * page_rect.width,
+                        (1 - b["Top"]) * page_rect.height,
+                        (b["Left"] + b["Width"]) * page_rect.width,
+                    )
+                elif selected_state == "North Carolina":
+                    normalized_rect = fitz.Rect(
+                        b["Left"] * page_rect.width,
+                        (b["Top"]) * page_rect.height,
+                        (b["Left"] + b["Width"]) * page_rect.width,
+                        (b["Top"] + b["Height"]) * page_rect.height,
+                    )
+                else:
+                    raise ValueError("State not supported")
+                page.draw_rect(normalized_rect, color=color, width=1)
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred: {e}")
+        # return None
 
 pix = page.get_pixmap()
 img_bytes = pix.pil_tobytes(format="PNG")
