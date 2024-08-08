@@ -66,14 +66,14 @@ with st.sidebar:
             "Texas",
             "North Carolina",
         ],
-        index=2,
+        index=1,
     )
 
     def format_state(state):
         return state.lower().replace(" ", "_")
 
     s3_pdf_dir = (
-        f"https://zoning-nan.s3.us-east-2.amazonaws.com/{format_state(selected_state)}"
+        f"https://zoning-nan.s3.us-east-2.amazonaws.com/pdf/{format_state(selected_state)}"
     )
 
     experiment_dir = state_experiment_map[selected_state]
@@ -322,9 +322,8 @@ if (
     load_ocr = True
 
 if load_ocr:
-    ocr_file = glob.glob(f"data/{format_state(selected_state)}/ocr/{place.town}.json")
-    assert len(ocr_file) == 1
-    ocr_file = ocr_file[0]
+    ocr_file = f"https://zoning-nan.s3.us-east-2.amazonaws.com/ocr/{format_state(selected_state)}/{place.town}.json"
+    # glob.glob(f"data/{format_state(selected_state)}/ocr/{place.town}.json")
     ocr_info = json.load(open(ocr_file))
     extract_blocks = [b for d in ocr_info for b in d["Blocks"]]
     page_ocr_info = [w for w in extract_blocks if w["Page"] == current_page]
