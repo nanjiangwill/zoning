@@ -410,7 +410,7 @@ with st.container(border=True):
     st.subheader("Current data")
     st.write(
         ":blue-background[Town]: {},:blue-background[District]: {} ({})".format(
-            place.town, place.district_full_name, place.district_short_name
+            "-".join([i[0].upper()+i[1:] for i in place.town.split("-")]), place.district_full_name, place.district_short_name
         )
     )
     st.write(":blue-background[Eval Term]: {}".format(format_eval_term[eval_term]))
