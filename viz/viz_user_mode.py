@@ -291,15 +291,12 @@ for i in range(len(jump_pages)):
             type="primary"
         ):
             current_page = page_num
-            # st.rerun()
     else:
         if cols[i].button(
             str(page_num),
             args=(f"{page_num}",),
-            type="secondary",
         ):
             current_page = page_num
-            # st.rerun()
 current_page = st.number_input(
     "Selected page",
     min_value=1,
@@ -428,9 +425,6 @@ with st.container(border=True):
         ":blue-background[LLM Answer]: {}".format(
             normalized_llm_output.normalized_answer
         )
-    )
-    st.write(
-        ":blue-background[LLM Answer Appear in Page]: {}".format(highlight_text_pages)
     )
     st.write(":blue-background[LLM Rationale]: {}".format(llm_output.rationale))
 
