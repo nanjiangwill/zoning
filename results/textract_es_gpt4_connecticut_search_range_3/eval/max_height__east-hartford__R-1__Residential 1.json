@@ -1,1 +1,1 @@
-{"place": {"town": "east-hartford", "district_short_name": "R-1", "district_full_name": "Residential 1"}, "eval_term": "max_height", "ground_truth": "35", "ground_truth_orig": null, "ground_truth_page": "74", "answer_correct": [true], "page_in_range": [true]}
+{"place": {"town": "east-hartford", "district_short_name": "R-1", "district_full_name": "Residential 1"}, "eval_term": "max_height", "ground_truth": "35", "ground_truth_orig": null, "ground_truth_page": "74", "answer_correct": true, "page_in_range": true}

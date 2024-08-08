@@ -60,7 +60,7 @@ def eval_fn(d: NormalizedLLMInferenceResult, gt, experiment_dir, target) -> Eval
 
     assert len(d.normalized_llm_outputs) == 1
 
-    o = d.normalized_llm_outputs
+    o = d.normalized_llm_outputs[0]
     if ground_truth is None and ground_truth_orig is None:
         if o.normalized_answer is None:
             answer_correct = True
@@ -138,29 +138,19 @@ def main(config: ZoningConfig):
 
         all_accuracy_results = [d.answer_correct for d in eval_term_data]
 
-        best_accuracy = sum([1 for d in all_accuracy_results if any(d)]) / len(
+        accuracy = sum([1 for d in all_accuracy_results if d]) / len(
             all_accuracy_results
         )
-        avg_accuracy = sum(
-            [sum([1 for d in a if d]) for a in all_accuracy_results]
-        ) / sum([len(a) for a in all_accuracy_results])
 
         all_page_results = [d.page_in_range for d in eval_term_data]
 
-        best_page_in_range = sum([1 for d in all_page_results if any(d)]) / len(
-            all_page_results
-        )
-        avg_page_in_range = sum(
-            [sum([1 for d in a if d]) for a in all_page_results]
-        ) / sum([len(a) for a in all_page_results])
+        page_in_range = sum([1 for d in all_page_results if d]) / len(all_page_results)
 
         print("=============================================")
         print(f"Evaluated term: {term}")
-        print(f"Best Accuracy: {best_accuracy}")
-        print(f"Avg Accuracy: {avg_accuracy}")
+        print(f"Accuracy: {accuracy}")
         print("\n")
-        print(f"Best Page Accuracy: {best_page_in_range}")
-        print(f"Avg Page Accuracy: {avg_page_in_range}")
+        print(f"Page Accuracy: {page_in_range}")
         print("=============================================")
         print("\n")
 

@@ -1,1 +1,1 @@
-{"place": {"town": "scotland", "district_short_name": "RA", "district_full_name": "Residential Agricultural"}, "eval_term": "min_lot_size", "ground_truth": "87120", "ground_truth_orig": "2", "ground_truth_page": "36", "answer_correct": [true], "page_in_range": [true]}
+{"place": {"town": "scotland", "district_short_name": "RA", "district_full_name": "Residential Agricultural"}, "eval_term": "min_lot_size", "ground_truth": "87120", "ground_truth_orig": "2", "ground_truth_page": "36", "answer_correct": true, "page_in_range": true}

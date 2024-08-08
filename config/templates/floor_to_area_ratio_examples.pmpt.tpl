@@ -252,4 +252,8 @@ Input:
 Multi-family building
 
 Output:
-null
+{
+    "extracted_text": null
+    "rationale": null
+    "answer": null
+}
