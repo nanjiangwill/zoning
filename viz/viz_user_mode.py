@@ -16,8 +16,11 @@ from zoning.class_types import (
 from zoning.utils import target_pdf
 import requests
 
-PDF_DIR = f"https://zoning-nan.s3.us-east-2.amazonaws.com/{sys.argv[1]}"
-EXPERIMENT_DIR = sys.argv[2]  # "results/textract_es_gpt4_connecticut_search_range_3"
+state_experiment_map = {
+    "Connecticut": "results/textract_es_gpt4_connecticut_search_range_3",
+    "Texas": "results/textract_es_gpt4_texas_search_range_3",
+    "North Carolina": "results/textract_es_gpt4_north_carolina_search_range_3",
+}
 
 st.set_page_config(layout="wide")
 
@@ -42,10 +45,25 @@ def write_data(human_feedback: str):
 with st.sidebar:
     # Step 1: load files
 
+    selected_state = st.selectbox(
+        "Select a state",
+        [
+            "Connecticut",
+            "Texas",
+            "North Carolina",
+        ],
+        index=0,
+    )
+    s3_pdf_dir = f"https://zoning-nan.s3.us-east-2.amazonaws.com/{selected_state}"
+    
+    experiment_dir = state_experiment_map[selected_state]
+    
+    
+    
     all_results = {
         k: [
             X.model_construct(**json.load(open(i)))
-            for i in sorted(glob.glob(f"{EXPERIMENT_DIR}/{k}/*.json"))
+            for i in sorted(glob.glob(f"{experiment_dir}/{k}/*.json"))
         ]
         for k, X in [
             ("search", SearchResult),
