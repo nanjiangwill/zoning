@@ -62,11 +62,11 @@ with st.sidebar:
     selected_state = st.selectbox(
         "Select a state",
         [
+            "North Carolina",
             "Connecticut",
             "Texas",
-            "North Carolina",
         ],
-        index=1,
+        index=0,
     )
 
     def format_state(state):
