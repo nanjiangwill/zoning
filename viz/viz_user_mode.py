@@ -352,36 +352,19 @@ if load_ocr:
     eval_term_color = (0, 0, 1)  # RGB values for blue (0,0,1 is full blue)
     llm_answer_color = (0, 1, 0)  # RGB values for green (0,1,0 is full green)
 
-    for _, district_box in district_boxs:
-        normalized_rect = fitz.Rect(
-            (1 - district_box["Top"] - district_box["Height"]) * page_rect.height,
-            district_box["Left"] * page_rect.width,
-            (1 - district_box["Top"]) * page_rect.height,
-            (district_box["Left"] + district_box["Width"]) * page_rect.width,
-        )
+    box_list = [district_boxs, eval_term_boxs, llm_answer_boxs]
+    color_list = [district_color, eval_term_color, llm_answer_color]
 
-        # Draw the rectangle
-        page.draw_rect(normalized_rect, color=district_color, width=1)
+    for box, color in zip(box_list, color_list):
+        for _, b in box:
+            normalized_rect = fitz.Rect(
+                (1 - b["Top"] - b["Height"]) * page_rect.height,
+                b["Left"] * page_rect.width,
+                (1 - b["Top"]) * page_rect.height,
+                (b["Left"] + b["Width"]) * page_rect.width,
+            )
+            page.draw_rect(normalized_rect, color=color, width=1)
 
-    for _, eval_term_box in eval_term_boxs:
-        normalized_rect = fitz.Rect(
-            (1 - eval_term_box["Top"] - eval_term_box["Height"]) * page_rect.height,
-            eval_term_box["Left"] * page_rect.width,
-            (1 - eval_term_box["Top"]) * page_rect.height,
-            (eval_term_box["Left"] + eval_term_box["Width"]) * page_rect.width,
-        )
-
-        page.draw_rect(normalized_rect, color=eval_term_color, width=1)
-
-    for _, llm_answer_box in llm_answer_boxs:
-        normalized_rect = fitz.Rect(
-            (1 - llm_answer_box["Top"] - llm_answer_box["Height"]) * page_rect.height,
-            llm_answer_box["Left"] * page_rect.width,
-            (1 - llm_answer_box["Top"]) * page_rect.height,
-            (llm_answer_box["Left"] + llm_answer_box["Width"]) * page_rect.width,
-        )
-
-        page.draw_rect(normalized_rect, color=llm_answer_color, width=2)
 
 pix = page.get_pixmap()
 img_bytes = pix.pil_tobytes(format="PNG")
