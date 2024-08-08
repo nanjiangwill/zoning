@@ -1,0 +1,1 @@
+{"place": {"town": "seabrook", "district_short_name": "R-1", "district_full_name": "Single-family detached residential"}, "eval_term": "min_lot_size", "ground_truth": "6000", "ground_truth_orig": "0.17", "ground_truth_page": "23,24,49,50,100,101", "answer_correct": [true], "page_in_range": [false]}

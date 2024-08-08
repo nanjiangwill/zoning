@@ -1,0 +1,1 @@
+{"place": {"town": "martindale", "district_short_name": "MU", "district_full_name": "Mixed Use"}, "eval_term": "min_parking_spaces", "ground_truth": "2", "ground_truth_orig": "2", "ground_truth_page": "27,28,35,36,37", "answer_correct": [false], "page_in_range": [false]}

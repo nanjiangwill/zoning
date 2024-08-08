@@ -1,0 +1,64 @@
+global_config:
+  experiment_name: textract_es_gpt4_connecticut_search_range_3
+  experiment_dir: results/textract_es_gpt4_connecticut_search_range_3
+  target_state: connecticut
+  eval_terms:
+  - min_lot_size
+  - min_unit_size
+  - max_height
+  data_dir: data/connecticut
+  target_town_file: data/connecticut/target_towns_names.json
+  target_district_file: data/connecticut/target_districts_names.json
+  target_eval_file: data/connecticut/target_eval_data.json
+  ground_truth_file: data/connecticut/ground_truth.json
+  thesaurus_file: data/thesaurus.json
+  result_output_dir: results/connecticut/textract_es_gpt4_connecticut_search_range_3
+  pdf_dir: data/connecticut/pdfs
+  ocr_dir: data/connecticut/ocr
+  format_ocr_dir: results/textract_es_gpt4_connecticut_search_range_3/format_ocr
+  index_dir: results/textract_es_gpt4_connecticut_search_range_3/index
+  search_dir: results/textract_es_gpt4_connecticut_search_range_3/search
+  prompt_dir: results/textract_es_gpt4_connecticut_search_range_3/prompt
+  llm_dir: results/textract_es_gpt4_connecticut_search_range_3/llm
+  normalization_dir: results/textract_es_gpt4_connecticut_search_range_3/normalization
+  eval_dir: results/textract_es_gpt4_connecticut_search_range_3/eval
+  es_endpoint: http://localhost:9200
+  random_seed: 13
+  test_size_per_term: 30
+  config_file: results/textract_es_gpt4_connecticut_search_range_3/config.yaml
+ocr_config:
+  method: textract
+  run_ocr: false
+  input_document_s3_bucket: null
+  pdf_name_prefix_in_s3_bucket: zoning/connecticut/
+  feature_types:
+  - TABLES
+format_ocr_config:
+  temp: x
+index_config:
+  method: keyword
+  index_key: town
+  es_endpoint: http://localhost:9200
+  index_range: 3
+search_config:
+  method: keyword
+  es_endpoint: http://localhost:9200
+  num_results: 5
+  is_district_fuzzy: false
+  is_eval_term_fuzzy: false
+  thesaurus_file: data/thesaurus.json
+  preprocess_search_target: false
+prompt_config:
+  method: few_shot
+  max_search_pages: 10
+  templates_dir: config/templates
+  thesaurus_file: data/thesaurus.json
+llm_config:
+  llm_name: gpt-4-1106-preview
+  max_tokens: 256
+  formatted_response: false
+  cache_dir: .diskcache
+normalization_config:
+  method: todo
+eval_config:
+  template_dir: zoning/eval/templates

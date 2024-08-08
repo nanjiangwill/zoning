@@ -1,0 +1,1 @@
+{"place": {"town": "seabrook", "district_short_name": "MH", "district_full_name": "Mobile home-manufactured housing"}, "eval_term": "min_parking_spaces", "ground_truth": "2", "ground_truth_orig": "2", "ground_truth_page": "45,49,50,100,101", "answer_correct": [false], "page_in_range": [true]}

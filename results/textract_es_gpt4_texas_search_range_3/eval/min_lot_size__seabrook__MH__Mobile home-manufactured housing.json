@@ -1,0 +1,1 @@
+{"place": {"town": "seabrook", "district_short_name": "MH", "district_full_name": "Mobile home-manufactured housing"}, "eval_term": "min_lot_size", "ground_truth": "4000", "ground_truth_orig": "0.09/dwelling on a pad; 0.17/lot on record", "ground_truth_page": "45,49,50,100,101", "answer_correct": [true], "page_in_range": [true]}

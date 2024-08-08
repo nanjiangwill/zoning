@@ -1,0 +1,1 @@
+{"place": {"town": "stafford", "district_short_name": "MU-2", "district_full_name": "Mixed Use District"}, "eval_term": "max_lot_coverage", "ground_truth": null, "ground_truth_orig": null, "ground_truth_page": "101,194,196,202,203,204,205,206", "answer_correct": [true], "page_in_range": [false]}

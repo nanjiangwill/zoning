@@ -1,0 +1,1 @@
+{"place": {"town": "willis", "district_short_name": "R-2", "district_full_name": "Single-family Residential 2"}, "eval_term": "floor_to_area_ratio", "ground_truth": null, "ground_truth_orig": null, "ground_truth_page": "48,49,72,73,89", "answer_correct": [true], "page_in_range": [true]}

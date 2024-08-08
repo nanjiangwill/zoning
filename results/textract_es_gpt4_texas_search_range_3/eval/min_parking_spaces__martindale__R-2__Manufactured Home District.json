@@ -1,0 +1,1 @@
+{"place": {"town": "martindale", "district_short_name": "R-2", "district_full_name": "Manufactured Home District"}, "eval_term": "min_parking_spaces", "ground_truth": "2", "ground_truth_orig": "2", "ground_truth_page": "22,23,27,28,32,33,35,36,37", "answer_correct": [false], "page_in_range": [true]}

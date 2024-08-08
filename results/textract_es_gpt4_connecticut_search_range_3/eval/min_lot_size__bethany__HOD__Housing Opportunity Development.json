@@ -1,0 +1,1 @@
+{"place": {"town": "bethany", "district_short_name": "HOD", "district_full_name": "Housing Opportunity Development"}, "eval_term": "min_lot_size", "ground_truth": "1306800", "ground_truth_orig": "30", "ground_truth_page": "70", "answer_correct": [false], "page_in_range": [true]}

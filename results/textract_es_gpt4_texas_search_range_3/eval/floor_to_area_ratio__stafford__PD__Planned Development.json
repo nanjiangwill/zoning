@@ -1,0 +1,1 @@
+{"place": {"town": "stafford", "district_short_name": "PD", "district_full_name": "Planned Development"}, "eval_term": "floor_to_area_ratio", "ground_truth": null, "ground_truth_orig": null, "ground_truth_page": "54,55,101,102", "answer_correct": [true], "page_in_range": [true]}

@@ -1,0 +1,1 @@
+{"place": {"town": "buda", "district_short_name": "Form 1", "district_full_name": "F1"}, "eval_term": "min_parking_spaces", "ground_truth": "2", "ground_truth_orig": "2", "ground_truth_page": "26,80", "answer_correct": [false], "page_in_range": [true]}
