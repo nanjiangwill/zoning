@@ -280,17 +280,26 @@ current_page = min(jump_pages) if jump_pages else 1
 # summary_col, search_col = st.columns(2)
 # with summary_col:
 
-st.write("Zoning AI Suggests Search Pages:")
+st.write("Zoning AI Suggests Search Pages:(Red is page with answer)")
 cols = st.columns(len(jump_pages))
 for i in range(len(jump_pages)):
     page_num = jump_pages[i]
-    if cols[i].button(
-        str(page_num),
-        args=(f"{page_num}",),
-    ):
-        current_page = page_num
-        # st.rerun()
-
+    if page_num in highlight_text_pages:
+        if cols[i].button(
+            str(page_num),
+            args=(f"{page_num}",),
+            type="primary"
+        ):
+            current_page = page_num
+            # st.rerun()
+    else:
+        if cols[i].button(
+            str(page_num),
+            args=(f"{page_num}",),
+            type="secondary",
+        ):
+            current_page = page_num
+            # st.rerun()
 current_page = st.number_input(
     "Selected page",
     min_value=1,
