@@ -157,7 +157,9 @@ with st.sidebar:
     # Step 3: Select one data to check
     st.divider()
     st.subheader("Step 3: Select one data to check", divider="rainbow")
-    place = st.radio("Which data to check?", (term["place"] for term in selected_data))
+    def show_fullname_shortname(place):
+        return f"{place.district_full_name} ({place.district_short_name})"
+    place = st.radio("Which data to check?", (show_fullname_shortname(term["place"]) for term in selected_data))
 
 # Load the data for the town.
 
