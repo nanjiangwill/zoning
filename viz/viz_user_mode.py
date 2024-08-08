@@ -402,9 +402,9 @@ pdf_viewer.image(
 
 
 # with search_col:
-st.write("District is hightlighted in :red-background[red]")
-st.write("Eval Term is hightlighted in :blue-background[blue]")
-st.write("LLM answer is hightlighted in :green-background[green]")
+st.write("District is highlighted in :red-background[red]")
+st.write("Eval Term is highlighted in :blue-background[blue]")
+st.write("LLM answer is highlighted in :green-background[green]")
 # st.divider()
 
 # with search_col:
