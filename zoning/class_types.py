@@ -254,7 +254,7 @@ class Place(BaseModel):
     def __str__(self) -> str:
         return f"{self.town}__{self.district_short_name}__{self.district_full_name}"
 
-    def from_str(self, place_str):
+    def from_str(place_str):
         town, district_short_name, district_full_name = place_str.split("__")
         return Place(
             town=town,

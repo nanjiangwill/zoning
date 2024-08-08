@@ -8,8 +8,6 @@ from zoning.format_ocr.__main__ import main as format_ocr_main
 from zoning.index.__main__ import main as index_main
 from zoning.llm.__main__ import main as llm_main
 from zoning.normalization.__main__ import main as normalization_main
-
-# Import the main functions from each module
 from zoning.ocr.__main__ import main as ocr_main
 from zoning.prompt.__main__ import main as prompt_main
 from zoning.search.__main__ import main as search_main
