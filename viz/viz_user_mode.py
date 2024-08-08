@@ -97,7 +97,7 @@ with st.sidebar:
 
     def show_fullname_shortname(place):
         town, district_short_name, district_full_name = place.split("__")
-        return f"{town}, {district_full_name} ({district_short_name})"
+        return f"{"-".join([i[0].upper()+i[1:] for i in town.split("-")])}, {district_full_name} ({district_short_name})"
 
     format_place_map = {place: show_fullname_shortname(place) for place in all_places}
 
@@ -280,7 +280,7 @@ current_page = min(jump_pages) if jump_pages else 1
 # summary_col, search_col = st.columns(2)
 # with summary_col:
 
-st.write("Zoning Suggests Search Pages:")
+st.write("Zoning AI Suggests Search Pages:")
 cols = st.columns(len(jump_pages))
 for i in range(len(jump_pages)):
     page_num = jump_pages[i]
@@ -358,13 +358,6 @@ if load_ocr:
         box_list = [district_boxs, eval_term_boxs, llm_answer_boxs]
         color_list = [district_color, eval_term_color, llm_answer_color]
 
-        print("\n\n")
-        for i in district_boxs:
-            print(i)
-        print("\n\n")
-        for i in llm_answer_boxs:
-            print(i)
-        # adsf
         for box, color in zip(box_list, color_list):
             for _, b in box:
                 if selected_state == "Texas":
