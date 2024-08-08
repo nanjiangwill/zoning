@@ -428,7 +428,7 @@ with st.container(border=True):
         )
     )
     st.write(
-        ":blue-background[LLM Answer appear in Psge]: {}".format(highlight_text_pages)
+        ":blue-background[LLM Answer Appear in Page]: {}".format(highlight_text_pages)
     )
     st.write(":blue-background[LLM Rationale]: {}".format(llm_output.rationale))
 
