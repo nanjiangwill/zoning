@@ -15,7 +15,7 @@ from zoning.class_types import (
 )
 from zoning.utils import flatten, target_pdf
 
-PDF_DIR = f"https://zoning-nan.s3.us-east-2.amazonaws.com/{sys.argv[1]}"
+PDF_DIR = f"data/{sys.argv[1]}/pdfs"
 EXPERIMENT_DIR = sys.argv[2]  # "results/textract_es_gpt4_connecticut_search_range_3"
 
 st.set_page_config(layout="wide")
@@ -165,7 +165,7 @@ page_in_range = eval_result.page_in_range
 
 pdf_file = target_pdf(place.town, PDF_DIR)
 doc = fitz.open(pdf_file)
-print(pdf_file)
+
 jump_pages = entire_search_page_range.copy()
 
 if ground_truth_page:
@@ -255,6 +255,19 @@ with search_col:
             for i in grouped_jump_pages
         ]
     )
+
+    def on_click(page_num):
+        current_page = int(page_num)
+        # st.rerun()
+
+    cols = st.columns(len(jump_pages))
+    for i in range(len(jump_pages)):
+        page_num = jump_pages[i]
+        if cols[i].button(
+            str(page_num),
+        ):
+            current_page = page_num
+            # st.rerun()
 
     st.subheader("LLM Inference Results")
 
