@@ -60,6 +60,7 @@ district_extraction_config:
   user_prompt_file: district_extraction_user
   verification_es_endpoint: ${global_config.es_endpoint}
   target_districts_file: ${global_config.target_district_file}
+  district_page_mapping_file: ${global_config.data_dir}/district_page_mapping.json
 
 index_config:
   method: keyword # allowed keyword/embedding

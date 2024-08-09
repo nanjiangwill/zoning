@@ -1,8 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Iterable
 
 from zoning.class_types import SearchConfig, SearchQuery, SearchResult
-from zoning.utils import get_thesaurus
 
 
 class Searcher(ABC):

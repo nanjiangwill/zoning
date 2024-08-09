@@ -62,6 +62,7 @@ class DistrictExtractionConfig(BaseModel):
     user_prompt_file: str
     verification_es_endpoint: str
     target_districts_file: str
+    district_page_mapping_file: str
 
 
 class IndexConfig(BaseModel):

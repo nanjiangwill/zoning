@@ -72,9 +72,7 @@ with st.sidebar:
     def format_state(state):
         return state.lower().replace(" ", "_")
 
-    s3_pdf_dir = (
-        f"https://zoning-nan.s3.us-east-2.amazonaws.com/pdf/{format_state(selected_state)}"
-    )
+    s3_pdf_dir = f"https://zoning-nan.s3.us-east-2.amazonaws.com/pdf/{format_state(selected_state)}"
 
     experiment_dir = state_experiment_map[selected_state]
 
@@ -285,11 +283,7 @@ cols = st.columns(len(jump_pages))
 for i in range(len(jump_pages)):
     page_num = jump_pages[i]
     if page_num in highlight_text_pages:
-        if cols[i].button(
-            str(page_num),
-            args=(f"{page_num}",),
-            type="primary"
-        ):
+        if cols[i].button(str(page_num), args=(f"{page_num}",), type="primary"):
             current_page = page_num
     else:
         if cols[i].button(
@@ -334,11 +328,13 @@ if load_ocr:
         response = requests.get(ocr_file_url)
         response.raise_for_status()
         ocr_info = response.json()
-        
+
         extract_blocks = [b for d in ocr_info for b in d["Blocks"]]
         page_ocr_info = [w for w in extract_blocks if w["Page"] == current_page]
         text_boundingbox = [
-            (w["Text"], w["Geometry"]["BoundingBox"]) for w in page_ocr_info if "Text" in w
+            (w["Text"], w["Geometry"]["BoundingBox"])
+            for w in page_ocr_info
+            if "Text" in w
         ]
         district_boxs = [
             [i[0], i[1]]
@@ -416,7 +412,9 @@ with st.container(border=True):
     st.subheader("Current data")
     st.write(
         ":blue-background[Town]: {},:blue-background[District]: {} ({})".format(
-            "-".join([i[0].upper()+i[1:] for i in place.town.split("-")]), place.district_full_name, place.district_short_name
+            "-".join([i[0].upper() + i[1:] for i in place.town.split("-")]),
+            place.district_full_name,
+            place.district_short_name,
         )
     )
     st.write(":blue-background[Eval Term]: {}".format(format_eval_term[eval_term]))

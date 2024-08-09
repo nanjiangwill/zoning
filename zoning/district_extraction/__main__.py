@@ -74,15 +74,22 @@ def main(config: ZoningConfig):
             f"{global_config.district_extraction_verification_dir}/*.json"
         )
         districts = []
+        district_page_mapping = {}
         for district_file in all_districts_files:
             verified_districts = DistrictExtractionVerificationResult.model_construct(
                 **json.load(open(district_file))
             )
             districts.extend(verified_districts.valid_districts)
+            district_page_mapping[verified_districts.town] = (
+                verified_districts.districts_info_page
+            )
 
         districts = sorted(list(set(districts)))
         with open(district_extraction_config.target_districts_file, "w") as f:
             json.dump(districts, f, indent=4)
+
+        with open(district_extraction_config.district_page_mapping_file, "w") as f:
+            json.dump(district_page_mapping, f, indent=4)
 
 
 if __name__ == "__main__":
