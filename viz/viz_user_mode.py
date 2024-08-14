@@ -336,133 +336,134 @@ showed_pages = get_showed_pages(highlight_text_pages, 1)
 
 if len(showed_pages) == 0:
     st.write("No page to show")
-    st.stop()
+
+else:
 
 
-format_ocr_file = glob.glob(f"{experiment_dir}/format_ocr/{place.town}.json")
-assert len(format_ocr_file) == 1
-format_ocr_file = format_ocr_file[0]
-format_ocr_result = FormatOCR.model_construct(**json.load(open(format_ocr_file)))
+    format_ocr_file = glob.glob(f"{experiment_dir}/format_ocr/{place.town}.json")
+    assert len(format_ocr_file) == 1
+    format_ocr_file = format_ocr_file[0]
+    format_ocr_result = FormatOCR.model_construct(**json.load(open(format_ocr_file)))
 
-# load ocr 
-try:
-    ocr_file_url = f"https://zoning-nan.s3.us-east-2.amazonaws.com/ocr/{format_state(selected_state)}/{place.town}.json"
-    # glob.glob(f"data/{format_state(selected_state)}/ocr/{place.town}.json")
-    response = requests.get(ocr_file_url)
-    response.raise_for_status()
-    ocr_info = response.json()
-except requests.exceptions.RequestException as e:
-    print(f"An error occurred: {e}")
-    ocr_info = []
+    # load ocr 
+    try:
+        ocr_file_url = f"https://zoning-nan.s3.us-east-2.amazonaws.com/ocr/{format_state(selected_state)}/{place.town}.json"
+        # glob.glob(f"data/{format_state(selected_state)}/ocr/{place.town}.json")
+        response = requests.get(ocr_file_url)
+        response.raise_for_status()
+        ocr_info = response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred: {e}")
+        ocr_info = []
 
-extract_blocks = [b for d in ocr_info for b in d["Blocks"]]
+    extract_blocks = [b for d in ocr_info for b in d["Blocks"]]
 
-edited_pages = []
-for show_page in showed_pages:
-    page = doc.load_page(show_page - 1)
-    page_rect = page.rect
-    page_info = [i for i in format_ocr_result.pages if i["page"] == str(show_page)]
-    assert len(page_info) == 1
-    page_info = page_info[0]
-    
-    load_ocr = False
-    for i in expand_term(thesarus_file, eval_term):
-        if i in page_info["text"]:
+    edited_pages = []
+    for show_page in showed_pages:
+        page = doc.load_page(show_page - 1)
+        page_rect = page.rect
+        page_info = [i for i in format_ocr_result.pages if i["page"] == str(show_page)]
+        assert len(page_info) == 1
+        page_info = page_info[0]
+        
+        load_ocr = False
+        for i in expand_term(thesarus_file, eval_term):
+            if i in page_info["text"]:
+                load_ocr = True
+        if (
+            place.town.lower() in page_info["text"].lower()
+            or place.district_full_name.lower() in page_info["text"].lower()
+            or place.district_short_name.lower() in page_info["text"].lower()
+        ):
             load_ocr = True
-    if (
-        place.town.lower() in page_info["text"].lower()
-        or place.district_full_name.lower() in page_info["text"].lower()
-        or place.district_short_name.lower() in page_info["text"].lower()
-    ):
-        load_ocr = True
 
-    if load_ocr:
-        page_ocr_info = [w for w in extract_blocks if w["Page"] == show_page]
-        text_boundingbox = [
-            (w["Text"], w["Geometry"]["BoundingBox"])
-            for w in page_ocr_info
-            if "Text" in w
-        ]
-        district_boxs = [
-            [i[0], i[1]]
-            for i in text_boundingbox
-            if place.district_full_name.lower() in i[0].lower()
-            or place.district_short_name in i[0]
-        ]
-        eval_term_boxs = [
-            [i[0], i[1]]
-            for i in text_boundingbox
-            if any(j in i[0] for j in expand_term(thesarus_file, eval_term))
-        ]
-        llm_answer_boxs = [
-            [i[0], i[1]]
-            for i in text_boundingbox
-            if any(j.split("\n")[-1] in i[0] for j in llm_output.extracted_text)
-        ]  # TODO
+        if load_ocr:
+            page_ocr_info = [w for w in extract_blocks if w["Page"] == show_page]
+            text_boundingbox = [
+                (w["Text"], w["Geometry"]["BoundingBox"])
+                for w in page_ocr_info
+                if "Text" in w
+            ]
+            district_boxs = [
+                [i[0], i[1]]
+                for i in text_boundingbox
+                if place.district_full_name.lower() in i[0].lower()
+                or place.district_short_name in i[0]
+            ]
+            eval_term_boxs = [
+                [i[0], i[1]]
+                for i in text_boundingbox
+                if any(j in i[0] for j in expand_term(thesarus_file, eval_term))
+            ]
+            llm_answer_boxs = [
+                [i[0], i[1]]
+                for i in text_boundingbox
+                if any(j.split("\n")[-1] in i[0] for j in llm_output.extracted_text)
+            ]  # TODO
 
-        district_color = (1, 0, 0)  # RGB values for red (1,0,0 is full red)
-        eval_term_color = (0, 0, 1)  # RGB values for blue (0,0,1 is full blue)
-        llm_answer_color = (0, 1, 0)  # RGB values for green (0,1,0 is full green)
+            district_color = (1, 0, 0)  # RGB values for red (1,0,0 is full red)
+            eval_term_color = (0, 0, 1)  # RGB values for blue (0,0,1 is full blue)
+            llm_answer_color = (0, 1, 0)  # RGB values for green (0,1,0 is full green)
 
-        box_list = [district_boxs, eval_term_boxs, llm_answer_boxs]
-        color_list = [district_color, eval_term_color, llm_answer_color]
+            box_list = [district_boxs, eval_term_boxs, llm_answer_boxs]
+            color_list = [district_color, eval_term_color, llm_answer_color]
 
-        for box, color in zip(box_list, color_list):
-            for _, b in box:
-                if selected_state == "Texas":
-                    normalized_rect = fitz.Rect(
-                        b["Left"] * page_rect.width,
-                        (b["Top"]) * page_rect.height,
-                        (b["Left"] + b["Width"]) * page_rect.width,
-                        (b["Top"] + b["Height"]) * page_rect.height,
-                    )
-                elif selected_state == "Connecticut":
-                    normalized_rect = fitz.Rect(
-                        (1 - b["Top"] - b["Height"]) * page_rect.height,
-                        b["Left"] * page_rect.width,
-                        (1 - b["Top"]) * page_rect.height,
-                        (b["Left"] + b["Width"]) * page_rect.width,
-                    )
-                elif selected_state == "North Carolina":
-                    normalized_rect = fitz.Rect(
-                        b["Left"] * page_rect.width,
-                        (b["Top"]) * page_rect.height,
-                        (b["Left"] + b["Width"]) * page_rect.width,
-                        (b["Top"] + b["Height"]) * page_rect.height,
-                    )
-                else:
-                    raise ValueError("State not supported")
-                page.draw_rect(normalized_rect, fill=color, width=1, stroke_opacity=0, fill_opacity=0.3)
+            for box, color in zip(box_list, color_list):
+                for _, b in box:
+                    if selected_state == "Texas":
+                        normalized_rect = fitz.Rect(
+                            b["Left"] * page_rect.width,
+                            (b["Top"]) * page_rect.height,
+                            (b["Left"] + b["Width"]) * page_rect.width,
+                            (b["Top"] + b["Height"]) * page_rect.height,
+                        )
+                    elif selected_state == "Connecticut":
+                        normalized_rect = fitz.Rect(
+                            (1 - b["Top"] - b["Height"]) * page_rect.height,
+                            b["Left"] * page_rect.width,
+                            (1 - b["Top"]) * page_rect.height,
+                            (b["Left"] + b["Width"]) * page_rect.width,
+                        )
+                    elif selected_state == "North Carolina":
+                        normalized_rect = fitz.Rect(
+                            b["Left"] * page_rect.width,
+                            (b["Top"]) * page_rect.height,
+                            (b["Left"] + b["Width"]) * page_rect.width,
+                            (b["Top"] + b["Height"]) * page_rect.height,
+                        )
+                    else:
+                        raise ValueError("State not supported")
+                    page.draw_rect(normalized_rect, fill=color, width=1, stroke_opacity=0, fill_opacity=0.3)
 
 
-    pix = page.get_pixmap()
-    img_bytes = pix.pil_tobytes(format="PNG")
-    edited_pages.append(img_bytes)
+        pix = page.get_pixmap()
+        img_bytes = pix.pil_tobytes(format="PNG")
+        edited_pages.append(img_bytes)
 
-page_img_cols = st.columns(len(showed_pages))
+    page_img_cols = st.columns(len(showed_pages))
 
-for i in range(len(showed_pages)):
-    page_img_cols[i].image(
-        edited_pages[i],
-        # caption=f"Page {showed_pages[i]}",
-        use_column_width=True,
-        # width=400
-    )
-# pdf_viewer = st.empty()
-# pdf_viewer.image(
-#     img_bytes,
-#     caption=f"Page {current_page}",
-#     use_column_width=True,
-#     # width=400
-# )
+    for i in range(len(showed_pages)):
+        page_img_cols[i].image(
+            edited_pages[i],
+            # caption=f"Page {showed_pages[i]}",
+            use_column_width=True,
+            # width=400
+        )
+    # pdf_viewer = st.empty()
+    # pdf_viewer.image(
+    #     img_bytes,
+    #     caption=f"Page {current_page}",
+    #     use_column_width=True,
+    #     # width=400
+    # )
 
 
-# # with search_col:
-# st.write("District is highlighted in :red-background[red]")
-# st.write("Eval Term is highlighted in :blue-background[blue]")
-# st.write("LLM answer is highlighted in :green-background[green]")
+    # # with search_col:
+    # st.write("District is highlighted in :red-background[red]")
+    # st.write("Eval Term is highlighted in :blue-background[blue]")
+    # st.write("LLM answer is highlighted in :green-background[green]")
 
-# with search_col:
+    # with search_col:
 
 st.divider()
 with st.container(border=True):
