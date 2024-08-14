@@ -18,7 +18,7 @@ from zoning.utils import expand_term, target_pdf
 
 from google.cloud import firestore
 
-db = firestore.Client.from_service_account_json("firestore-key.json")
+db = firestore.Client.from_service_account_json(st.secrets["firebase"]['my_project_settings'])
 
 
 state_experiment_map = {
