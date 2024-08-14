@@ -15,4 +15,5 @@ streamlit # for visualization
 typer
 wandb
 watchdog
+google-cloud-firestore
 -e .
