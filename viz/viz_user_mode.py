@@ -16,15 +16,10 @@ from zoning.class_types import (
 )
 from zoning.utils import expand_term, target_pdf
 
-import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import firestore
+from google.cloud import firestore
 
-# db = firestore.Client.from_service_account_json(st.secrets["firebase"]['my_project_settings'])
-cred = credentials.ApplicationDefault()
+db = firestore.Client.from_service_account_info(st.secrets["firebase"]['my_project_settings'])
 
-firebase_admin.initialize_app(cred)
-db = firestore.client(st.secrets["firebase"]['my_project_settings'])
 
 state_experiment_map = {
     "Connecticut": "results/textract_es_gpt4_connecticut_search_range_3",
