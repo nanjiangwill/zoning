@@ -15,3 +15,4 @@ streamlit # for visualization
 typer
 wandb
 watchdog
+-e .
