@@ -24,3 +24,7 @@ zoning/*/__pycache__
 zoning/__pycache__
 zoning/prompt/old_templates
 zoning/~*
+.streamlit
+Procfile
+runtime.txt
+setup.sh

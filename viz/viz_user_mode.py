@@ -16,13 +16,18 @@ from zoning.class_types import (
 )
 from zoning.utils import expand_term, target_pdf
 
+from google.cloud import firestore
+
+db = firestore.Client.from_service_account_json("firestore-key.json")
+
+
 state_experiment_map = {
     "Connecticut": "results/textract_es_gpt4_connecticut_search_range_3",
     "Texas": "results/textract_es_gpt4_texas_search_range_3",
     "North Carolina": "results/textract_es_gpt4_north_carolina_search_range_3",
 }
 
-# st.set_page_config(layout="wide")
+st.set_page_config(layout="wide")
 
 thesarus_file = "data/thesaurus.json"
 
@@ -40,23 +45,29 @@ inverse_format_eval_term = {k: v for v, k in format_eval_term.items()}
 
 
 def write_data(human_feedback: str):
-    try:
-        existing_data = json.load(open("data.json"))
-    except FileNotFoundError or json.decoder.JSONDecodeError:
-        existing_data = []
-
-    d = {
-        "place": str(place),
-        "eval_term": eval_term,
-        "human_feedback": human_feedback,
-    }
-    existing_data.append(d)
-    with open("data.json", "w") as f:
-        json.dump(existing_data, f)
+    if not analyst_name or analyst_name == "":
+        st.toast("Please enter your name", icon="🚨")
+    else:
+        d = {
+            "analyst_name": analyst_name,
+            "state": selected_state,
+            "place": str(place),
+            "eval_term": eval_term,
+            "human_feedback": human_feedback,
+        }
+        
+        doc_ref = db.collection(selected_state)
+        
+        doc_ref.add(d)
+        
+        st.toast("Data successfully written to database!", icon='🎉')
 
 
 # Sidebar config
 with st.sidebar:
+    # Step 0: enter your name
+    analyst_name = st.text_input("Please Enter your name", placeholder="")
+    
     # Step 1: load files
 
     selected_state = st.selectbox(
@@ -278,59 +289,95 @@ current_page = min(jump_pages) if jump_pages else 1
 # summary_col, search_col = st.columns(2)
 # with summary_col:
 
-st.write("Zoning AI Suggests Search Pages:(Red is page with answer)")
-cols = st.columns(len(jump_pages))
-for i in range(len(jump_pages)):
-    page_num = jump_pages[i]
-    if page_num in highlight_text_pages:
-        if cols[i].button(str(page_num), args=(f"{page_num}",), type="primary"):
-            current_page = page_num
-    else:
-        if cols[i].button(
-            str(page_num),
-            args=(f"{page_num}",),
-        ):
-            current_page = page_num
-current_page = st.number_input(
-    "Selected page",
-    min_value=1,
-    max_value=len(doc),
-    value=current_page,
+# st.write("Zoning AI Suggests Search Pages:(Red is page with answer)")
+# cols = st.columns(len(jump_pages))
+# for i in range(len(jump_pages)):
+#     page_num = jump_pages[i]
+#     if page_num in highlight_text_pages:
+#         if cols[i].button(str(page_num), args=(f"{page_num}",), type="primary"):
+#             current_page = page_num
+#     else:
+#         if cols[i].button(
+#             str(page_num),
+#             args=(f"{page_num}",),
+#         ):
+#             current_page = page_num
+st.write(
+    ":blue-background[Town]: {},:blue-background[District]: {} ({})".format(
+        "-".join([i[0].upper() + i[1:] for i in place.town.split("-")]),
+        place.district_full_name,
+        place.district_short_name,
+    )
 )
+st.write(":blue-background[Eval Term]: {}".format(format_eval_term[eval_term]))
 
-# load pdf
-page = doc.load_page(current_page - 1)
-page_rect = page.rect
+st.write(
+    ":blue-background[LLM Answer]: {}".format(
+        normalized_llm_output.normalized_answer
+    )
+)
+st.write(":blue-background[LLM Rationale]: {}".format(llm_output.rationale))
+
+# current_page = st.number_input(
+#     "Selected page",
+#     min_value=1,
+#     max_value=len(doc),
+#     value=current_page,
+# )
+
+# current_page = highlight_text_pages[0]
+
+def get_showed_pages(pages, interval):
+    showed_pages = []
+    for page in pages:
+        showed_pages.extend(range(page - interval, page + interval + 1))
+    return sorted(list(set(showed_pages)))
+showed_pages = get_showed_pages(highlight_text_pages, 1)
+
+if len(showed_pages) == 0:
+    st.write("No page to show")
+    st.stop()
+
 
 format_ocr_file = glob.glob(f"{experiment_dir}/format_ocr/{place.town}.json")
 assert len(format_ocr_file) == 1
 format_ocr_file = format_ocr_file[0]
 format_ocr_result = FormatOCR.model_construct(**json.load(open(format_ocr_file)))
-page_info = [i for i in format_ocr_result.pages if i["page"] == str(current_page)]
-assert len(page_info) == 1
-page_info = page_info[0]
 
-load_ocr = False
-for i in expand_term(thesarus_file, eval_term):
-    if i in page_info["text"]:
+# load ocr 
+try:
+    ocr_file_url = f"https://zoning-nan.s3.us-east-2.amazonaws.com/ocr/{format_state(selected_state)}/{place.town}.json"
+    # glob.glob(f"data/{format_state(selected_state)}/ocr/{place.town}.json")
+    response = requests.get(ocr_file_url)
+    response.raise_for_status()
+    ocr_info = response.json()
+except requests.exceptions.RequestException as e:
+    print(f"An error occurred: {e}")
+    ocr_info = []
+
+extract_blocks = [b for d in ocr_info for b in d["Blocks"]]
+
+edited_pages = []
+for show_page in showed_pages:
+    page = doc.load_page(show_page - 1)
+    page_rect = page.rect
+    page_info = [i for i in format_ocr_result.pages if i["page"] == str(show_page)]
+    assert len(page_info) == 1
+    page_info = page_info[0]
+    
+    load_ocr = False
+    for i in expand_term(thesarus_file, eval_term):
+        if i in page_info["text"]:
+            load_ocr = True
+    if (
+        place.town.lower() in page_info["text"].lower()
+        or place.district_full_name.lower() in page_info["text"].lower()
+        or place.district_short_name.lower() in page_info["text"].lower()
+    ):
         load_ocr = True
-if (
-    place.town.lower() in page_info["text"].lower()
-    or place.district_full_name.lower() in page_info["text"].lower()
-    or place.district_short_name.lower() in page_info["text"].lower()
-):
-    load_ocr = True
 
-if load_ocr:
-    try:
-        ocr_file_url = f"https://zoning-nan.s3.us-east-2.amazonaws.com/ocr/{format_state(selected_state)}/{place.town}.json"
-        # glob.glob(f"data/{format_state(selected_state)}/ocr/{place.town}.json")
-        response = requests.get(ocr_file_url)
-        response.raise_for_status()
-        ocr_info = response.json()
-
-        extract_blocks = [b for d in ocr_info for b in d["Blocks"]]
-        page_ocr_info = [w for w in extract_blocks if w["Page"] == current_page]
+    if load_ocr:
+        page_ocr_info = [w for w in extract_blocks if w["Page"] == show_page]
         text_boundingbox = [
             (w["Text"], w["Geometry"]["BoundingBox"])
             for w in page_ocr_info
@@ -385,47 +432,41 @@ if load_ocr:
                     )
                 else:
                     raise ValueError("State not supported")
-                page.draw_rect(normalized_rect, color=color, width=1)
-    except requests.exceptions.RequestException as e:
-        print(f"An error occurred: {e}")
-        # return None
+                page.draw_rect(normalized_rect, fill=color, width=1, stroke_opacity=0, fill_opacity=0.3)
 
-pix = page.get_pixmap()
-img_bytes = pix.pil_tobytes(format="PNG")
-pdf_viewer = st.empty()
-pdf_viewer.image(
-    img_bytes,
-    caption=f"Page {current_page}",
-    use_column_width=True,
-    # width=400
-)
 
+    pix = page.get_pixmap()
+    img_bytes = pix.pil_tobytes(format="PNG")
+    edited_pages.append(img_bytes)
+
+page_img_cols = st.columns(len(showed_pages))
+
+for i in range(len(showed_pages)):
+    page_img_cols[i].image(
+        edited_pages[i],
+        # caption=f"Page {showed_pages[i]}",
+        use_column_width=True,
+        # width=400
+    )
+# pdf_viewer = st.empty()
+# pdf_viewer.image(
+#     img_bytes,
+#     caption=f"Page {current_page}",
+#     use_column_width=True,
+#     # width=400
+# )
+
+
+# # with search_col:
+# st.write("District is highlighted in :red-background[red]")
+# st.write("Eval Term is highlighted in :blue-background[blue]")
+# st.write("LLM answer is highlighted in :green-background[green]")
 
 # with search_col:
-st.write("District is highlighted in :red-background[red]")
-st.write("Eval Term is highlighted in :blue-background[blue]")
-st.write("LLM answer is highlighted in :green-background[green]")
-# st.divider()
 
-# with search_col:
+st.divider()
 with st.container(border=True):
-    st.subheader("Current data")
-    st.write(
-        ":blue-background[Town]: {},:blue-background[District]: {} ({})".format(
-            "-".join([i[0].upper() + i[1:] for i in place.town.split("-")]),
-            place.district_full_name,
-            place.district_short_name,
-        )
-    )
-    st.write(":blue-background[Eval Term]: {}".format(format_eval_term[eval_term]))
-
-    st.write(
-        ":blue-background[LLM Answer]: {}".format(
-            normalized_llm_output.normalized_answer
-        )
-    )
-    st.write(":blue-background[LLM Rationale]: {}".format(llm_output.rationale))
-
+    # st.subheader("Current data")
     correct_col, not_sure_col, wrong_col = st.columns(3)
     with correct_col:
         if st.button(
