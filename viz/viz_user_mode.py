@@ -334,12 +334,13 @@ def get_showed_pages(pages, interval):
     return sorted(list(set(showed_pages)))
 showed_pages = get_showed_pages(highlight_text_pages, 1)
 
-if len(showed_pages) == 0:
-    st.write("No page to show")
+if len(showed_pages) == 0 and normalized_llm_output.normalized_answer == None :
+    st.write("LLM does not find any page related")
 
 else:
-
-
+    if len(showed_pages) == 0:
+        showed_pages = entire_search_page_range.copy()
+        
     format_ocr_file = glob.glob(f"{experiment_dir}/format_ocr/{place.town}.json")
     assert len(format_ocr_file) == 1
     format_ocr_file = format_ocr_file[0]
