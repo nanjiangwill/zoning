@@ -417,18 +417,18 @@ else:
                 if "Text" in w
             ]
             district_boxs = [
-                [i[0] + 50, i[1] + 50]
+                [i[0], i[1]]
                 for i in text_boundingbox
                 if place.district_full_name.lower() in i[0].lower()
                 or place.district_short_name in i[0]
             ]
             eval_term_boxs = [
-                [i[0] + 50, i[1] + 50]
+                [i[0], i[1]]
                 for i in text_boundingbox
                 if any(j in i[0] for j in expand_term(thesarus_file, eval_term))
             ]
             llm_answer_boxs = [
-                [i[0] + 50, i[1] + 50]
+                [i[0], i[1]]
                 for i in text_boundingbox
                 if any(j.split("\n")[-1] in i[0] for j in llm_output.extracted_text)
             ]  # TODO
@@ -442,6 +442,10 @@ else:
 
             for box, color in zip(box_list, color_list):
                 for _, b in box:
+                    b["Left"] += 50
+                    b["Top"] += 50
+                    b["Width"] -= 50
+                    b["Height"] -= 50
                     if selected_state == "Texas":
                         normalized_rect = fitz.Rect(
                             b["Left"] * page_rect.width,
