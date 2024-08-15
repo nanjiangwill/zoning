@@ -442,10 +442,10 @@ else:
 
             for box, color in zip(box_list, color_list):
                 for _, b in box:
-                    b["Left"] += 50
-                    b["Top"] += 50
-                    b["Width"] -= 50
-                    b["Height"] -= 50
+                    # b["Left"] += 50
+                    # b["Top"] += 50
+                    # b["Width"] -= 50
+                    # b["Height"] -= 50
                     if selected_state == "Texas":
                         normalized_rect = fitz.Rect(
                             b["Left"] * page_rect.width,
