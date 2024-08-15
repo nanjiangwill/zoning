@@ -1,6 +1,6 @@
 import glob
 import json
-
+import pandas as pd
 import fitz  # PyMuPDF
 import requests
 import streamlit as st
@@ -62,6 +62,22 @@ def write_data(human_feedback: str):
         
         st.toast("Data successfully written to database!", icon='🎉')
 
+def get_firebase_csv_data(state: str):
+    doc_ref = db.collection(selected_state)
+    
+    docs = doc_ref.get()
+    
+    data = []
+    
+    # Iterate through documents and extract data
+    for doc in docs:
+        data.append(doc.to_dict())
+    
+    # Create a DataFrame from the data
+    df = pd.DataFrame(data)
+    
+    return df.to_csv(index=False)
+    
 
 # Sidebar config
 with st.sidebar:
@@ -198,6 +214,15 @@ with st.sidebar:
         "Which data to check?",
         (format_place_map[term["place"]] for term in selected_data),
     )
+    
+    st.subheader("Step 4: Download all labeled data", divider="rainbow")
+    if st.button("Download all labeled data"):
+        st.download_button(
+            label="Download CSV",
+            data=get_firebase_csv_data(selected_state),
+            file_name=f"{selected_state}_data.csv",
+            mime="text/csv"
+        )
 
 # Load the data for the town.
 place = inverse_format_place_map[place]
