@@ -462,8 +462,8 @@ else:
                         )
                     elif selected_state == "North Carolina":
                         normalized_rect = fitz.Rect(
-                            (b["Left"] + 10) * page_rect.width,
-                            (b["Top"] + 10) * page_rect.height,
+                            (b["Left"]) * page_rect.width,
+                            (b["Top"]) * page_rect.height,
                             (b["Left"] + b["Width"]) * page_rect.width,
                             (b["Top"] + b["Height"]) * page_rect.height,
                         )
