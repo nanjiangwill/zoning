@@ -393,7 +393,6 @@ else:
         page = doc.load_page(show_page - 1)
         page_rect = page.rect
         # for zoom in
-        page_rect += (50, 50, -50, -50)
         page_info = [i for i in format_ocr_result.pages if i["page"] == str(show_page)]
         assert len(page_info) == 1
         page_info = page_info[0]
@@ -473,7 +472,7 @@ else:
 
         zoom = 2
         mat = fitz.Matrix(zoom, zoom)
-        
+        page_rect += (50, 50, -50, 50)
         # Render the page to a PIL Image
         pix = page.get_pixmap(matrix=mat, clip=page_rect)
         # pix = page.get_pixmap()
