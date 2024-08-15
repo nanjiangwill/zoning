@@ -1,5 +1,6 @@
 import glob
-import json
+#import json
+import orjson as json
 import pandas as pd
 import fitz  # PyMuPDF
 import requests
@@ -19,7 +20,7 @@ from zoning.utils import expand_term, target_pdf
 
 from google.cloud import firestore
 
-db = firestore.Client.from_service_account_info(st.secrets["firebase"]['my_project_settings'])
+db = firestore.Client.from_service_account_json("zoning_firestore.json") #st.secrets["firebase"]['my_project_settings'])
 
 
 state_experiment_map = {
@@ -118,7 +119,7 @@ with st.sidebar:
 
     all_results = {
         k: [
-            X.model_construct(**json.load(open(i)))
+            X.model_construct(**json.loads(open(i).read()))
             for i in sorted(glob.glob(f"{experiment_dir}/{k}/*.json"))
         ]
         for k, X in [
@@ -135,7 +136,8 @@ with st.sidebar:
 
     def show_fullname_shortname(place):
         town, district_short_name, district_full_name = place.split("__")
-        return f"{"-".join([i[0].upper()+i[1:] for i in town.split("-")])}, {district_full_name} ({district_short_name})"
+        jstr = "-".join([i[0].upper()+i[1:] for i in town.split("-")])
+        return f"{jstr}, {district_full_name} ({district_short_name})"
 
     format_place_map = {place: show_fullname_shortname(place) for place in all_places}
 
@@ -339,23 +341,29 @@ current_page = min(jump_pages) if jump_pages else 1
 #             args=(f"{page_num}",),
 #         ):
 #             current_page = page_num
-st.write(
-    ":blue-background[Town]: {},:blue-background[District]: {} ({})".format(
-        "-".join([i[0].upper() + i[1:] for i in place.town.split("-")]),
-        place.district_full_name,
-        place.district_short_name,
-    )
-)
-st.write(":blue-background[Eval Term]: {}".format(format_eval_term[eval_term]))
 
-st.write(
-    ":blue-background[LLM Answer]: {}".format(
-        normalized_llm_output.normalized_answer
-    )
-)
-st.write(":blue-background[LLM Rationale]: {}".format(llm_output.rationale))
+norm = normalized_llm_output.normalized_answer
+if isinstance(norm, list):
+    norm = norm[0]
 
-st.link_button("PDF Link", pdf_file)
+town = "-".join([i[0].upper() + i[1:] for i in place.town.split("-")])
+st.html(f"""
+    <h2><em>{format_eval_term[eval_term]}</em> for the <em>{place.district_full_name}({place.district_short_name})</em> District in <em>{town}</em></h2>
+    <h2>Value: <em>{norm}</em></h2>
+    <h4>Rationale: {llm_output.rationale}</h4>
+""")
+
+
+# # st.write(":blue-background[Eval Term]: {}".format())
+
+# # st.write(
+# #     ":blue-background[LLM Answer]: {}".format(
+
+# #     )
+# # )
+# st.write(":blue-background[LLM Rationale]: {}".format(llm_output.rationale))
+
+
 # current_page = st.number_input(
 #     "Selected page",
 #     min_value=1,
@@ -382,8 +390,11 @@ else:
     format_ocr_file = glob.glob(f"{experiment_dir}/format_ocr/{place.town}.json")
     assert len(format_ocr_file) == 1
     format_ocr_file = format_ocr_file[0]
-    format_ocr_result = FormatOCR.model_construct(**json.load(open(format_ocr_file)))
-
+    print("loading")
+    d = json.loads(open(format_ocr_file).read())
+    print("deserizing")
+    format_ocr_result = FormatOCR.model_construct(**d)
+    print("done")
     # load ocr 
     try:
         ocr_file_url = f"https://zoning-nan.s3.us-east-2.amazonaws.com/ocr/{format_state(selected_state)}/{place.town}.json"
@@ -395,10 +406,12 @@ else:
         print(f"An error occurred: {e}")
         ocr_info = []
 
+    print("extract")
+    
     extract_blocks = [b for d in ocr_info for b in d["Blocks"]]
-
+    print("done")
     edited_pages = []
-    for show_page in showed_pages:
+    for shown_page_num, show_page in enumerate(showed_pages):
         page = doc.load_page(show_page - 1)
         page_rect = page.rect
         # for zoom in
@@ -488,15 +501,19 @@ else:
         img_bytes = pix.pil_tobytes(format="PNG")
         edited_pages.append(img_bytes)
 
-    page_img_cols = st.columns(len(showed_pages))
+    page_img_cols = st.columns(3)
 
-    for i in range(len(showed_pages)):
-        page_img_cols[i].image(
-            edited_pages[i],
-            # caption=f"Page {showed_pages[i]}",
-            use_column_width=True,
-            # width=400
-        )
+    for k in range(len(showed_pages) // 3 + 1):
+        for j in range(3):
+            i = k * 3 + j
+            if i >= len(showed_pages):
+                continue
+            page_img_cols[j].image(
+                edited_pages[i],
+                # caption=f"Page {showed_pages[i]}",
+                use_column_width=True,
+                # width=400
+            )
     # pdf_viewer = st.empty()
     # pdf_viewer.image(
     #     img_bytes,
@@ -519,26 +536,30 @@ with st.container(border=True):
     correct_col, not_sure_col, wrong_col = st.columns(3)
     with correct_col:
         if st.button(
-            "LLM Correct",
+            "Verified Correct",
             key="llm_correct",
-            type="secondary",
+            type="primary",
+            use_container_width=True,
         ):
             write_data("correct")
     with not_sure_col:
         if st.button(
-            "Not Sure",
+            "Not Enough Information",
             key="llm_not_sure",
             type="secondary",
+            use_container_width=True,
         ):
             write_data("not_sure")
     with wrong_col:
         if st.button(
-            "LLM Wrong",
+            "Verified Incorrect",
             key="llm_wrong",
             type="secondary",
+            use_container_width=True,
+
         ):
             write_data("wrong")
-
+st.link_button("PDF Link", pdf_file)
 # st.divider()
 
 # st.title("More Details")
