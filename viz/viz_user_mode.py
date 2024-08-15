@@ -392,6 +392,8 @@ else:
     for show_page in showed_pages:
         page = doc.load_page(show_page - 1)
         page_rect = page.rect
+        # for zoom in
+        page_rect += (50, 50, -50, -50)
         page_info = [i for i in format_ocr_result.pages if i["page"] == str(show_page)]
         assert len(page_info) == 1
         page_info = page_info[0]
@@ -415,18 +417,18 @@ else:
                 if "Text" in w
             ]
             district_boxs = [
-                [i[0], i[1]]
+                [i[0] + 50, i[1] + 50]
                 for i in text_boundingbox
                 if place.district_full_name.lower() in i[0].lower()
                 or place.district_short_name in i[0]
             ]
             eval_term_boxs = [
-                [i[0], i[1]]
+                [i[0] + 50, i[1] + 50]
                 for i in text_boundingbox
                 if any(j in i[0] for j in expand_term(thesarus_file, eval_term))
             ]
             llm_answer_boxs = [
-                [i[0], i[1]]
+                [i[0] + 50, i[1] + 50]
                 for i in text_boundingbox
                 if any(j.split("\n")[-1] in i[0] for j in llm_output.extracted_text)
             ]  # TODO
@@ -469,7 +471,7 @@ else:
         mat = fitz.Matrix(zoom, zoom)
         
         # Render the page to a PIL Image
-        pix = page.get_pixmap(matrix=mat)
+        pix = page.get_pixmap(matrix=mat, clip=page_rect)
         # pix = page.get_pixmap()
         img_bytes = pix.pil_tobytes(format="PNG")
         edited_pages.append(img_bytes)
