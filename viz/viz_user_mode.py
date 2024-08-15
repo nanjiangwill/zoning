@@ -392,6 +392,7 @@ else:
     for show_page in showed_pages:
         page = doc.load_page(show_page - 1)
         page_rect = page.rect
+        # for zoom in
         page_rect += (50, 50, -50, -50)
         page_info = [i for i in format_ocr_result.pages if i["page"] == str(show_page)]
         assert len(page_info) == 1
@@ -466,8 +467,12 @@ else:
                         raise ValueError("State not supported")
                     page.draw_rect(normalized_rect, fill=color, width=1, stroke_opacity=0, fill_opacity=0.15)
 
-
-        pix = page.get_pixmap()
+        zoom = 2
+        mat = fitz.Matrix(zoom, zoom)
+        
+        # Render the page to a PIL Image
+        pix = page.get_pixmap(matrix=mat, clip=page_rect)
+        # pix = page.get_pixmap()
         img_bytes = pix.pil_tobytes(format="PNG")
         edited_pages.append(img_bytes)
 
