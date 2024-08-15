@@ -48,12 +48,16 @@ def write_data(human_feedback: str):
     if not analyst_name or analyst_name == "":
         st.toast("Please enter your name", icon="🚨")
     else:
+        town_name, district_short_name, district_full_name = place.split("__")
         d = {
             "analyst_name": analyst_name,
             "state": selected_state,
-            "place": str(place),
+            "town": town_name,
+            "district_full_name": district_full_name,
+            "district_short_name": district_short_name,
             "eval_term": eval_term,
             "human_feedback": human_feedback,
+            "date": pd.Timestamp.now(),
         }
         
         doc_ref = db.collection(selected_state)
