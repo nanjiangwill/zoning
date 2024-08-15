@@ -48,7 +48,9 @@ def write_data(human_feedback: str):
     if not analyst_name or analyst_name == "":
         st.toast("Please enter your name", icon="🚨")
     else:
-        town_name, district_short_name, district_full_name = place.split("__")
+        town_name = place.town
+        district_full_name = place.district_full_name
+        district_short_name = place.district_short_name
         d = {
             "analyst_name": analyst_name,
             "state": selected_state,
