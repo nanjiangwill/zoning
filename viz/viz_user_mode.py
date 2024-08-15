@@ -216,13 +216,12 @@ with st.sidebar:
     )
     
     st.subheader("Step 4: Download all labeled data", divider="rainbow")
-    if st.button("Download all labeled data"):
-        st.download_button(
-            label="Download CSV",
-            data=get_firebase_csv_data(selected_state),
-            file_name=f"{selected_state}_data.csv",
-            mime="text/csv"
-        )
+    st.download_button(
+        label="Download CSV",
+        data=get_firebase_csv_data(selected_state),
+        file_name=f"{selected_state}_data.csv",
+        mime="text/csv"
+    )
 
 # Load the data for the town.
 place = inverse_format_place_map[place]
@@ -460,7 +459,7 @@ else:
                         )
                     else:
                         raise ValueError("State not supported")
-                    page.draw_rect(normalized_rect, fill=color, width=1, stroke_opacity=0, fill_opacity=0.3)
+                    page.draw_rect(normalized_rect, fill=color, width=1, stroke_opacity=0, fill_opacity=0.15)
 
 
         pix = page.get_pixmap()
