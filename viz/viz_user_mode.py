@@ -1,5 +1,6 @@
 import glob
-import json
+#import json
+import orjson as json
 import pandas as pd
 import fitz  # PyMuPDF
 import requests
@@ -116,7 +117,7 @@ with st.sidebar:
 
     all_results = {
         k: [
-            X.model_construct(**json.load(open(i)))
+            X.model_construct(**json.loads(open(i).read()))
             for i in sorted(glob.glob(f"{experiment_dir}/{k}/*.json"))
         ]
         for k, X in [
@@ -387,8 +388,11 @@ else:
     format_ocr_file = glob.glob(f"{experiment_dir}/format_ocr/{place.town}.json")
     assert len(format_ocr_file) == 1
     format_ocr_file = format_ocr_file[0]
-    format_ocr_result = FormatOCR.model_construct(**json.load(open(format_ocr_file)))
-
+    print("loading")
+    d = json.loads(open(format_ocr_file).read())
+    print("deserizing")
+    format_ocr_result = FormatOCR.model_construct(**d)
+    print("done")
     # load ocr 
     try:
         ocr_file_url = f"https://zoning-nan.s3.us-east-2.amazonaws.com/ocr/{format_state(selected_state)}/{place.town}.json"
@@ -400,8 +404,10 @@ else:
         print(f"An error occurred: {e}")
         ocr_info = []
 
+    print("extract")
+    
     extract_blocks = [b for d in ocr_info for b in d["Blocks"]]
-
+    print("done")
     edited_pages = []
     for shown_page_num, show_page in enumerate(showed_pages):
         page = doc.load_page(show_page - 1)
