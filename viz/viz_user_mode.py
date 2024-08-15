@@ -4,6 +4,7 @@ import pandas as pd
 import fitz  # PyMuPDF
 import requests
 import streamlit as st
+from collections import OrderedDict
 
 from zoning.class_types import (
     EvalResult,
@@ -68,7 +69,9 @@ def write_data(human_feedback: str):
         
         st.toast("Data successfully written to database!", icon='🎉')
 
-def get_firebase_csv_data(state: str):
+def get_firebase_csv_data(selected_state: str):
+    key_order =  ["eval_term", "state", "town", "district_full_name", "district_short_name" "human_feedback", "analyst_name", "date"]
+
     doc_ref = db.collection(selected_state)
     
     docs = doc_ref.get()
@@ -77,12 +80,13 @@ def get_firebase_csv_data(state: str):
     
     # Iterate through documents and extract data
     for doc in docs:
-        data.append(doc.to_dict())
+        ordered_dict = OrderedDict((k, doc.to_dict().get(k, '')) for k in key_order)
+        data.append(ordered_dict)
     
     # Create a DataFrame from the data
     df = pd.DataFrame(data)
     
-    return df.to_csv(index=False)
+    return df.to_csv(index=True)
     
 
 # Sidebar config
