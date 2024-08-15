@@ -70,7 +70,7 @@ def write_data(human_feedback: str):
         st.toast("Data successfully written to database!", icon='🎉')
 
 def get_firebase_csv_data(selected_state: str):
-    key_order =  ["eval_term", "state", "town", "district_full_name", "district_short_name" "human_feedback", "analyst_name", "date"]
+    key_order =  ["eval_term", "state", "town", "district_full_name", "district_short_name", "human_feedback", "analyst_name", "date"]
 
     doc_ref = db.collection(selected_state)
     
@@ -81,6 +81,7 @@ def get_firebase_csv_data(selected_state: str):
     # Iterate through documents and extract data
     for doc in docs:
         ordered_dict = OrderedDict((k, doc.to_dict().get(k, '')) for k in key_order)
+        ordered_dict["eval_term"] = format_eval_term[ordered_dict["eval_term"]]
         data.append(ordered_dict)
     
     # Create a DataFrame from the data
