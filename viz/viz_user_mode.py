@@ -133,7 +133,8 @@ with st.sidebar:
 
     def show_fullname_shortname(place):
         town, district_short_name, district_full_name = place.split("__")
-        return f"{"-".join([i[0].upper()+i[1:] for i in town.split("-")])}, {district_full_name} ({district_short_name})"
+        jstr = "-".join([i[0].upper()+i[1:] for i in town.split("-")])
+        return f"{jstr}, {district_full_name} ({district_short_name})"
 
     format_place_map = {place: show_fullname_shortname(place) for place in all_places}
 
