@@ -84,8 +84,10 @@ def get_firebase_csv_data(selected_state: str):
         ordered_dict["eval_term"] = format_eval_term[ordered_dict["eval_term"]]
         data.append(ordered_dict)
     
+    sorted_data = sorted(data, key=lambda x: x.get("eval_term", ''))
+    
     # Create a DataFrame from the data
-    df = pd.DataFrame(data)
+    df = pd.DataFrame(sorted_data)
     
     return df.to_csv(index=True)
     
