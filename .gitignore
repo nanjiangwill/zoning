@@ -1,6 +1,8 @@
 .diskcache
 .env
 .mypy_cache
+.streamlit
+Procfile
 data/*/eval
 data/*/format_ocr
 data/*/index
@@ -17,6 +19,8 @@ old_results
 results/*/district_extraction
 results/*/district_extraction_verification
 results/*/page_embedding
+runtime.txt
+setup.sh
 wandb/
 zoning.egg-info
 zoning.egg-info/
@@ -24,7 +28,3 @@ zoning/*/__pycache__
 zoning/__pycache__
 zoning/prompt/old_templates
 zoning/~*
-.streamlit
-Procfile
-runtime.txt
-setup.sh

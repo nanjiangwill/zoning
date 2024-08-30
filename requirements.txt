@@ -1,8 +1,11 @@
+-e .
 anthropic
 boto3
 datasets
 diskcache
 elasticsearch-dsl
+firebase_admin
+google-cloud-firestore
 hydra-core
 ipykernel
 matplotlib
@@ -15,6 +18,3 @@ streamlit # for visualization
 typer
 wandb
 watchdog
-google-cloud-firestore
--e .
-firebase_admin

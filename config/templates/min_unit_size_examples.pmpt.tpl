@@ -1,4 +1,6 @@
 Here are several examples that you can use as references.
+
+Remember, min unit size is not min lot size
 # Examples
 
 Input:
@@ -257,3 +259,5 @@ Output:
     "rationale": null
     "answer": null
 }
+
+Remember, min unit size is not min lot size
