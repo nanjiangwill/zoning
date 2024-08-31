@@ -2,258 +2,249 @@ Here are several examples that you can use as references.
 # Examples
 
 Input:
-NEW PAGE 11
-
-{{zone_abbreviation}} Zone
-
-CELL (2, 1):
-Field
-CELL (2, 2):
-Value
-CELL (3, 1):
-{{term}}
-CELL (3, 2):
-123456 sq ft
-CELL (4, 1):
-Apartment Area
-CELL (4, 2):
-10,000
-
-
-Output:
-{
-    "extracted_text": ["CELL (3, 2):\n123456 sq ft"],
-    "rationale": "The cell that corresponds to the value for {{term}} in this table has this answer.",
-    "answer": "123456"
-}
-
-Input:
-NEW PAGE 32
-
-Section 6.3 Industrial Area & Dimensional Requirements
-1 Public Sewer or Public Water
-2 Neither Public Sewer nor Public Water
-3 For proposed warehouse/manufacturing uses 35%, for all other uses 25%, subject to
-Commission's authority to permit greater coverage based on landscape, architectural design
-and site development elements that exceed minimum standard of the Regulation
-4
-Shall be in addition to requirements of 8.1.2 Landscaping and Buffers
-6-4
-
-CELL (1, 1):
+NEW PAGE 98
+ARTICLE 7 - DIMENSIONAL STANDARDS
+7.2
+Dimensional Standards for Lots and Principal Structures
+The following tables establish the minimum dimensional standards for lots, including size,
+width, depth, setbacks, height and building coverage:
+Table 7-1 Minimum Lot Dimensions for Single Family Residential Zoning Districts
+Table 7-2 Project Area and Density Standards for the Multifamily Residential District
+Table 7-3 Minimum Lot Dimensions for Nonresidential Zoning Districts
+Table 7-4 Setbacks, Height and Building Coverage Requirements
+P Indicates that prevailing setbacks are required.
+VILLAGE OF LAKE PARK UNIFIED DEVELOPMENT ORDINANCE
+DISTRICT
 CELL (1, 2):
-Table 6.3 Area, Height, Coverage and Setback Requirements
+XXXX
 CELL (1, 3):
-Table 6.3 Area, Height, Coverage and Setback Requirements
+XXXX
 CELL (1, 4):
-Table 6.3 Area, Height, Coverage and Setback Requirements
+XXXX
 CELL (1, 5):
-Table 6.3 Area, Height, Coverage and Setback Requirements
+XXXX
 CELL (1, 6):
-Table 6.3 Area, Height, Coverage and Setback Requirements
+{{zone_abbreviation}}
 CELL (1, 7):
-Table 6.3 Area, Height, Coverage and Setback Requirements
+XXXX
 CELL (1, 8):
-Table 6.3 Area, Height, Coverage and Setback Requirements
+XXXX
 CELL (1, 9):
+XXXX
 CELL (1, 10):
-CELL (2, 1):
-Zone
-CELL (2, 2):
-Min
-Area
-CELL (2, 3):
-Min
-Width
-CELL (2, 4):
-Min
-Depth
-CELL (2, 5):
-Max
-Stories
-CELL (2, 6):
-Max
-Height
-CELL (2, 7):
-Max % Lot
-Coverage
-CELL (2, 8):
-Min
-Front
-Yard
-CELL (2, 9):
-Min
-Side
-Yard
-CELL (2, 10):
-Min
-Rear
-Yard
-CELL (3, 1):
-I
-CELL (3, 2):
-20,000
-sq. ft.
-CELL (3, 3):
-100'
-CELL (3, 4):
-100'
-CELL (3, 5):
-2 1/2
-CELL (3, 6):
-50'
-CELL (3, 7):
-N/A
-CELL (3, 8):
-25'
-CELL (3, 9):
-20'
-CELL (3, 10):
-20'
-CELL (4, 1):
-{{zone_abbreviation}}
-CELL (4, 2):
-40,000
-sq. ft. 1
-CELL (4, 3):
-150'
-CELL (4, 4):
-150'
-CELL (4, 5):
-2 1/2
-CELL (4, 6):
-50'
-CELL (4, 7):
-25%³
-CELL (4, 8):
-50'
-CELL (4, 9):
-20'
-CELL (4, 10):
-20'
-CELL (5, 1):
-{{zone_abbreviation}}
-CELL (5, 2):
-60,000
-sq. ft. 2
-CELL (5, 3):
-200'
-CELL (5, 4):
-200'
-CELL (5, 5):
-2 1/2
-CELL (5, 6):
-50'
-CELL (5, 7):
-25%³
-CELL (5, 8):
-50'
-CELL (5, 9):
-20'
-CELL (5, 10):
-20'4
+XXXX
+CELL (1, 11):
+XXXX
+CELL (1, 12):
+|
+CELL (6, 1):
+Maximum Height (feet)
+CELL (6, 2):
+35
+CELL (6, 3):
+35
+CELL (6, 4):
+35
+CELL (6, 5):
+35
+CELL (6, 6):
+35
+CELL (6, 7):
+35
+CELL (6, 8):
+35
+CELL (6, 9):
+35
+CELL (6, 10):
+35
+CELL (6, 11):
+35
+CELL (6, 12):
+35
 
 Output:
 {
-    "extracted_text": [
-        "1 Public Sewer or Public Water",
-        "2 Neither Public Sewer nor Public Water",
-        "CELL (4, 2): \n40,000\nsq. ft.",
-        "CELL (5, 2): \n60,000\nsq. ft."
-    ],
-    "rationale": "From this page we can infer that the value is conditional on the presence of a public sewer or water system, and there are two different values for the current zone, depending on that.",
-    "answer": "40,000 sq ft (if public water or sewer); 60,000 sq ft (otherwise)"
+    "extracted_text": ["CELL (6, 6):\n35"],
+    "rationale": "The section titled Maximum Height (feet) says the answer for district, {{zone_abbreviation}}, explicitly.",
+    "answer": "35 ft"
 }
 
 Input:
 NEW PAGE 66
-
-{{zone_abbreviation}} Zone
-
-{{term}} is 123 sq ft, side length is 10 ft
-
-NEW PAGE 67
-
-{{zone_abbreviation}} Zone - Senior Active Overlay
-
-{{term}} is 1523 sq ft
-
-DKEWKWKDS Zone
-
-{{term}} is 20,000 sq ft
+(B) Table: Permitted Uses by Zoning District.
+CELL (1, 1):
+Sign
+District
+CELL (1, 2):
+XXXX
+CELL (1, 3):
+XXXX
+CELL (1, 4):
+XXXX
+CELL (1, 5):
+XXXX
+CELL (1, 6):
+XXXX
+CELL (1, 7):
+XXXX
+CELL (1, 8):
+XXXX
+CELL (1, 9):
+XXXX
+CELL (1, 10):
+XXXX
+CELL (1, 11):
+XXXX
+CELL (1, 12):
+XXXX
+CELL (1, 13):
+{{zone_abbreviation}}
+CELL (2, 1):
+Outdoor
+advertising
+CELL (2, 2):
+Not
+Permitted
+CELL (2, 3):
+Not
+Permitted
+CELL (2, 4):
+Not
+Permitted
+CELL (2, 5):
+Not
+Permitted
+CELL (2, 6):
+Not
+Permitted d
+CELL (2, 7):
+Not
+Permitted
+CELL (2, 8):
+Not
+Permitted
+CELL (2, 9):
+Not
+Permitted
+CELL (2, 10):
+Not
+Permitted
+CELL (2, 11):
+Not
+Permitted
+CELL (2, 12):
+Not
+Permitted
+CELL (2, 13):
+Not
+Permitted
+CELL (3, 1):
+Marquees
+CELL (3, 2):
+Not
+Permitted
+CELL (3, 3):
+Not
+Permitted
+CELL (3, 4):
+6' max
+height
+CELL (3, 5):
+6' max
+height
+CELL (3, 6):
+Not
+Permitted d
+CELL (3, 7):
+6' max
+height
 
 Output:
 {
-    "extracted_text": ["{{term}} is 123 sq ft"],
-    "rationale": "The section titled {{zone_abbreviation}} says the answer explicitly. We ignore sections that specify regulations for overlay districts within this district.",
-    "answer": "123 sq ft"
+    "extracted_text": null,
+    "rationale": "The section is about the maximum height of flags in different zoning districts, not the maximum height of buildings.",
+    "answer": null
 }
 
 Input:
-NEW PAGE 47
+Section 5. - {{zone_name}} ({{zone_abbreviation}}).
+5.1. Purpose. The requirements set forth in this district are extended to provide for the proper
+development of areas in the Town of Indian Beach which, due to their location, natural
+features and access, have an extremely high potential for both permanent and tourist types of
+residential development.
+5.2. Uses Permitted.
+(a) Single-family unattached dwellings.
+(b) Two-family attached dwelling (duplex).
+(c) Townhouses, apartments and condominiums in accordance with the Town of Indian Beach
+Group Housing Project Ordinance.
+(d) Public utility buildings and facilities only upon submission of architectural rendering of
+such building and facilities.
+35 of 78
+4/13/24, 12:40
 
-specified in Schedule A. The total floor area of all buildings and other structures on any lot, excluding basements, shall not exceed the percentage of the lot as specified in Schedule A.
-
-7.6 Minimum Floor Area - Dwelling: Each dwelling shall have a minimum floor area on the ground floor as specified in Schedule A.
-
-7.7 Corner Lots: On any corner lot, the required minimum street setback specified in Schedule A shall be applied to each street line.
-
-SCHEDULE A
-AREA, LOCATION AND BULK STANDARDS Line Standards Districts
-A
-B
-C
-
-{{term}} (in square feet)
-8,400
-5,500
-6,300
-
+NEW PAGE 36
+Indian Beach, NC Code of Ordinances
+requirements set forth in Article V, Section 5.8.
+(k) Mobile homes for the limited purpose of contractor's temporary field construction offices,
+contractor's temporary construction warehouse facilities, temporary sales offices, and
+temporary offices and housing for security personnel. Mobile homes under the specific
+limitation of this subparagraph shall be permitted only after a building permit has been
+issued for a permitted or special use within the RR District, and the mobile homes shall be
+maintained upon such building site until the occupancy permit is issued for the
+development represented by the building permit, or until the said building permit has
+expired, at which time the mobile home must be removed from the RR district.
+5.3. Dimensional Requirements for Permitted Uses.
+(a) Minimum lot area:
+(i) Hotels, motels and accessory uses in accordance with Article V, Section 5.8 hereinafter.
+(ii) Detached single-family dwellings - 15,000 square feet; however, if the lot is served by
+Public Sewer and a Public Water System, the minimum lot size is 10,000 square feet.
+Editor's note- [This subsection as amended by Ord. of 12-9-2010, § I.]
+(iii) Two-family dwellings (duplex) - 20,000 square feet.
+(b) Maximum building lot coverage - 35 percent
+(c) (i) Maximum building height - 100 feet
+(ii) Any building with any floor of thirty (30) feet or more in height must have exterior fire
+escapes, or fire proof interior stairways if approved by the North Carolina Department
+of Insurance, extending from the ground to each floor at thirty (30) feet or above.
 Output:
 {
-    "extracted_text": ["6,300"],
-    "rationale": "The section {{term}} or its close synonyms says the answer explicitly.",
-    "answer": "6,300 sq ft"
+    "extracted_text": ["Maximum building height - 100 feet"],
+    "rationale": "The section explicitly states the {{term}} for district, {{zone_abbreviation}}.",
+    "answer": "100 ft"
 }
-
 
 Input:
-NEW PAGE 84
+NEW PAGE 100
+Sec. 21-66. General criteria for uses listed SR in the {{zone_abbreviation}} District in section 21-113.
+Uses listed as SR in the Al District in section 21-113, the table of uses, shall comply with
+the following criteria, as applicable:
+(1) Site plan. A site plan shall be provided showing the existing lot, existing and proposed
+100
 
-SECTION 9A - Housing Opportunity Development (This Section Repealed - August 15, 2014)
-SECTION 9B - Housing Opportunity Development District (Effective July 1, 2014)
-
-Housing Opportunity Development:
-9B.1 Intent and Purpose:
-This Housing Opportunity Development ("HOD") District is intended to increase in the Town of Bethany the supply of housing that is within the economic means of moderate income households. The HOD District is a separate and independent zoning district and shall replace, not supplement, the existing zoning district of any property to which it is applied.
-
-9B.2 Permitted Uses:
-Principal Uses: Residential homes with a maximum of three dwelling units per building as part of a Housing Opportunity Development.
-Accessory Uses:
-Accessory buildings, structures, and uses.
-Agricultural or farming uses.
-Common or community buildings for residents and guests (not for residential purposes or temporary/transient occupancy).
-
-9B.3 Eligible Areas:
-Criteria for HOD Application:
-The total combined property shall be at least (30) acres in size.
-Frontage on Old Amity Road and Meyers Road.
-Owned by the same person or entity for at least three years prior to application.
+NEW PAGE 101
+As of 01/17/23
+buildings, and criteria required herein.
+(2) Lighting. Any outdoor or building mounted lighting shall be shielded or directed downward to
+prevent upward illumination that may create interference with airport operations.
+(3) Building material. No glare-producing material shall be used as exterior siding or as roofing
+on any building.
+(4) Building height. The maximum height for any building or structure not associated with
+administration or operation(s) of the Mid-Carolina Regional Airport shall be limited to the
+lesser of the Airport Zoning Overlay (AZO) or thirty-five (35') feet
+(5) Parking. Parking shall be as prescribed in Article VII, Parking, for that use.
 
 Output:
 {
-    "extracted_text": [The total combined property shall be at least (30) acres in size.],
-    "rationale": "The section state the {{term}}",
-    "answer": "30 acres"
+    "extracted_text": ["The maximum height for any building or structure not associated with administration or operation(s) of the Mid-Carolina Regional Airport shall be limited to the lesser of the Airport Zoning Overlay (AZO) or thirty-five (35') feet"],
+    "rationale": "The section explicitly states the maximum height of any building in the {{zone_abbreviation}} district.",
+    "answer": "35 ft"
 }
-
 
 Input:
 Multi-family building
 
 Output:
 {
-    "extracted_text": null
-    "rationale": null
+    "extracted_text": null,
+    "rationale": "The section does not provide a specific value for {{term}}, and is not about single-family homes.",
     "answer": null
 }

@@ -2,251 +2,223 @@ Here are several examples that you can use as references.
 # Examples
 
 Input:
-NEW PAGE 11
-
-{{zone_abbreviation}} Zone
-
-CELL (2, 1):
-Field
-CELL (2, 2):
-Value
-CELL (3, 1):
-{{term}}
-CELL (3, 2):
-123456 sq ft
-CELL (4, 1):
-Apartment Area
-CELL (4, 2):
-10,000
-
-
-Output:
-{
-    "extracted_text": ["CELL (3, 2):\n123456 sq ft"],
-    "rationale": "The cell that corresponds to the value for {{term}} in this table has this answer.",
-    "answer": "123456"
-}
-
-Input:
-NEW PAGE 32
-
-Section 6.3 Industrial Area & Dimensional Requirements
-1 Public Sewer or Public Water
-2 Neither Public Sewer nor Public Water
-3 For proposed warehouse/manufacturing uses 35%, for all other uses 25%, subject to
-Commission's authority to permit greater coverage based on landscape, architectural design
-and site development elements that exceed minimum standard of the Regulation
-4
-Shall be in addition to requirements of 8.1.2 Landscaping and Buffers
-6-4
-
+165/167
 CELL (1, 1):
+Restaurants (with drive through service)
 CELL (1, 2):
-Table 6.3 Area, Height, Coverage and Setback Requirements
-CELL (1, 3):
-Table 6.3 Area, Height, Coverage and Setback Requirements
-CELL (1, 4):
-Table 6.3 Area, Height, Coverage and Setback Requirements
-CELL (1, 5):
-Table 6.3 Area, Height, Coverage and Setback Requirements
-CELL (1, 6):
-Table 6.3 Area, Height, Coverage and Setback Requirements
-CELL (1, 7):
-Table 6.3 Area, Height, Coverage and Setback Requirements
-CELL (1, 8):
-Table 6.3 Area, Height, Coverage and Setback Requirements
-CELL (1, 9):
-CELL (1, 10):
+One (1) space for each four (4) seating
+accommodations, plus one (1) space for each
+two (2) employees on the shift of largest
+employment; and Three (3) stacking spaces
+for each drive through window.
 CELL (2, 1):
-Zone
+School, Elementary and Middle (both public
+and private):
 CELL (2, 2):
-Min
-Area
-CELL (2, 3):
-Min
-Width
-CELL (2, 4):
-Min
-Depth
-CELL (2, 5):
-Max
-Stories
-CELL (2, 6):
-Max
-Height
-CELL (2, 7):
-Max % Lot
-Coverage
-CELL (2, 8):
-Min
-Front
-Yard
-CELL (2, 9):
-Min
-Side
-Yard
-CELL (2, 10):
-Min
-Rear
-Yard
+One (1) parking space for each classroom and
+administrative office, plus one (1) parking
+space for each employee and one (1) large
+space for each bus.
 CELL (3, 1):
-I
+School, High School (both public and private)
 CELL (3, 2):
-20,000
-sq. ft.
-CELL (3, 3):
-100'
-CELL (3, 4):
-100'
-CELL (3, 5):
-2 1/2
-CELL (3, 6):
-50'
-CELL (3, 7):
-N/A
-CELL (3, 8):
-25'
-CELL (3, 9):
-20'
-CELL (3, 10):
-20'
+One (1) parking space for each fifteen (15)
+students for which the building was designed,
+plus one (1) parking space for each classroom
+and administrative office, plus one (1) parking
+space for each employee, plus one (1) large
+space for each bus.
 CELL (4, 1):
-{{zone_abbreviation}}
+Shopping Centers, large and small
 CELL (4, 2):
-40,000
-sq. ft. 1
-CELL (4, 3):
-150'
-CELL (4, 4):
-150'
-CELL (4, 5):
-2 1/2
-CELL (4, 6):
-50'
-CELL (4, 7):
-25%³
-CELL (4, 8):
-50'
-CELL (4, 9):
-20'
-CELL (4, 10):
-20'
+One (1) space for each three hundred (300)
+square feet of gross floor area.
 CELL (5, 1):
-{{zone_abbreviation}}
+Single Family, Duplex, Condominiums,
+Manufactured Homes, and similar residential
 CELL (5, 2):
-60,000
-sq. ft. 2
+Two (2) spaces per dwelling unit
+CELL (6, 1):
+Terminals, Bus
+CELL (6, 2):
+One (1) space for each employee and one (1)
+space for each bus loading ramp and track.
+CELL (7, 1):
+Stadiums, Theaters, and similar uses
+involving the assembling of persons:
+CELL (7, 2):
+One (1) parking space for each four (4) seats
+in the largest assembly room. One (1) seat
+equals two (2) feet of bench length.
+
+Output:
+{
+    "extracted_text": ["CELL (5, 2):\nTwo (2) spaces per dwelling unit"],
+    "rationale": "The cell corresponding to single-family contains the information for {{term}}.",
+    "answer": "2"
+}
+
+Input:
+NEW PAGE 191
+CHAPTER 10:
+PARKING
+10.3 Required Vehicle and Bicycle Parking
+(a) All square footage calculations are gross interior floor area with the exception of a Restaurant/Bar use which can
+include both interior and exterior gross dining floor area for square footage calculations.
+(b) Required bicycle parking spaces are based on the indicated minimum percentage of vehicle parking spaces provided.
+A single "inverted U" bicycle parking rack will count as two (2) bicycle parking spaces. The minimum number of
+bicycle parking spaces per use, when required, is two (2) or one rack and the maximum number of required bicycle
+spaces shall be 20 or 10 racks.
+(c) Bicycle parking is required for multi-family dwellings of only more than 4 units per building
+(d) Garage parking shall not count towards residential parking requirements, except for homes with two car garages,
+which may count 1 garage space towards parking requirements.
+SALISBURY, NC LAND DEVELOPMENT ORDINANCE
+10-3
+ADOPTED DECEMBER 18, 2007; EFFECTIVE JANUARY 1, 2008
+AMENDED 5/6/08, ORD.2008-17;4/3/18, ORD.2018-16; 10/2/18, ORD.2018-48; 6/18/19,
+ORD.2019-40;5/17/22, ORD.2022-37;2/21/23,ORD.2023-15;5/16/23,ORD.2023-31
+CELL (1, 1):
+Use Type
+CELL (1, 2):
+Vehicle Parking Spaces
+CELL (1, 3):
+Vehicle Parking Spaces
+CELL (1, 4):
+Bicycle
+CELL (2, 1):
+CELL (2, 2):
+Minimum
+Required(a)
+CELL (2, 3):
+Maximum
+Permitted(a)
+CELL (2, 4):
+Parking
+Spaces(b)
+CELL (3, 1):
+Residential
+CELL (3, 2):
+1 per bedroom up to 2
+per unit
+CELL (3, 3):
+CELL (3, 4):
+5% (c)
+CELL (4, 1):
+Lodging
+CELL (4, 2):
+1 per room or suite
+CELL (4, 3):
+CELL (4, 4):
+2%
+CELL (5, 1):
+General Office /
+Business or Personal
+Service
+CELL (5, 2):
+2 per 1000 ft2
 CELL (5, 3):
-200'
+5 per 1000 ft2
 CELL (5, 4):
-200'
-CELL (5, 5):
-2 1/2
-CELL (5, 6):
-50'
-CELL (5, 7):
-25%³
-CELL (5, 8):
-50'
-CELL (5, 9):
-20'
-CELL (5, 10):
-20'4
+5%
 
 Output:
 {
-    "extracted_text": [
-        "1 Public Sewer or Public Water",
-        "2 Neither Public Sewer nor Public Water",
-        "CELL (4, 2): \n40,000\nsq. ft.",
-        "CELL (5, 2): \n60,000\nsq. ft."
-    ],
-    "rationale": "From this page we can infer that the value is conditional on the presence of a public sewer or water system, and there are two different values for the current zone, depending on that.",
-    "answer": "40,000 sq ft (if public water or sewer); 60,000 sq ft (otherwise)"
+    "extracted_text": ["CELL (3, 2):\n1 per bedroom up to 2 per unit"],
+    "rationale": "The cell corresponding to residential contains the information for {{term}}.",
+    "answer": "1, 2 (depending on the number of bedrooms or units)"}
 }
 
 Input:
-NEW PAGE 66
-
-{{zone_abbreviation}} Zone
-
-{{term}} is 123 sq ft, side length is 10 ft
-
-NEW PAGE 67
-
-{{zone_abbreviation}} Zone - Senior Active Overlay
-
-{{term}} is 1523 sq ft
-
-DKEWKWKDS Zone
-
-{{term}} is 20,000 sq ft
+NEW PAGE 130
+8.1. Off-Street Parking Requirements.
+With the exception of Section 8.6, there shall be provided at the time of the erection of any
+building, or at the time any principal building is enlarged or increased in capacity by adding dwelling
+units, guest rooms, seats, or floor area; or before conversion from one (1) type of use or occupancy to
+another, permanent off-street parking space in the amount specified by this section. Such parking
+spaces may be provided in a parking garage or parking lot constructed in accordance with Section 8.2.
+C.
+Minimum Off-Street Parking Requirements. The following off-street parking spaces shall be
+required:
+Created: 2024-05-20 14:11:49 [EST]
+(Supp. No. 31)
+Page 130 of 250
+CELL (1, 1):
+Classification
+CELL (1, 2):
+Off-Street Parking Requirement
+(Any fraction space e.g., 47.3 shall be considered
+the next whole number, e.g., 48)
+CELL (2, 1):
+Residential:
+CELL (2, 2):
+CELL (3, 1):
+Housing designed for and used by the elderly
+CELL (3, 2):
+1 space per 2 dwelling units
+CELL (4, 1):
+Incidental home occupations
+CELL (4, 2):
+1 space per addition to the residential
+requirement
+CELL (5, 1):
+Multi-Family residences including townhouses
+CELL (5, 2):
+2 spaces per dwelling unit
+CELL (6, 1):
+Congregate care
+CELL (6, 2):
+1 space per 2 beds 1 space per 2 Dwelling Units
+CELL (7, 1):
+Single-family and two-family residences (may be
+in a single drive with one car behind the other)
+CELL (7, 2):
+2 spaces per Dwelling Unit
+CELL (8, 1):
+Commercial and Industrial:
+CELL (8, 2):
+CELL (9, 1):
+Auto service stations and/or repair shops
+CELL (9, 2):
+3 spaces per service bay, plus 1 space per
+wrecker or service vehicle and 2 spaces per gas
+dispenser
+CELL (10, 1):
+Auto sales
+CELL (10, 2):
+3 spaces plus 1 space per 400 square feet of
+building area devoted to sales
+CELL (11, 1):
+Bank and consumer financial services
+CELL (11, 2):
+1 space per 200 square feet of gross floor area
+CELL (12, 1):
+Barber & beauty shops and other similar personal
+services
+CELL (12, 2):
+2 spaces per operator
+CELL (13, 1):
+Car washes
+CELL (13, 2):
+3 spaces per service bay
+CELL (14, 1):
+Delivery, ambulance, taxi, and other similar
+services
+CELL (14, 2):
+1 space per vehicle, plus 1 space for each
+employee
+CELL (15, 1):
+Drive-through services such as banks, automobile
+service stations, dry cleaners, car washes and
+similar uses (in addition to Use Requirements)
+CELL (15, 2):
+Stacking for 4 vehicles at each bay window or
+lane
 
 Output:
 {
-    "extracted_text": ["{{term}} is 123 sq ft"],
-    "rationale": "The section titled {{zone_abbreviation}} says the answer explicitly. We ignore sections that specify regulations for overlay districts within this district.",
-    "answer": "123 sq ft"
-}
-
-Input:
-NEW PAGE 47
-
-specified in Schedule A. The total floor area of all buildings and other structures on any lot, excluding basements, shall not exceed the percentage of the lot as specified in Schedule A.
-
-7.6 Minimum Floor Area - Dwelling: Each dwelling shall have a minimum floor area on the ground floor as specified in Schedule A.
-
-7.7 Corner Lots: On any corner lot, the required minimum street setback specified in Schedule A shall be applied to each street line.
-
-SCHEDULE A
-AREA, LOCATION AND BULK STANDARDS Line Standards Districts
-A
-B
-C
-
-{{term}} (in square feet)
-8,400
-5,500
-6,300
-
-Output:
-{
-    "extracted_text": ["6,300"],
-    "rationale": "The section {{term}} or its close synonyms says the answer explicitly.",
-    "answer": "6,300 sq ft"
-}
-
-
-Input:
-NEW PAGE 84
-
-SECTION 9A - Housing Opportunity Development (This Section Repealed - August 15, 2014)
-SECTION 9B - Housing Opportunity Development District (Effective July 1, 2014)
-
-Housing Opportunity Development:
-9B.1 Intent and Purpose:
-This Housing Opportunity Development ("HOD") District is intended to increase in the Town of Bethany the supply of housing that is within the economic means of moderate income households. The HOD District is a separate and independent zoning district and shall replace, not supplement, the existing zoning district of any property to which it is applied.
-
-9B.2 Permitted Uses:
-Principal Uses: Residential homes with a maximum of three dwelling units per building as part of a Housing Opportunity Development.
-Accessory Uses:
-Accessory buildings, structures, and uses.
-Agricultural or farming uses.
-Common or community buildings for residents and guests (not for residential purposes or temporary/transient occupancy).
-
-9B.3 Eligible Areas:
-Criteria for HOD Application:
-The total combined property shall be at least (30) acres in size.
-Frontage on Old Amity Road and Meyers Road.
-Owned by the same person or entity for at least three years prior to application.
-
-Output:
-{
-    "extracted_text": [The total combined property shall be at least (30) acres in size.],
-    "rationale": "The section state the {{term}}",
-    "answer": "30 acres"
-}
-
+    "extracted_text": ["CELL (7, 2):\n2 spaces per Dwelling Unit"],
+    "rationale": "The cell corresponding to single-family contains the information for {{term}}.",
+    "answer": "2"}
 
 Input:
 Multi-family building
@@ -254,6 +226,6 @@ Multi-family building
 Output:
 {
     "extracted_text": null
-    "rationale": null
+    "rationale": "The section does not provide a specific value for {{term}}, and is not about single-family homes."
     "answer": null
 }

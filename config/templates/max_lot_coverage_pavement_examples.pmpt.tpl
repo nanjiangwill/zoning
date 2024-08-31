@@ -1,151 +1,216 @@
+Remember, {{term}} records the amount of land that may be covered by both buildings and other impervious surfaces, such as pavement. If the document specifies the maximum lot coverage by buildings only, DO NOT include it. If the document simply refers to maximum lot coverage, you can assume it falls in this category and include it. If the document only specifies impervious surface, it can be considered as building and included in the answer.
+
 Here are several examples that you can use as references.
 # Examples
 
 Input:
-Page 191
-
-NEW PAGE 216
-CELL (1, 1):
-9.2-2
-CELL (1, 2):
-Detached House Lot Type.
-CELL (2, 1):
-CELL (2, 2):
-(A.) Building Placement, Parking, and Vehicle Access.
-CELL (3, 1):
-CELL (3, 2):
-(1.) Along new streets:
-CELL (4, 1):
-CELL (4, 2):
-(a.) the front setback shall be measured behind street ROW;
-CELL (5, 1):
-CELL (5, 2):
-(b.) the rear setback shall be measured from the rear property line;
-CELL (6, 1):
-CELL (6, 2):
-(c.) the side setbacks on interior lots shall be measured from the side property
-line;
-CELL (7, 1):
-CELL (7, 2):
-(d.) the side setback on corner lots for the side of the building that faces the
-street shall be measured from the street ROW on a corner lot.
-CELL (8, 1):
-CELL (8, 2):
-(2.) Building placement may be further defined by zoning districts.
-CELL (9, 1):
-CELL (9, 2):
-(3.) Parking standards of Article 12 apply (see Section 12.3 and Table 12-1).
-CELL (10, 1):
-CELL (10, 2):
-(4.) Accessory structures, including detached garages, shall be located at least
-five (5') feet behind the primary structure.
-CELL (11, 1):
-CELL (11, 2):
-(5.) Only in the most exceptional circumstances having to do with extreme
-topography or very special design composition may the rules of residential
-building placement be varied.
-CELL (12, 1):
-CELL (12, 2):
-(6.) Grading shall provide for smooth grade transitions to avoid abrupt \"V\"
-ditches, swales and other disruptions to the landscape, particularly between
-buildings where open space enhancements for use by persons actively
-utilizing the landscape and/or yard area. The use of crawl- space
-construction techniques in detached residential structures and professional
-landscape design is required to meet this characteristic of site development.
-CELL (13, 1):
-CELL (13, 2):
-(7.) The maximum building coverage for the primary structure shall be thirty
-(30%) percent of the lot area; however, notwithstanding the foregoing, in
-the Multi-Family Transitional (MFT) zoning district, the maximum
-building coverage for the primary structure shall be fifty (50%) percent of
-the lot area in subdivisions where occupancy is age-targeted in part to
-persons over the age of fifty-five (55) years.\" (Amended October 24, 2022)
-CELL (14, 1):
-CELL (14, 2):
-(B.) Encroachment, Pedestrian Access, and Commercial Use Standards &
-Specifications.
-CELL (15, 1):
-CELL (15, 2):
-(1.) Primary pedestrian access into the building shall be from the street frontage
-line. Secondary access may be from parking areas.
-CELL (16, 1):
-CELL (16, 2):
-(2.) Balconies, stoops, stairs, open porches, bay windows, and awnings are
-permitted to encroach into the front setback area up to eight (8') feet.
-CELL (17, 1):
-CELL (17, 2):
-(3.) Mechanical equipment exceeding sixteen (16) square feet shall not encroach
-into any required setback.
-Stallings Development Ordinance-Article9
+NEW PAGE 100
+As of 01/17/23
+Uses listed as SR in the {{zone_abbreviation}} District in section 21-113, the table of uses, shall comply with the
+following criteria, as applicable:
+(1) Site plan. A site plan shall be provided showing the existing lot and all existing and proposed
+buildings. As well as all criteria required herein.
+(2) Lighting. The lighting shall be shielded to prevent light and glare spillover to adjacent
+residentially developed properties.
+(3) Minimum zone lot size. The minimum zone lot size shall be two (2) acres.
+(4) Building size. The maximum building size per parcel shall not exceed ten (10) percent of the
+lot area up to ten thousand (10,000) square foot and five (5) percent of the lot acreage
+thereafter up to twenty-five thousand (25,000) sq.ft. Multiple buildings may be used in
+calculating the maximum allowable building size.
+(5) Impervious surface. The maximum impervious surface shall not exceed sixty-five (65)
+percent of the lot.
+(6) Hours of operation. Hours of operation shall not exceed 6:00 a.m. to 11:00 p.m.
+(7) Parking. Parking shall be as prescribed in article VII, Parking, for that use.
+(8) Signage. Shall be as prescribed in article VIII, Signs, for the underlying district.
+(9) Noise. Noise shall not exceed the decibel levels during time periods prescribed in section 21-
+241 for construction, manufacturing, transportation, communications, electric, gas and
+sanitary services, wholesale, and service uses.
+(10) Outdoor storage. All outside storage areas including dumpsters shall be:
+a. Sited to the rear of the building;
+b. Not within the required setbacks.
+C.
+Notwithstanding other requirements of this subsection, outdoor storage shall be
+completely screened from adjacent residentially zoned property
 
 Output:
 {
-    "extracted_text": [The maximum building coverage for the primary structure shall be thirty
-    (30%) percent of the lot area],
-    "rationale": "The section state the {{term}}",
-    "answer": "30 percent"
+    "extracted_text": ["The maximum impervious surface shall not exceed sixty-five (65)\npercent of the lot."],
+    "rationale": "The section state the {{term}} for district {{zone_abbreviation}}.",
+    "answer": "65"
 }
 
 Input:
-NEW PAGE 71
-Town of Navassa Zoning Ordinance
-length of controlled access right-of-way that extends away from the
-highway at intersections.
-(C)
-Bufferyard
-A bufferyard of fifty (50) feet shall be provided and maintained
-immediately adjacent to and along each side of the bypass right-of-way,
-including the full length of controlled access right-of-way that extends
-away from the highway at intersections. Where public necessity requires
-the location of major public utility lines adjacent to the 1-140 Bypass and
-the easement or right-of-way for a line precludes provision of a bufferyard
-immediately adjacent to the highway right-of-way, the required bufferyard
-shall be provided adjacent to the outer edge of the utility easement or
-right-of-way.
-1.
-Composition. To the greatest extent possible, existing planting
-material within the buffer yard shall be retained - particularly
-mature trees and rare specimens. Where adequate plant material
-is absent or to be removed, a landscaped buffer consisting of two
-(2) canopy trees and two (2) understory trees per one-hundred
-(100) linear feet of property frontage shall be installed. In addition,
-one upright shrub per eight (8) linear feet of property frontage
-shall also be installed.
-2.
-Permitted Structures. The following structures may be built within
-the required buffer yard.
-a.
-Pedestrian or bicycle paths;
-b.
-Planters, retaining walls, fences, park tables and seating,
-hedges, and other landscaping structures; and
+NEW PAGE 25
+ARTICLE VI.
+GENERAL PROVISIONS AND SUPPLEMENTARY REGULATIONS
+D.
+Dimensional Requirements for Low Density Residential Districts
+SECTION 6.03.
+{{zone_abbreviation}} LIMITED LOW DENSITY RESIDENTIAL DISTRICT
 C.
-Utility lines (above or
-below ground), their support structures, and minor
-structures accessory to utility lines, provided that they
-generally cross rather than run along the length of the
-buffer yard.
-(D)
-Maximum Impervious Surface
-The maximum permitted coverage by impervious surfaces shall be eighty
-percent (80%) of the total lot area.
-(E)
-Parking and Loading
+Special Uses
+The following uses are permitted subject to the requirements of this district, additional
+regulations and requirements imposed by the Board of Commissioners as provided in Article
+VIII.
 1.
-Parking.
-a.
-Locational Requirements. No vehicular or equipment
-parking except automobile parking shall be permitted in the
-yard area adjacent to the I-140 Bypass. When more than
-Article 7 - Overlay District
-7-3
+Churches and cemeteries.
+2.
+Home occupations under provisions of Section 7.07.
+3.
+Duplex apartments: lot minimum size 30,000 square feet.
+4.
+Public utility facilities: subject to provision of a vegetated buffer strip at least ten (10)
+feet in height.
+5.
+Group developments under the provisions of Section 7.05 with a density of not more
+than three (8) dwelling units per acre. (As amended April 2, 2013)
+20
+CELL (7, 1):
+6.
+CELL (7, 2):
+Maximum allowable lot coverage by principal use and all accessory structures: 30%
+CELL (7, 3):
+Maximum allowable lot coverage by principal use and all accessory structures: 30%
 
 Output:
 {
-    "extracted_text": [The maximum permitted coverage by impervious surfaces shall be eighty
-    percent (80%) of the total lot area],
-    "rationale": "The section state the {{term}}",
-    "answer": "80 percent"
+    "extracted_text": null,
+    "rationale": "The section is referring to the maximum allowable lot coverage by principal use and all accessory structures for district {{zone_abbreviation}}, which explicitly specifies buildings only, thus the value is not included in the answer.",
+    "answer": null
+}
+
+Input:
+NEW PAGE 157
+Article 3: Base Zoning Districts
+Section 3.4: {{zone_name}} Districts
+Orange County, North Carolina - Unified Development Ordinance
+Page 3-23
+CELL (1, 1):
+2.
+CELL (1, 2):
+Development within the zoning district shall be subject to all applicable use standards detailed in Article 5
+and all applicable development standards detailed in Article 6 of this Ordinance. See Sections 6.2.5 and
+6.2.6 if more than one principal use or principal structure is proposed on a non-residential zoning lot.
+CELL (2, 1):
+3.
+CELL (2, 2):
+The residential density permitted on a given parcel is based on the Watershed Protection Overlay District in
+which the property is located. Refer to Section 4.2.4 for a breakdown of the allowable density (i.e., the
+number of individual dwellings that can be developed on a parcel of property).
+CELL (3, 1):
+4.
+CELL (3, 2):
+Allowable impervious surface area is based on the Watershed Protection Overlay District in which the
+property is located. Refer to Sections 4.2.5 and 4.2.6 for a breakdown of the allowable impervious surface
+area. Additionally, Section 4.2.6 may require a larger lot size for non-residential uses than is contained in
+the Dimensional and Ratio Standards Table.
+
+Output:
+{
+    "extracted_text": null,
+    "rationale": "The section directed the guidence on {{term}} of district {{zone_name}} to Section 4.2.5 and 4.2.6., but no specific value is provided.",
+    "answer": null
+}
+
+Input:
+
+NEW PAGE 25
+NOTES TO TABLE:
+*
+For maximum percentage of impervious surfaces, see division (C) below
+(C) Steep slope maximum density requirement.
+CELL (1, 1):
+CELL (1, 2):
+CELL (1, 3):
+Average Natural Slope of Parcel by Acre
+CELL (1, 4):
+Average Natural Slope of Parcel by Acre
+CELL (1, 5):
+Average Natural Slope of Parcel by Acre
+CELL (1, 6):
+CELL (2, 1):
+Zoning District
+CELL (2, 2):
+Under 20%
+CELL (2, 3):
+21% to 30%
+CELL (2, 4):
+31% to 40%
+CELL (2, 5):
+41% to 50%
+CELL (2, 6):
+Over 51%
+CELL (3, 1):
+CELL (3, 2):
+Maximum Allowable Percent of Impervious Surfaces/Dwelling Units Per Acre of Land
+CELL (3, 3):
+Maximum Allowable Percent of Impervious Surfaces/Dwelling Units Per Acre of Land
+Including the Removal of Active Recreation Area, Section 312
+CELL (3, 4):
+Maximum Allowable Percent of Impervious Surfaces/Dwelling Units Per Acre of Land
+Including the Removal of Active Recreation Area, Section 312
+CELL (3, 5):
+Maximum Allowable Percent of Impervious Surfaces/Dwelling Units Per Acre of Land
+Including the Removal of Active Recreation Area, Section 312
+CELL (3, 6):
+Maximum Allowable Percent of Impervious Surfaces/Dwelling Units Per Acre of Land
+Including the Removal of Active Recreation Area, Section 312
+CELL (7, 1):
+{{zone_abbreviation}}
+CELL (7, 2):
+40%
+CELL (7, 3):
+35%
+CELL (7, 4):
+30%
+CELL (7, 5):
+25%
+CELL (7, 6):
+Geotechnical
+engineer
+required
+CELL (8, 1):
+XXXX
+XXXX
+CELL (8, 2):
+45%
+CELL (8, 3):
+40%
+CELL (8, 4):
+35%
+CELL (8, 5):
+30%
+CELL (8, 6):
+Geotechnical
+engineer
+required
+
+Output:
+{
+    "extracted_text": [
+        "CELL (1, 3):\nAverage Natural Slope of Parcel by Acre",
+        "CELL (1, 4):\nAverage Natural Slope of Parcel by Acre",
+        "CELL (1, 5):\nAverage Natural Slope of Parcel by Acre",
+        "CELL (2, 2):\nUnder 20%",
+        "CELL (2, 3):\n21% to 30%",
+        "CELL (2, 4):\n31% to 40%",
+        "CELL (2, 5):\n41% to 50%",
+        "CELL (2, 6):\nOver 51%",
+        "CELL (7, 1):\nR-1",
+        "CELL (7, 2):\n40%",
+        "CELL (7, 3):\n35%",
+        "CELL (7, 4):\n30%",
+        "CELL (7, 5):\n25%",
+        "CELL (7, 6):\nGeotechnical engineer required",
+        "CELL (8, 1):\nR-2\nR-1-U",
+        "CELL (8, 2):\n45%",
+        "CELL (8, 3):\n40%",
+        "CELL (8, 4):\n35%",
+        "CELL (8, 5):\n30%",
+        "CELL (8, 6):\nGeotechnical engineer required"
+    ],
+    "rationale": "The section specifies the {{term}} for district {{zone_abbreviation}}. It can be infered that the value depends on the slope of the parcel by acre.",
+    "answer": "40; 35; 30; 25 (depending on the slope of the parcel by acre)"
 }
 
 Input:
@@ -153,7 +218,7 @@ Multi-family building
 
 Output:
 {
-    "extracted_text": null
-    "rationale": null
+    "extracted_text": null,
+    "rationale": "The section does not provide a specific value for {{term}}, and is not about single-family homes.",
     "answer": null
 }
