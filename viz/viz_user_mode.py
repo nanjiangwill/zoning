@@ -11,6 +11,7 @@ import orjson as json
 import pandas as pd
 import requests
 import streamlit as st
+from streamlit_modal import Modal
 from google.cloud import firestore
 
 from zoning.class_types import (
@@ -54,16 +55,25 @@ format_eval_term = {
 
 inverse_format_eval_term = {k: v for v, k in format_eval_term.items()}
 
+# Modal for entering the name
+modal = Modal(
+    "Please enter your name to continue:",
+    key="demo-modal",
+
+    padding=20,
+    max_width=744
+)
+
 
 def write_data(human_feedback: str):
-    if not analyst_name or analyst_name == "":
-        st.toast("Please enter your name", icon="🚨")
+    if "analyst_name" not in st.session_state or not st.session_state["analyst_name"]:
+        modal.open()
     else:
         town_name = place.town
         district_full_name = place.district_full_name
         district_short_name = place.district_short_name
         d = {
-            "analyst_name": analyst_name,
+            "analyst_name": st.session_state["analyst_name"],
             "state": selected_state,
             "town": town_name,
             "district_full_name": district_full_name,
@@ -111,12 +121,30 @@ def get_firebase_csv_data(selected_state: str):
 
     return df.to_csv(index=True)
 
+# Initialize session state variables
+if "analyst_name" not in st.session_state:
+    st.session_state["analyst_name"] = ""
+
+if not st.session_state["analyst_name"] and not modal.is_open():
+    modal.open()
+
+if modal.is_open():
+    with modal.container():
+        name_input = st.text_input("Your Name")
+        submit_button = st.button("Submit")
+
+        if submit_button:
+            if not name_input:
+                st.warning("Please enter a valid name")
+            else:
+                st.session_state["analyst_name"] = name_input
+                modal.close()
+
+if "analyst_name" in st.session_state and st.session_state["analyst_name"]:
+    st.sidebar.write(f"Hello, {st.session_state['analyst_name']}!")
 
 # Sidebar config
 with st.sidebar:
-    # Step 0: enter your name
-    analyst_name = st.text_input("Please Enter your name", placeholder="")
-
     # Step 1: load files
 
     selected_state = st.selectbox(
