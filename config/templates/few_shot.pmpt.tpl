@@ -12,8 +12,11 @@ lines and that it is a real substring of the input. You CANNOT make up a value
 for "extracted_text", and it MUST be a substring! "extracted_text" will be used
 in the python statement `extracted_text in input` and if that returns False, the
 universe will be destroyed! If you cannot extract reasonable text, then you
-should not return an answer. For {{term}} in residential districts, we are only
-interested in the answer as it pertains to single-family homes.
+should not return an answer. If {{zone_name}} ({{zone_abbreviation}}) is referring
+to a general residential district, we are only interested in the requirement of
+{{term}} for single-family homes. However, if it is referring to a specific district,
+like Multi Family Residential (MFR), General Commercial (GC), etc., we are still interested
+in the requirement of {{term}} for {{zone_name}} ({{zone_abbreviation}}).
 
 # Schema
 {
