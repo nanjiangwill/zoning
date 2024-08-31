@@ -151,11 +151,11 @@ if modal.is_open():
                 modal.close()
 
 if "analyst_name" in st.session_state and st.session_state["analyst_name"]:
-    st.sidebar.write(f"Hello, {st.session_state['analyst_name']}!")
+    st.sidebar.subheader(f"Hello, {st.session_state['analyst_name']}!")
 
 # Sidebar config
 with st.sidebar:
-    # Step 1: load files
+    # Step 0: load files
 
     selected_state = st.selectbox(
         "Select a state",
@@ -226,9 +226,9 @@ with st.sidebar:
     #     len(all_places),
     # )
 
-    # Step 2: Config
+    # Step 1: Config
     st.divider()
-    st.subheader("Step 2: Select Field", divider="rainbow")
+    st.subheader("Step 1: Select Field", divider="rainbow")
 
     eval_term = st.radio(
         "All available fields",
@@ -287,9 +287,9 @@ with st.sidebar:
     #         if not i["eval"][0].answer_correct and not i["eval"][0].page_in_range
     #     ]
 
-    # Step 3: Select one data to check
+    # Step 2: Select one data to check
     st.divider()
-    st.subheader("Step 3: Select one district to check", divider="rainbow")
+    st.subheader("Step 2: Select one district to check", divider="rainbow")
 
     place = st.radio(
         "All available districts",
@@ -309,7 +309,7 @@ with st.sidebar:
         index=0,
     )
 
-    st.subheader("Step 4: Download all labeled data", divider="rainbow")
+    st.subheader("Step 3: Download all labeled data", divider="rainbow")
     st.download_button(
         label="Download CSV",
         data=get_firebase_csv_data(selected_state),
