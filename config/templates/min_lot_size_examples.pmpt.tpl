@@ -253,7 +253,7 @@ Multi-family building
 
 Output:
 {
-    "extracted_text": null
-    "rationale": null
+    "extracted_text": null,
+    "rationale": null,
     "answer": null
 }
