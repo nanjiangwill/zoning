@@ -13,7 +13,7 @@ ocr_config:
   run_ocr: false
 
 district_extraction_config:
-  run_district_extraction: true
+  run_district_extraction: false
 
 index_config:
   index_range: 3
@@ -22,4 +22,4 @@ search_config:
   num_results: 5
   is_district_fuzzy: false
   is_eval_term_fuzzy: false
-  preprocess_search_target: false
+  preprocess_search_target: True
