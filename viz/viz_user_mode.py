@@ -72,6 +72,14 @@ def write_data(human_feedback: str):
         town_name = place.town
         district_full_name = place.district_full_name
         district_short_name = place.district_short_name
+
+        # Store and reset the timer
+        if "start_time" not in st.session_state:
+            elapsed_sec = -1
+        else:
+            elapsed_sec = time.time() - st.session_state["start_time"]
+        st.session_state["start_time"] = time.time()
+
         d = {
             "analyst_name": st.session_state["analyst_name"],
             "state": selected_state,
@@ -81,6 +89,7 @@ def write_data(human_feedback: str):
             "eval_term": format_eval_term[eval_term],
             "human_feedback": human_feedback,
             "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "elapsed_sec": elapsed_sec,
         }
 
         doc_ref = db.collection(selected_state)
@@ -138,6 +147,7 @@ if modal.is_open():
                 st.warning("Please enter a valid name")
             else:
                 st.session_state["analyst_name"] = name_input
+                st.session_state["start_time"] = time.time()
                 modal.close()
 
 if "analyst_name" in st.session_state and st.session_state["analyst_name"]:
