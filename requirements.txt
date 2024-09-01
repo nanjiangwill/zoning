@@ -16,6 +16,8 @@ PyMuPDF # for visualization
 python-dotenv
 streamlit # for visualization
 streamlit-modal # for visualization
+Flask # for visualization
+Flask-Cors # for visualization
 typer
 wandb
 watchdog
