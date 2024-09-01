@@ -5,7 +5,7 @@
 @IDE ：PyCharm
 """
 
-from flask import Blueprint, request, jsonify, send_file
+from flask import Blueprint, request, jsonify, make_response
 from viz_v2.backend.models.firestore_client import FirestoreClient
 from viz_v2.backend.models.data_models import ZoningData
 from viz_v2.backend.utils import load_evals_data
@@ -261,9 +261,8 @@ def get_pdf_file():
     output_pdf.save(pdf_bytes, garbage=4)
     pdf_bytes.seek(0)
 
-    return send_file(
-        pdf_bytes,
-        as_attachment=True,
-        download_name="highlighted_zoning_map.pdf",
-        mimetype="application/pdf"
-    )
+    response = make_response(pdf_bytes.read())
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = 'inline; filename="highlighted_zoning_map.pdf"'
+
+    return response
