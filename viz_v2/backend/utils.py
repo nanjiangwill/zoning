@@ -13,18 +13,13 @@ from zoning.class_types import (
     PromptResult,
     SearchResult,
 )
-
-state_experiment_map = {
-    "Connecticut": "../../results/textract_es_gpt4_connecticut_search_range_3",
-    "Texas": "../../results/textract_es_gpt4_texas_search_range_3",
-    "North Carolina": "../../results/textract_es_gpt4_north_carolina_search_range_3_old_thesaurus",
-}
+from viz_v2.backend.config import Config
 
 def load_evals_data():
     """Load all necessary data at server startup."""
     data_store = {}
 
-    for state, experiment_dir in state_experiment_map.items():
+    for state, experiment_dir in Config.STATE_EXPERIMENT_MAP.items():
         all_results = {
             k: [
                 X.model_construct(**json.loads(open(i).read()))
