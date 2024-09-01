@@ -6,10 +6,12 @@
 """
 
 from flask import Flask
+from flask_cors import CORS
 from viz_v2.backend.routes.zoning_routes import zoning_bp
 from viz_v2.backend.config import Config
 
 app = Flask(__name__)
+CORS(app)
 app.config.from_object(Config)
 
 # Register Blueprints
