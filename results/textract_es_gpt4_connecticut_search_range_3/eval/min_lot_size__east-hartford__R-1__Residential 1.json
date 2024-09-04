@@ -1,1 +1,0 @@
-{"place": {"town": "east-hartford", "district_short_name": "R-1", "district_full_name": "Residential 1"}, "eval_term": "min_lot_size", "ground_truth": "30000", "ground_truth_orig": "0.6887", "ground_truth_page": "73", "answer_correct": true, "page_in_range": true}
