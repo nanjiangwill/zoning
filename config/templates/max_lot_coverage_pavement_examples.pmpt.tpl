@@ -1,4 +1,6 @@
-Remember, {{term}} records the amount of land that may be covered by both buildings and other impervious surfaces, such as pavement. If the document specifies the maximum lot coverage by buildings only, DO NOT include it. If the document simply refers to maximum lot coverage, you can assume it falls in this category and include it. If the document only specifies impervious surface, it can be considered as building and included in the answer.
+Remember, the {{term}} records the amount of land that may be covered by both buildings and other impervious surfaces, such as pavement. If the document specifies the maximum lot coverage by buildings only, DO NOT include it. If the document refers to maximum lot coverage generally, you can assume it includes both buildings and impervious surfaces and include it. If the document only specifies impervious surface coverage, it can be considered as building coverage and included in the answer.
+
+The range for {{term}} is typically between 5% and 100% (0.05 to 1). Please focus on values within this range when searching for {{term}} and provide the answer as a whole number (e.g., 50% or 0.5 should be 50). However, bear in mind that values falling outside of these ranges are possible, so do not disregard them.
 
 Here are several examples that you can use as references.
 # Examples

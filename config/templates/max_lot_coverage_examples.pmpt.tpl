@@ -1,4 +1,6 @@
-Remember, the {{term}} is solely referring to the maximum lot coverage of buildings for primary use and all accessory structures. Impervious surface coverage, such as pavement, is not included in this value. If the document specified that impervious surface is included, or simply referring to maximum lot size generally, which may contain other impervious surfaces, DO NOT include it.
+Remember, the {{term}} refers solely to the maximum lot coverage of buildings for primary use and all accessory structures. Impervious surface coverage, such as pavement, is not included in this value. If the document specifies that impervious surface is included or simply refers to maximum lot coverage generally, which may contain other impervious surfaces, DO NOT include it.
+
+The range for {{term}} is typically between 5% and 100% (0.05 to 1). Please focus on values within this range when searching for {{term}} and provide the answer as a whole number (e.g., 50% or 0.5 should be 50). However, bear in mind that values falling outside of these ranges are possible, so do not disregard them.
 
 Here are several examples that you can use as references.
 # Examples

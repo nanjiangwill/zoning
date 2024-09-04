@@ -1,3 +1,5 @@
+The range for {{term}} is typically between 1 and 20 (per dwelling unit, square feet of floor area, etc.). Please focus on values within this range when searching for {{term}} and provide the answer as a decimal value with unit (e.g., 1 parking space per unit plus 1 guest parking space for every 4 units should be calculated as "1.25 per unit"). However, bear in mind that values falling outside of these ranges are possible, so do not disregard them.
+
 Here are several examples that you can use as references.
 # Examples
 
@@ -55,7 +57,7 @@ Output:
 {
     "extracted_text": ["CELL (5, 2):\nTwo (2) spaces per dwelling unit"],
     "rationale": "The cell corresponding to single-family contains the information for {{term}}.",
-    "answer": "2"
+    "answer": "2 per dwelling unit"
 }
 
 Input:
@@ -125,7 +127,7 @@ Output:
 {
     "extracted_text": ["CELL (3, 2):\n1 per bedroom up to 2 per unit"],
     "rationale": "The cell corresponding to residential contains the information for {{term}}.",
-    "answer": "1, 2 (depending on the number of bedrooms or units)"}
+    "answer": "1 per bedroom, 2 per unit"
 }
 
 Input:
@@ -218,7 +220,7 @@ Output:
 {
     "extracted_text": ["CELL (7, 2):\n2 spaces per Dwelling Unit"],
     "rationale": "The cell corresponding to single-family contains the information for {{term}}.",
-    "answer": "2"}
+    "answer": "2 per dwelling unit"
 
 Input:
 Multi-family building
