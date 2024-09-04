@@ -1,3 +1,5 @@
+The range for {{term}} is typically between 1,000 and 2,000,000 sq ft or 0.02 and 50 acres. Please focus on values within this range when searching for {{term}} and provide the answer as a whole number with unit (e.g., 5000 sq ft). However, bear in mind that values falling outside of these ranges are possible, so do not disregard them.
+
 Here are several examples that you can use as references.
 # Examples
 
@@ -24,7 +26,7 @@ Output:
 {
     "extracted_text": ["CELL (3, 2):\n123456 sq ft"],
     "rationale": "The cell that corresponds to the value for {{term}} in this table has this answer.",
-    "answer": "123456"
+    "answer": "123456 sq ft"
 }
 
 Input:

@@ -1,4 +1,6 @@
-Remember, min unit size (min lot size per dwelling unit) is not min lot size.
+Remember, {{term}} refers to the minimum lot size per dwelling unit, which is different from the overall minimum lot size.
+
+The range for {{term}} is typically between 200 and 5,000 sq ft. Please focus on values within this range when searching for {{term}} and provide the answer as a whole number with unit (e.g., 500 sq ft). However, bear in mind that values falling outside of these ranges are possible, so do not disregard them.
 
 Here are several examples that you can use as references.
 # Examples

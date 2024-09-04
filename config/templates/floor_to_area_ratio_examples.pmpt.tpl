@@ -1,3 +1,5 @@
+The range for {{term}} is typically between 0.1 and 20 (10% to 2000%). Please focus on values within this range when searching for {{term}} and provide the answer as a decimal value (e.g., 50% should be 0.5). However, bear in mind that values falling outside of these ranges are possible, so do not disregard them.
+
 Here are several examples that you can use as references.
 # Examples
 
