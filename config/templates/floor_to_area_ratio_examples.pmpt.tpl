@@ -44,7 +44,7 @@ range from .5 to 1.5.
 
 Output:
 {
-    "extracted_text": ["4. Minimum permitted Floor Area Ratio (FAR) is .35; preferred FAR will\nrange from .5 to 1.5."],
+    "extracted_text": [["4. Minimum permitted Floor Area Ratio (FAR) is .35; preferred FAR will\nrange from .5 to 1.5.", 83]],
     "rationale": "The section state the {{term}} for the district, {{zone_abbreviation}}.",
     "answer": "0.35"
 }
@@ -89,7 +89,7 @@ CELL (8, 2):
 
 Output:
 {
-    "extracted_text": ["CELL (6, 2):\n0.25"],
+    "extracted_text": [["CELL (6, 2):\n0.25", 199]],
     "rationale": "The table is specified the requirement for {{zone_abbreviation}}, and the cell that corresponds to the value for {{term}} in this table has this answer.",
     "answer": "0.25"
 }
@@ -185,7 +185,7 @@ Pedestrian/Landscape
 
 Output:
 {
-    "extracted_text": [".65"],
+    "extracted_text": [[".65", 169]],
     "rationale": "The section state the {{term}} for the district, {{zone_abbreviation}}.",
     "answer": "0.65"
 }

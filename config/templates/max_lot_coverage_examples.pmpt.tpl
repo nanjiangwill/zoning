@@ -76,7 +76,7 @@ of the total lot area, except in the case of single-family attached which shall 
 
 Output:
 {
-    "extracted_text": ["in the case of single-family attached which shall have a maximum lot coverage of 75% of the lot area."],
+    "extracted_text": [["in the case of single-family attached which shall have a maximum lot coverage of 75% of the lot area.", 127]],
     "rationale": "It can be inferred that the {{term}} used in this section refers to total ground area covered by the principal building and all accessory building, satisfying our definition. And we focus on single-family for residential area, thus the {{term}} is 75%.",
     "answer": "75"
 }
@@ -180,16 +180,16 @@ CELL (6, 2):
 Output:
 {
     "extracted_text": [
-        "CELL (2, 1):\nUp to 4,000",
-        "CELL (2, 2):\n50",
-        "CELL (3, 1):\n4,001-6,500",
-        "CELL (3, 2):\n45",
-        "CELL (4, 1):\n6,501-8,500",
-        "CELL (4, 2):\n40",
-        "CELL (5, 1):\n8,501-15,000",
-        "CELL (5, 2):\n35",
-        "CELL (6, 1):\n15,001 or greater",
-        "CELL (6, 2):\n30"
+        ["CELL (2, 1):\nUp to 4,000", 188],
+        ["CELL (2, 2):\n50", 188],
+        ["CELL (3, 1):\n4,001-6,500", 188],
+        ["CELL (3, 2):\n45", 188],
+        ["CELL (4, 1):\n6,501-8,500", 188],
+        ["CELL (4, 2):\n40", 188],
+        ["CELL (5, 1):\n8,501-15,000", 188],
+        ["CELL (5, 2):\n35", 188],
+        ["CELL (6, 1):\n15,001 or greater", 188],
+        ["CELL (6, 2):\n30", 188]
     ],
     "rationale": "The cell specifies the requirement of {{term}} for the district, {{zone_abbreviation}}. It can be inferred that the requirement for {{term}} follows the instruction on Table 9.305(1)(i), which depends on Single Family Lot Size.",
     "answer": "50; 45; 40; 35; 30 (depending on the Single Family Lot Size)"

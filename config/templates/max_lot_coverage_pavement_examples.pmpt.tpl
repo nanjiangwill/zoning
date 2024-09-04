@@ -36,7 +36,7 @@ completely screened from adjacent residentially zoned property
 
 Output:
 {
-    "extracted_text": ["The maximum impervious surface shall not exceed sixty-five (65)\npercent of the lot."],
+    "extracted_text": [["The maximum impervious surface shall not exceed sixty-five (65)\npercent of the lot.", 100]],
     "rationale": "The section state the {{term}} for district {{zone_abbreviation}}.",
     "answer": "65"
 }
@@ -190,26 +190,26 @@ required
 Output:
 {
     "extracted_text": [
-        "CELL (1, 3):\nAverage Natural Slope of Parcel by Acre",
-        "CELL (1, 4):\nAverage Natural Slope of Parcel by Acre",
-        "CELL (1, 5):\nAverage Natural Slope of Parcel by Acre",
-        "CELL (2, 2):\nUnder 20%",
-        "CELL (2, 3):\n21% to 30%",
-        "CELL (2, 4):\n31% to 40%",
-        "CELL (2, 5):\n41% to 50%",
-        "CELL (2, 6):\nOver 51%",
-        "CELL (7, 1):\nR-1",
-        "CELL (7, 2):\n40%",
-        "CELL (7, 3):\n35%",
-        "CELL (7, 4):\n30%",
-        "CELL (7, 5):\n25%",
-        "CELL (7, 6):\nGeotechnical engineer required",
-        "CELL (8, 1):\nR-2\nR-1-U",
-        "CELL (8, 2):\n45%",
-        "CELL (8, 3):\n40%",
-        "CELL (8, 4):\n35%",
-        "CELL (8, 5):\n30%",
-        "CELL (8, 6):\nGeotechnical engineer required"
+        ["CELL (1, 3):\nAverage Natural Slope of Parcel by Acre", 25],
+        ["CELL (1, 4):\nAverage Natural Slope of Parcel by Acre", 25],
+        ["CELL (1, 5):\nAverage Natural Slope of Parcel by Acre", 25],
+        ["CELL (2, 2):\nUnder 20%", 25],
+        ["CELL (2, 3):\n21% to 30%", 25],
+        ["CELL (2, 4):\n31% to 40%", 25],
+        ["CELL (2, 5):\n41% to 50%", 25],
+        ["CELL (2, 6):\nOver 51%", 25],
+        ["CELL (7, 1):\n{{zone_abbreviation}}", 25],
+        ["CELL (7, 2):\n40%", 25],
+        ["CELL (7, 3):\n35%", 25],
+        ["CELL (7, 4):\n30%", 25],
+        ["CELL (7, 5):\n25%", 25],
+        ["CELL (7, 6):\nGeotechnical engineer required", 25],
+        ["CELL (8, 1):\nXXXX\nXXXX", 25],
+        ["CELL (8, 2):\n45%", 25],
+        ["CELL (8, 3):\n40%", 25],
+        ["CELL (8, 4):\n35%", 25],
+        ["CELL (8, 5):\n30%", 25],
+        ["CELL (8, 6):\nGeotechnical engineer required", 25]
     ],
     "rationale": "The section specifies the {{term}} for district {{zone_abbreviation}}. It can be infered that the value depends on the slope of the parcel by acre.",
     "answer": "40; 35; 30; 25 (depending on the slope of the parcel by acre)"

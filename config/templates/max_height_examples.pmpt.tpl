@@ -66,7 +66,7 @@ CELL (6, 12):
 
 Output:
 {
-    "extracted_text": ["CELL (6, 6):\n35"],
+    "extracted_text": [["CELL (6, 6):\n35", 98]],
     "rationale": "The section titled Maximum Height (feet) says the answer for district, {{zone_abbreviation}}, explicitly.",
     "answer": "35 ft"
 }
@@ -209,7 +209,7 @@ escapes, or fire proof interior stairways if approved by the North Carolina Depa
 of Insurance, extending from the ground to each floor at thirty (30) feet or above.
 Output:
 {
-    "extracted_text": ["Maximum building height - 100 feet"],
+    "extracted_text": [["Maximum building height - 100 feet", 36]],
     "rationale": "The section explicitly states the {{term}} for district, {{zone_abbreviation}}.",
     "answer": "100 ft"
 }
@@ -236,7 +236,7 @@ lesser of the Airport Zoning Overlay (AZO) or thirty-five (35') feet
 
 Output:
 {
-    "extracted_text": ["The maximum height for any building or structure not associated with administration or operation(s) of the Mid-Carolina Regional Airport shall be limited to the lesser of the Airport Zoning Overlay (AZO) or thirty-five (35') feet"],
+    "extracted_text": [["The maximum height for any building or structure not associated with\nadministration or operation(s) of the Mid-Carolina Regional Airport shall be limited to the\nlesser of the Airport Zoning Overlay (AZO) or thirty-five (35') feet", 101]],
     "rationale": "The section explicitly states the maximum height of any building in the {{zone_abbreviation}} district.",
     "answer": "35 ft"
 }
