@@ -221,6 +221,7 @@ Output:
     "extracted_text": ["CELL (7, 2):\n2 spaces per Dwelling Unit"],
     "rationale": "The cell corresponding to single-family contains the information for {{term}}.",
     "answer": "2 per dwelling unit"
+}
 
 Input:
 Multi-family building
