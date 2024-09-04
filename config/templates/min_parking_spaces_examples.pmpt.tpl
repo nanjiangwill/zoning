@@ -125,7 +125,7 @@ Output:
 {
     "extracted_text": ["CELL (3, 2):\n1 per bedroom up to 2 per unit"],
     "rationale": "The cell corresponding to residential contains the information for {{term}}.",
-    "answer": "1, 2 (depending on the number of bedrooms or units)"}
+    "answer": "1, 2 (depending on the number of bedrooms or units)"
 }
 
 Input:
