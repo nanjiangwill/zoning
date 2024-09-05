@@ -224,7 +224,7 @@ in the project site plan.
 Output:
 {
     "extracted_text": null,
-    "rationale": "The section does refer to building area coverage, following our definition of {{term}}, but it not provide a specific number for {{{{zone_abbreviation}}}}, thus the value is not included in the answer.",
+    "rationale": "The section does refer to building area coverage, following our definition of {{term}}, but it not provide a specific number for {{zone_abbreviation}}, thus the value is not included in the answer.",
     "answer": null
 
 }

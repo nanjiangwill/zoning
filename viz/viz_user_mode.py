@@ -36,7 +36,19 @@ else:
 state_experiment_map = {
     "Connecticut": "results/textract_es_gpt4_connecticut_search_range_3",
     "Texas": "results/textract_es_gpt4_texas_search_range_3",
-    "North Carolina": "results/textract_es_gpt4_north_carolina_search_range_3_old_thesaurus",
+    "North Carolina": "results/textract_es_gpt4_north_carolina_search_range_3_updated_prompt",
+}
+
+pdf_dir_map = {
+    "Connecticut": "data/connecticut/pdfs",
+    "Texas": "data/texas/pdfs",
+    "North Carolina": "data/north_carolina/pdfs",
+}
+
+ocr_dir_map = {
+    "Connecticut": "data/connecticut/ocr",
+    "Texas": "data/texas/ocr",
+    "North Carolina": "data/north_carolina/ocr",
 }
 
 st.set_page_config(page_title="Zoning", layout="wide")
@@ -152,7 +164,10 @@ if modal.is_open():
 
 if "analyst_name" in st.session_state and st.session_state["analyst_name"]:
     st.sidebar.subheader(f"Hello, {st.session_state['analyst_name']}!")
-
+if "eval_term" not in st.session_state:
+    st.session_state["eval_term"] = "Floor to Area Ratio"
+if "place" not in st.session_state:
+    st.session_state["place"] = None
 # Sidebar config
 with st.sidebar:
     # Step 0: load files
@@ -172,7 +187,7 @@ with st.sidebar:
 
     experiment_dir = state_experiment_map[selected_state]
     # s3_pdf_dir = f"https://zoning-nan.s3.us-east-2.amazonaws.com/pdf/{format_state(selected_state)}"
-    pdf_dir = f"{experiment_dir}/pdf"
+    pdf_dir = pdf_dir_map[selected_state]
 
     all_results = {
         k: [
@@ -228,24 +243,7 @@ with st.sidebar:
 
     # Step 1: Config
     st.divider()
-    st.subheader("Step 1: Select Field", divider="rainbow")
-
-    eval_term = st.radio(
-        "All available fields",
-        # [format_eval_term[i] for i in all_eval_terms],
-        [
-            format_eval_term[i]
-            for i in [
-                "max_height",
-                "max_lot_coverage",
-                "min_lot_size",
-                "min_parking_spaces",
-            ]
-        ],
-        index=0,
-        # key="eval_term",
-    )
-    eval_term = inverse_format_eval_term[eval_term]
+    eval_term = inverse_format_eval_term[st.session_state["eval_term"]]
 
     # eval_type = st.radio(
     #     "Choosing :orange-background[Data Result Type] you want to check",
@@ -261,7 +259,6 @@ with st.sidebar:
     # )
 
     selected_data = [i for _, i in sorted(all_data_by_eval_term[eval_term].items())]
-
     # if eval_type == "correct":
     #     selected_data = [
     #         i
@@ -289,24 +286,48 @@ with st.sidebar:
 
     # Step 2: Select one data to check
     st.divider()
-    st.subheader("Step 2: Select one district to check", divider="rainbow")
+    st.subheader("Step 1: Select one district to check", divider="rainbow")
 
     place = st.radio(
         "All available districts",
         (
             format_place_map[term["place"]]
             for term in selected_data
-            if str(term["place"])
-            not in [
-                "bethel__MR__Multi-family Residential",
-                "canton__C-4__Highway business",
-                "harmony__R-O__Residential Office",
-                "falkland__A-R__Agricultural-Residential",
-                "knightdale__HB__Highway Business",
-            ]
         ),
         # key="place",
         index=0,
+    )
+
+    st.subheader("Step 2: Select Field", divider="rainbow")
+
+    st.radio(
+        "All available fields",
+        # [format_eval_term[i] for i in all_eval_terms],
+        [
+            format_eval_term[i]
+            for i in [
+                "floor_to_area_ratio",
+                "max_height",
+                "max_lot_coverage",
+                "max_lot_coverage_pavement",
+                "min_lot_size",
+                "min_parking_spaces",
+                "min_unit_size",
+            ]
+        ],
+        key="eval_term",
+        index=[
+            format_eval_term[i]
+            for i in [
+                "floor_to_area_ratio",
+                "max_height",
+                "max_lot_coverage",
+                "max_lot_coverage_pavement",
+                "min_lot_size",
+                "min_parking_spaces",
+                "min_unit_size",
+            ]
+        ].index(st.session_state["eval_term"]),
     )
 
     st.subheader("Step 3: Download all labeled data", divider="rainbow")
@@ -360,7 +381,6 @@ page_in_range = eval_result.page_in_range
 
 
 pdf_file = target_pdf(place.town, pdf_dir)
-
 # r = requests.get(pdf_file)
 # doc = fitz.open(stream=r.content, filetype="pdf")
 doc = fitz.open(pdf_file)
@@ -490,7 +510,7 @@ else:
     #     print(f"An error occurred: {e}")
     #     ocr_info = []
 
-    ocr_file = glob.glob(f"{experiment_dir}/ocr/{place.town}.json")
+    ocr_file = glob.glob(f"{ocr_dir_map[selected_state]}/{place.town}.json")
     assert len(ocr_file) == 1
     ocr_file = ocr_file[0]
     ocr_info = json.loads(open(ocr_file).read())
@@ -544,45 +564,78 @@ else:
             eval_term_color = (0, 0, 1)  # RGB values for blue (0,0,1 is full blue)
             llm_answer_color = (0, 1, 0)  # RGB values for green (0,1,0 is full green)
 
-            box_list = [district_boxs, eval_term_boxs, llm_answer_boxs]
-            color_list = [district_color, eval_term_color, llm_answer_color]
-
-            for box, color in zip(box_list, color_list):
-                for _, b in box:
-                    # b["Left"] += 50
-                    # b["Top"] += 50
-                    # b["Width"] -= 50
-                    # b["Height"] -= 50
-                    if selected_state == "Texas":
-                        normalized_rect = fitz.Rect(
-                            b["Left"] * page_rect.width,
-                            (b["Top"]) * page_rect.height,
-                            (b["Left"] + b["Width"]) * page_rect.width,
-                            (b["Top"] + b["Height"]) * page_rect.height,
-                        )
-                    elif selected_state == "Connecticut":
-                        normalized_rect = fitz.Rect(
-                            (1 - b["Top"] - b["Height"]) * page_rect.height,
-                            b["Left"] * page_rect.width,
-                            (1 - b["Top"]) * page_rect.height,
-                            (b["Left"] + b["Width"]) * page_rect.width,
-                        )
-                    elif selected_state == "North Carolina":
-                        normalized_rect = fitz.Rect(
-                            (b["Left"]) * page_rect.width,
-                            (b["Top"]) * page_rect.height,
-                            (b["Left"] + b["Width"]) * page_rect.width,
-                            (b["Top"] + b["Height"]) * page_rect.height,
-                        )
-                    else:
-                        raise ValueError("State not supported")
-                    page.draw_rect(
-                        normalized_rect,
-                        fill=color,
-                        width=1,
-                        stroke_opacity=0,
-                        fill_opacity=0.15,
+            def get_normalized_rect(b):
+                if selected_state == "Texas":
+                    return fitz.Rect(
+                        b["Left"] * page_rect.width,
+                        (b["Top"]) * page_rect.height,
+                        (b["Left"] + b["Width"]) * page_rect.width,
+                        (b["Top"] + b["Height"]) * page_rect.height,
                     )
+                elif selected_state == "Connecticut":
+                    return fitz.Rect(
+                        (1 - b["Top"] - b["Height"]) * page_rect.height,
+                        b["Left"] * page_rect.width,
+                        (1 - b["Top"]) * page_rect.height,
+                        (b["Left"] + b["Width"]) * page_rect.width,
+                    )
+                elif selected_state == "North Carolina":
+                    return fitz.Rect(
+                        (b["Left"]) * page_rect.width,
+                        (b["Top"]) * page_rect.height,
+                        (b["Left"] + b["Width"]) * page_rect.width,
+                        (b["Top"] + b["Height"]) * page_rect.height,
+                    )
+                else:
+                    raise ValueError("State not supported")
+
+            def extend_rect(rect):
+                return fitz.Rect(rect.x0, 0, rect.x1, page_rect.height) | fitz.Rect(0, rect.y0, page_rect.width, rect.y1)
+
+            district_rects = [get_normalized_rect(b) for _, b in district_boxs]
+            eval_term_rects = [get_normalized_rect(b) for _, b in eval_term_boxs]
+            llm_answer_rects = [get_normalized_rect(b) for _, b in llm_answer_boxs]
+
+            for rect in district_rects:
+                page.draw_rect(
+                    rect,
+                    fill=district_color,
+                    width=1,
+                    stroke_opacity=0,
+                    fill_opacity=0.15,
+                )
+
+            for rect in eval_term_rects:
+                page.draw_rect(
+                    rect,
+                    fill=eval_term_color,
+                    width=1,
+                    stroke_opacity=0,
+                    fill_opacity=0.15,
+                )
+
+            extended_district_rects = [extend_rect(rect) for rect in district_rects]
+            extended_eval_term_rects = [extend_rect(rect) for rect in eval_term_rects]
+
+            for llm_rect in llm_answer_rects:
+                # if any(llm_rect.intersects(rect) for rect in extended_district_rects + extended_eval_term_rects):
+                #     # page.draw_rect(
+                #     #     llm_rect,
+                #     #     fill=llm_answer_color,
+                #     #     width=1,
+                #     #     stroke_opacity=0,
+                #     #     fill_opacity=0.5,  # Higher opacity for overlapping LLM answers
+                #     # )
+                #     pas
+                # else:
+                # page.draw_rect(
+                #     llm_rect,
+                #     fill=llm_answer_color,
+                #     width=1,
+                #     stroke_opacity=0,
+                #     fill_opacity=0.15,
+                # )
+                continue
 
         zoom = 2
         mat = fitz.Matrix(zoom, zoom)
@@ -631,19 +684,13 @@ with st.container(border=True):
             type="primary",
             use_container_width=True,
         ):
-            # print(place)
             write_data("correct")
-            # time.sleep(2)
-            # eval_term_idx = all_eval_terms.index(eval_term)
-            # if eval_term_idx < len(all_eval_terms):
-            #     st.session_state.eval_term = all_eval_terms[eval_term_idx + 1]
-            # else:
-            #     place_idx = all_places.index(place)
-            #     if place_idx < len(all_places):
-            #         st.session_state.place = all_places[place_idx + 1]
-            #     else:
-            #         st.toast("No more data to show", icon='🚨')
-            # st.rerun()
+            eval_term_idx = all_eval_terms.index(eval_term)
+            if eval_term_idx < len(all_eval_terms) - 1:
+                st.session_state.eval_term = format_eval_term[all_eval_terms[eval_term_idx + 1]]
+                st.rerun()
+            else:
+                st.toast("No more fields to evaluate", icon='🚨')
 
     with not_sure_col:
         if st.button(
@@ -653,6 +700,13 @@ with st.container(border=True):
             use_container_width=True,
         ):
             write_data("not_sure")
+            eval_term_idx = all_eval_terms.index(eval_term)
+            if eval_term_idx < len(all_eval_terms) - 1:
+                st.session_state.eval_term = format_eval_term[all_eval_terms[eval_term_idx + 1]]
+                st.rerun()
+            else:
+                st.toast("No more fields to evaluate", icon='🚨')
+
     with wrong_col:
         if st.button(
             "Verified Incorrect",
@@ -661,6 +715,12 @@ with st.container(border=True):
             use_container_width=True,
         ):
             write_data("wrong")
+            eval_term_idx = all_eval_terms.index(eval_term)
+            if eval_term_idx < len(all_eval_terms) - 1:
+                st.session_state.eval_term = format_eval_term[all_eval_terms[eval_term_idx + 1]]
+                st.rerun()
+            else:
+                st.toast("No more fields to evaluate", icon='🚨')
 st.link_button("PDF Link", pdf_file)
 # st.divider()
 
