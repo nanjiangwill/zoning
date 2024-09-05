@@ -133,10 +133,10 @@ CELL (6, 9):
 Output:
 {
     "extracted_text": [
-        "CELL (2, 5):\nWith\nWater and\nSewer",
-        "CELL (3, 5):\n6,000",
-        "CELL (2, 6):\nWithout\nWater and\nSewer",
-        "CELL (3, 6):\n10,000"
+        ["CELL (2, 5):\nWith\nWater and\nSewer", 74],
+        ["CELL (3, 5):\n6,000", 74],
+        ["CELL (2, 6):\nWithout\nWater and\nSewer", 74],
+        ["CELL (3, 6):\n10,000" 74]
     ],
     "rationale": "For district {{zone_abbreviation}}, the section provides the information for {{term}}. It can be inferred that the {{term}} depends on whether the area has water and sewer.",
     "answer": "6,000 sq ft (With Water and Sewer), 10,000 sq ft (Without Water and Sewer)"
@@ -260,8 +260,8 @@ SEC. 9-4-200.4 {{zone_abbreviation}} {{zone_name}} STANDARDS.
 Output:
 {
     "extracted_text": [
-        "1. One bedroom unit: 400 square feet.",
-        "2. Two or more bedroom unit: 500 square feet."
+        ["1. One bedroom unit: 400 square feet.", 66],
+        ["2. Two or more bedroom unit: 500 square feet.", 66]
     ],
     "rationale": "The section provides the information for {{term}} of the district {{zone_abbreviation}}. It can be inferred that the {{term}} is dependent on the unit's number of bedrooms.",
     "answer": "400 sq ft (One bedroom unit), 500 sq ft (Two or more bedroom unit)"

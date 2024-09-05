@@ -4,6 +4,7 @@ Here are several examples that you can use as references.
 # Examples
 
 Input:
+NEW PAGE 165
 165/167
 CELL (1, 1):
 Restaurants (with drive through service)
@@ -55,7 +56,7 @@ equals two (2) feet of bench length.
 
 Output:
 {
-    "extracted_text": ["CELL (5, 2):\nTwo (2) spaces per dwelling unit"],
+    "extracted_text": [["CELL (5, 2):\nTwo (2) spaces per dwelling unit", 165]],
     "rationale": "The cell corresponding to single-family contains the information for {{term}}.",
     "answer": "2 per dwelling unit"
 }
@@ -125,7 +126,7 @@ CELL (5, 4):
 
 Output:
 {
-    "extracted_text": ["CELL (3, 2):\n1 per bedroom up to 2 per unit"],
+    "extracted_text": [["CELL (3, 2):\n1 per bedroom up to 2 per unit", 191]],
     "rationale": "The cell corresponding to residential contains the information for {{term}}.",
     "answer": "1 per bedroom, 2 per unit"
 }
@@ -218,7 +219,7 @@ lane
 
 Output:
 {
-    "extracted_text": ["CELL (7, 2):\n2 spaces per Dwelling Unit"],
+    "extracted_text": [["CELL (7, 2):\n2 spaces per Dwelling Unit", 130]],
     "rationale": "The cell corresponding to single-family contains the information for {{term}}.",
     "answer": "2 per dwelling unit"
 }
