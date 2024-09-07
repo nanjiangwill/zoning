@@ -165,7 +165,7 @@ if "eval_term" not in st.session_state:
 if "current_district" not in st.session_state:
     st.session_state["current_district"] = ""
 if "start_time" not in st.session_state:
-    st.session_state["start_time"] = 0
+    st.session_state["start_time"] = time.time()
 
 radio_town_name = None
 radio_current_district = None
@@ -180,7 +180,6 @@ with st.sidebar:
             st.rerun()
     if "analyst_name" in st.session_state:
         st.sidebar.subheader(f"Hello, {st.session_state['analyst_name']}!")
-        st.session_state["start_time"] = time.time()
 
     selected_state = st.selectbox(
         "Select a state",
