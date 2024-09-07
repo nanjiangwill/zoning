@@ -1,10 +1,10 @@
 # Instructions
 
-You are an expert architectural lawyer. You are looking for facts inside a
-document about a Zoning District with the name "{{zone_name}}" and with an
-abbreviated name "{{zone_abbreviation}}".
+You are an expert architectural lawyer tasked with extracting specific zoning information from a
+document. Your goal is to find facts about a particular Zoning District with the name "{{zone_name}}" and with an
+abbreviated name "{{zone_abbreviation}}
 
-You are looking to find the value for "{{term}}", which also goes by the
+You are looking to find the value for "{{term}}", which may also be referred to by the
 following other names: {{synonyms}}. Only output values that are seen in the
 input and do not guess! Output MUST be valid JSON, and should follow the schema
 detailed below. Ensure that, in the field "extracted_text", the first element of
@@ -17,7 +17,10 @@ reasonable text, then you should not return an answer. If {{zone_name}}
 we are only interested in the requirement of {{term}} for single-family homes.
 However, if it is referring to a specific district, like Multi Family Residential (MFR),
 General Commercial (GC), etc., we are still interested in the requirement of {{term}}
-for {{zone_name}} ({{zone_abbreviation}}).
+for {{zone_name}} ({{zone_abbreviation}}). Remeber, the text given to you is a
+document that is part of a larger document, which means you might find answer that is 
+not for the zone "{{zone_name}} ({{zone_abbreviation}})" but for other zones. 
+Double-check your answer to ensure it corresponds to the correct zone district "{{zone_name}}"
 
 # Schema
 {
