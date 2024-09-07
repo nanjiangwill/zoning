@@ -3,6 +3,7 @@ import glob
 import sys
 import time
 from collections import OrderedDict
+import bisect
 
 import fitz  # PyMuPDF
 
@@ -142,6 +143,7 @@ def get_firebase_csv_data(selected_state: str):
 
     return df.to_csv(index=True)
 
+
 if ("analyst_name" not in st.session_state or not st.session_state["analyst_name"]) and not modal.is_open():
     modal.open()
 
@@ -161,15 +163,13 @@ if modal.is_open():
 if "town_name" not in st.session_state:
     st.session_state["town_name"] = ""
 if "eval_term" not in st.session_state:
-    st.session_state["eval_term"] = "Floor to Area Ratio"
+    st.session_state["eval_term"] = ""
 if "current_district" not in st.session_state:
     st.session_state["current_district"] = ""
 if "start_time" not in st.session_state:
     st.session_state["start_time"] = time.time()
 
 radio_town_name = None
-radio_current_district = None
-radio_eval_term = None
 # Sidebar config
 with st.sidebar:
     # Step 0: input analyst name
@@ -243,26 +243,29 @@ with st.sidebar:
         }
 
 
+    def filtered_by_place_and_eval(results, place, eval_term):
+        return {
+            k: [result for result in results[k] if str(result.place) == str(place) and result.eval_term == eval_term]
+            for k in results
+        }
+
+
     def get_town_by_place(place):
         return Place.from_str(place).town
 
 
     all_data_by_town = {
         town_name: {
-            eval_term: {
-                place: {"place": place, "eval_term": eval_term}
-                       | filtered_by_eval(filtered_by_place(all_results, place), eval_term)
-                for place in all_places if get_town_by_place(place) == town_name
-            }
-            for eval_term in all_eval_terms
-        }
+            (eval_term, place): {"place": place, "eval_term": eval_term} | filtered_by_place_and_eval(all_results,
+                                                                                                      place, eval_term)
+            for place in all_places if get_town_by_place(place) == town_name
+            for eval_term in all_eval_terms}
         for town_name in all_towns
     }
 
     # Step 1: Select one town
     st.divider()
     st.subheader("Step 1: Select one town", divider="rainbow")
-    # town_name = inverse_format_town_map[st.session_state["town_name"]]
 
     if st.session_state["town_name"] not in format_town_map:
         st.session_state["town_name"] = format_town_map[all_towns[0]]
@@ -285,76 +288,30 @@ with st.sidebar:
     ]
     town_name = inverse_format_town_map[st.session_state["town_name"]]
 
-    eval_term = inverse_format_eval_term[st.session_state["eval_term"]]
-
-    st.divider()
-    st.subheader("Step 2: Select Field", divider="rainbow")
-
-    radio_eval_term = [
-        format_eval_term[i]
-        for i in [
-            "floor_to_area_ratio",
-            "max_height",
-            "max_lot_coverage",
-            "max_lot_coverage_pavement",
-            "min_lot_size",
-            "min_parking_spaces",
-            "min_unit_size",
-        ]
-    ]
-    if "eval_term" not in st.session_state or st.session_state["eval_term"] not in radio_eval_term:
-        st.session_state["eval_term"] = radio_eval_term[0]
-    eval_term = st.radio(
-        "All available fields",
-        radio_eval_term,
-        index=radio_eval_term.index(st.session_state["eval_term"]),
-    )
-    st.session_state["eval_term"] = eval_term
-    eval_term = inverse_format_eval_term[eval_term]
-
-    # Step 2: Select one data to check
-    selected_town_data = [i for _, i in sorted(all_data_by_town[town_name][eval_term].items())]
-
-    st.divider()
-    st.subheader("Step 3: Select one district to check", divider="rainbow")
-    all_town_districts = [term["place"] for term in selected_town_data]
-
-    def show_fullname_shortname(place):
-        _, district_short_name, district_full_name = place.split("__")
-        # jstr = "-".join([i[0].upper() + i[1:] for i in town.split("-")])
-        return f"{district_full_name} ({district_short_name})"
-
-
-    format_town_district_map = {place: show_fullname_shortname(place) for place in all_places}
-    inverse_format_town_district_map = {k: v for v, k in format_town_district_map.items()}
-
-    sorted_district = {}
-    for town_district in all_town_districts:
-        sorted_district[format_town_district_map[town_district]] = min(
+    sorted_eval_district = sorted(
+        (
+            (eval_term, town_district)
+            for (eval_term, town_district) in all_data_by_town[town_name]
+        ),
+        key=lambda pair: min(
             [
                 item[1]
                 for item in
-                (all_data_by_town[town_name][eval_term][town_district]["llm"][0].llm_outputs[0].extracted_text or [])
+                (all_data_by_town[town_name][pair]["llm"][0].llm_outputs[0].extracted_text or [])
                 if isinstance(item[1], int)
             ] or [float('inf')]
         )
-
-    sorted_districts = sorted(sorted_district.items(), key=lambda x: x[1])
-    sorted_all_town_districts = [i[0] for i in sorted_districts]
-
-    radio_current_district = sorted_all_town_districts
-    if "current_district" not in st.session_state or st.session_state["current_district"] not in radio_current_district:
-        st.session_state["current_district"] = radio_current_district[0]
-
-    current_district = st.radio(
-        "All available districts (sorted by information pages)",
-        sorted_all_town_districts,
-        # key="current_district",
-        index=sorted_all_town_districts.index(st.session_state["current_district"])
     )
 
-    st.session_state["current_district"] = current_district
-    st.subheader("Step 4: Download all labeled data", divider="rainbow")
+    if "eval_term" not in st.session_state or not st.session_state["eval_term"] or st.session_state[
+        "eval_term"] not in all_eval_terms:
+        st.session_state["eval_term"] = sorted_eval_district[0][0]
+
+    if "current_district" not in st.session_state or not st.session_state["current_district"] or st.session_state[
+        "current_district"] not in all_places:
+        st.session_state["current_district"] = sorted_eval_district[0][1]
+
+    st.subheader("Step 2: Download all labeled data", divider="rainbow")
     st.download_button(
         label="Download CSV",
         data=get_firebase_csv_data(selected_state),
@@ -363,11 +320,13 @@ with st.sidebar:
     )
 
 # Load the data for the town.
-current_district = inverse_format_town_district_map[st.session_state["current_district"]]
+current_district = st.session_state["current_district"]
+if (st.session_state["eval_term"], current_district) not in all_data_by_town[town_name]:
+    st.session_state["eval_term"] = sorted_eval_district[0][0]
+    st.session_state["current_district"] = sorted_eval_district[0][1]
+    current_district = sorted_eval_district[0][1]
 
-visualized_data = all_data_by_town[town_name][eval_term][
-    current_district
-]  # list([data for data in selected_data if data["place"] == place])[0]
+visualized_data = all_data_by_town[town_name][(st.session_state["eval_term"], current_district)]
 
 place = Place.from_str(current_district)
 
@@ -668,35 +627,18 @@ st.divider()
 
 def jump_to_next_one():
     # Get the current indices
-    time.sleep(1)
-    current_town_index = radio_town_name.index(st.session_state["town_name"])
-    current_eval_term_index = radio_eval_term.index(st.session_state["eval_term"])
-    current_district_index = radio_current_district.index(st.session_state["current_district"])
-
-    current_town = st.session_state["town_name"]
     current_eval_term = st.session_state["eval_term"]
     current_district = st.session_state["current_district"]
 
-    if current_district_index < len(radio_current_district) - 1:
-        next_district = radio_current_district[current_district_index + 1]
-        st.session_state["current_district"] = next_district
-        st.rerun()
-    # If no more districts, try to move to the next eval term
-    elif current_eval_term_index < len(radio_eval_term) - 1:
-        next_eval_term = radio_eval_term[current_eval_term_index + 1]
-        st.session_state["eval_term"] = next_eval_term
-        next_districts = list(
-            all_data_by_town[inverse_format_town_map[current_town]][inverse_format_eval_term[next_eval_term]].keys())
-        st.session_state["current_district"] = next_districts[0]
-        st.rerun()
-    # If no more eval terms, try to move to the next town
-    elif current_town_index < len(radio_town_name) - 1:
-        next_town = radio_town_name[current_town_index + 1]
-        st.session_state["town_name"] = next_town
-        st.session_state["eval_term"] = radio_eval_term[0]
-        next_districts = list(
-            all_data_by_town[inverse_format_town_map[next_town]][inverse_format_eval_term[radio_eval_term[0]]].keys())
-        st.session_state["current_district"] = next_districts[0]
+    def get_next_element(sorted_list, current_element):
+        for i, item in enumerate(sorted_list):
+            if item == current_element:
+                return sorted_list[i + 1] if i + 1 < len(sorted_list) else None
+
+    next_eval_district = get_next_element(sorted_eval_district, (current_eval_term, current_district))
+    if next_eval_district:
+        st.session_state["eval_term"] = next_eval_district[0]
+        st.session_state["current_district"] = next_eval_district[1]
         st.rerun()
     # If no more towns, we've reached the end
     else:
