@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union, Any
 
 from pydantic import BaseModel
 
@@ -346,7 +346,7 @@ class LLMOutput(BaseModel):
     place: Place
     eval_term: str
     raw_model_response: str | None = None
-    extracted_text: Optional[List[str] | None] = None
+    extracted_text: Optional[List[Any]] = None
     rationale: Optional[str | None] = None
     answer: Optional[str | None] = None
 
