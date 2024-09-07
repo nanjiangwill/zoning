@@ -436,7 +436,11 @@ norm = normalized_llm_output.llm_output.answer
 town = "-".join([i[0].upper() + i[1:] for i in place.town.split("-")])
 st.html(
     f"""
-    <h2><em>{format_eval_term[eval_term]}</em> for the <em>{place.district_full_name}({place.district_short_name})</em> District in <em>{town}</em></h2>
+    <h2 style="text-align: center; font-size: 2.5em;">
+        <em>{format_eval_term[eval_term]}</em> for the 
+        <em>{place.district_full_name} ({place.district_short_name})</em> 
+        District in <em>{town}</em>
+    </h2>
     <h2>Value: <em>{norm}</em></h2>
     <h4>Rationale: {llm_output.rationale}</h4>
 """
