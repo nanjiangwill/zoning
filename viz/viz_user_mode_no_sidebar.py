@@ -359,38 +359,20 @@ page_in_range = eval_result.page_in_range
 pdf_file = target_pdf(town_name, pdf_dir)
 doc = fitz.open(pdf_file)
 
-jump_pages = entire_search_page_range.copy()
+# Display the progress bar
+current_index = 0
+for i, item in enumerate(sorted_eval_district):
+    if item == (eval_term, current_district):
+        current_index = i + 1
+        break
+total_index = len(sorted_eval_district)
+col1, col2 = st.columns([5, 1])
+with col1:
+    st.progress(current_index / total_index)
+with col2:
+    st.write(f"Progress: {current_index}/{total_index} items")
 
-if ground_truth_page:
-    if "," in ground_truth_page:
-        ground_truth_pages = [int(i) for i in ground_truth_page.split(",")]
-        jump_pages.extend(ground_truth_pages)
-    else:
-        jump_pages.append(ground_truth_page)
-jump_pages = [int(i) for i in jump_pages]
-jump_pages = sorted(set(jump_pages))  # Remove duplicates and sort
-
-
-def group_continuous(sorted_list):
-    if not sorted_list:
-        return []
-
-    result = []
-    current_group = [sorted_list[0]]
-
-    for i in range(1, len(sorted_list)):
-        if sorted_list[i] == sorted_list[i - 1] + 1:
-            current_group.append(sorted_list[i])
-        else:
-            result.append(current_group)
-            current_group = [sorted_list[i]]
-
-    result.append(current_group)
-    return result
-
-
-current_page = min(jump_pages) if jump_pages else 1
-
+# Display the title
 norm = normalized_llm_output.llm_output.answer
 
 town = "-".join([i[0].upper() + i[1:] for i in place.town.split("-")])
@@ -683,8 +665,8 @@ else:
 
 st.link_button("PDF Link", pdf_file)
 
-# # button jump to the second last item for testing
-# if st.button("Jump to the second last item"):
-#     st.session_state["eval_term"] = sorted_eval_district[-2][0]
-#     st.session_state["current_district"] = sorted_eval_district[-2][1]
-#     st.rerun()
+# button jump to the second last item for testing
+if st.button("Jump to the second last item"):
+    st.session_state["eval_term"] = sorted_eval_district[-2][0]
+    st.session_state["current_district"] = sorted_eval_district[-2][1]
+    st.rerun()
