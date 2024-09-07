@@ -3,17 +3,12 @@ import glob
 import sys
 import time
 from collections import OrderedDict
-import bisect
-
 import fitz  # PyMuPDF
-
-# import json
 import orjson as json
 import pandas as pd
-import requests
 import streamlit as st
-from streamlit_modal import Modal
 from google.cloud import firestore
+from streamlit_modal import Modal
 
 from zoning.class_types import (
     EvalResult,
@@ -302,7 +297,6 @@ with st.sidebar:
             ] or [float('inf')]
         )
     )
-    print(sorted_eval_district)
 
     if "eval_term" not in st.session_state or not st.session_state["eval_term"] or st.session_state[
         "eval_term"] not in all_eval_terms:
@@ -390,6 +384,7 @@ st.html(
 
 
 def get_showed_pages(pages, interval):
+
     showed_pages = []
     for page in pages:
         showed_pages.extend(range(page - interval, page + interval + 1))
@@ -659,14 +654,15 @@ next_eval_district = get_next_eval_district(
 
 if next_eval_district:
     next_place = Place.from_str(next_eval_district[1])
-    st.write(f"Next item: {format_eval_term[next_eval_district[0]]} for the {next_place.district_full_name} ({next_place.district_short_name}) District in {town}")
+    st.write(
+        f"Next item: {format_eval_term[next_eval_district[0]]} for the {next_place.district_full_name} ({next_place.district_short_name}) District in {town}")
 else:
     st.write("No more items.")
 
 st.link_button("PDF Link", pdf_file)
 
-# button jump to the second last item for testing
-if st.button("Jump to the second last item"):
-    st.session_state["eval_term"] = sorted_eval_district[-2][0]
-    st.session_state["current_district"] = sorted_eval_district[-2][1]
-    st.rerun()
+# # button jump to the second last item for testing
+# if st.button("Jump to the second last item"):
+#     st.session_state["eval_term"] = sorted_eval_district[-2][0]
+#     st.session_state["current_district"] = sorted_eval_district[-2][1]
+#     st.rerun()
