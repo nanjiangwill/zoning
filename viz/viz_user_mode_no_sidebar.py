@@ -302,6 +302,7 @@ with st.sidebar:
             ] or [float('inf')]
         )
     )
+    print(sorted_eval_district)
 
     if "eval_term" not in st.session_state or not st.session_state["eval_term"] or st.session_state[
         "eval_term"] not in all_eval_terms:
@@ -625,17 +626,20 @@ else:
 st.divider()
 
 
+def get_next_eval_district(current_eval_term, current_district, sorted_eval_district):
+    for i, item in enumerate(sorted_eval_district):
+        if item == (current_eval_term, current_district):
+            return sorted_eval_district[i + 1] if i + 1 < len(sorted_eval_district) else None
+    return None
+
+
+# Function to jump to the next item
 def jump_to_next_one():
-    # Get the current indices
-    current_eval_term = st.session_state["eval_term"]
-    current_district = st.session_state["current_district"]
-
-    def get_next_element(sorted_list, current_element):
-        for i, item in enumerate(sorted_list):
-            if item == current_element:
-                return sorted_list[i + 1] if i + 1 < len(sorted_list) else None
-
-    next_eval_district = get_next_element(sorted_eval_district, (current_eval_term, current_district))
+    next_eval_district = get_next_eval_district(
+        st.session_state["eval_term"],
+        st.session_state["current_district"],
+        sorted_eval_district,
+    )
     if next_eval_district:
         st.session_state["eval_term"] = next_eval_district[0]
         st.session_state["current_district"] = next_eval_district[1]
@@ -647,34 +651,40 @@ def jump_to_next_one():
 
 
 with st.container(border=True):
-    # st.subheader("Current data")
     correct_col, not_sure_col, wrong_col = st.columns(3)
+
     with correct_col:
-        if st.button(
-                "Verified Correct",
-                key="llm_correct",
-                type="primary",
-                use_container_width=True,
-        ):
+        if st.button("Verified Correct", key="llm_correct", type="primary", use_container_width=True):
             write_data("correct")
             jump_to_next_one()
+
     with not_sure_col:
-        if st.button(
-                "Not Enough Information",
-                key="llm_not_sure",
-                type="secondary",
-                use_container_width=True,
-        ):
+        if st.button("Not Enough Information", key="llm_not_sure", type="secondary", use_container_width=True):
             write_data("not_sure")
             jump_to_next_one()
+
     with wrong_col:
-        if st.button(
-                "Verified Incorrect",
-                key="llm_wrong",
-                type="secondary",
-                use_container_width=True,
-        ):
+        if st.button("Verified Incorrect", key="llm_wrong", type="secondary", use_container_width=True):
             write_data("wrong")
             jump_to_next_one()
 
+# Display the next item
+next_eval_district = get_next_eval_district(
+    st.session_state["eval_term"],
+    st.session_state["current_district"],
+    sorted_eval_district,
+)
+
+if next_eval_district:
+    next_place = Place.from_str(next_eval_district[1])
+    st.write(f"Next item: {format_eval_term[next_eval_district[0]]} for the {next_place.district_full_name} ({next_place.district_short_name}) District in {town}")
+else:
+    st.write("No more items.")
+
 st.link_button("PDF Link", pdf_file)
+
+# # button jump to the second last item for testing
+# if st.button("Jump to the second last item"):
+#     st.session_state["eval_term"] = sorted_eval_district[-2][0]
+#     st.session_state["current_district"] = sorted_eval_district[-2][1]
+#     st.rerun()
