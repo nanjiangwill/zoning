@@ -1,1 +1,0 @@
-{"place": {"town": "north-canaan", "district_short_name": "C", "district_full_name": "Commercial"}, "eval_term": "min_lot_size", "ground_truth": "60000", "ground_truth_orig": "21780 (if served by water & sewer); 60000 (if not)", "ground_truth_page": "19", "answer_correct": true, "page_in_range": true}
