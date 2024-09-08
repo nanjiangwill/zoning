@@ -9,6 +9,9 @@ import pandas as pd
 import streamlit as st
 from google.cloud import firestore
 from streamlit_modal import Modal
+from google.api_core.exceptions import GoogleAPIError
+from firebase_admin import exceptions as FirebaseError
+from google.cloud.firestore_v1.base_query import FieldFilter
 
 from zoning.class_types import (
     EvalResult,
@@ -72,7 +75,7 @@ modal = Modal(
 )
 
 
-def write_data(human_feedback: str):
+def write_data(human_feedback: str) -> bool:
     town_name = place.town
     district_full_name = place.district_full_name
     district_short_name = place.district_short_name
@@ -82,11 +85,10 @@ def write_data(human_feedback: str):
         elapsed_sec = -1
     else:
         elapsed_sec = time.time() - st.session_state["start_time"]
-    st.session_state["start_time"] = time.time()
 
-    if "analyst_name" not in st.session_state:
+    if "analyst_name" not in st.session_state or not st.session_state["analyst_name"]:
         st.toast("Please enter your name first", icon="🚨")
-        return
+        return False
     d = {
         "analyst_name": st.session_state["analyst_name"],
         "state": selected_state,
@@ -99,16 +101,26 @@ def write_data(human_feedback: str):
         "elapsed_sec": elapsed_sec,
     }
 
-    # doc_ref = db.collection(selected_state)
-    #
-    # doc_ref.add(d)
-    print(d)
+    try:
+        doc_ref = db.collection(selected_state)
+        _, result = doc_ref.add(d)
+        result.get()  # Wait for acknowledgment
+        st.session_state["start_time"] = time.time()  # Reset the timer
 
-    st.toast("Going to next data in 2 seconds", icon="🚀")
-    st.toast("Data successfully written to database!", icon="🎉")
+        st.toast("Going to next data in 2 seconds", icon="🚀")
+        st.toast("Data successfully written to database!", icon="🎉")
+
+        return True
+
+    except GoogleAPIError as e:
+        st.error(f"Error writing to Firestore: {e}")
+    except FirebaseError as e:
+        st.error(f"Firebase SDK Error: {e}")
+
+    return False
 
 
-def get_firebase_csv_data(selected_state: str):
+def get_firebase_data(selected_state: str, filters: dict = None) -> pd.DataFrame:
     key_order = [
         "eval_term",
         "state",
@@ -121,12 +133,14 @@ def get_firebase_csv_data(selected_state: str):
     ]
 
     doc_ref = db.collection(selected_state)
-
-    docs = doc_ref.get()
-
-    data = []
+    query = doc_ref
+    if filters:
+        for field, condition in filters.items():
+            query = query.where(filter=FieldFilter(field, condition[0], condition[1]))
+    docs = query.get()
 
     # Iterate through documents and extract data
+    data = []
     for doc in docs:
         ordered_dict = OrderedDict((k, doc.to_dict().get(k, "")) for k in key_order)
         data.append(ordered_dict)
@@ -135,8 +149,14 @@ def get_firebase_csv_data(selected_state: str):
 
     # Create a DataFrame from the data
     df = pd.DataFrame(sorted_data)
+    return df
 
-    return df.to_csv(index=True)
+
+def get_next_eval_district(current_eval_term, current_district, sorted_eval_district):
+    for i, item in enumerate(sorted_eval_district):
+        if item == (current_eval_term, current_district):
+            return sorted_eval_district[i + 1] if i + 1 < len(sorted_eval_district) else None
+    return None
 
 
 if ("analyst_name" not in st.session_state or not st.session_state["analyst_name"]) and not modal.is_open():
@@ -211,6 +231,7 @@ with st.sidebar:
     all_eval_terms = sorted(list(set([i.eval_term for i in all_results["eval"]])))
     all_places = sorted(list(set(str(i.place) for i in all_results["eval"])))
     all_towns = sorted(list(set([i.place.town for i in all_results["eval"]])))
+    print(all_towns)
 
 
     def show_town(place):
@@ -297,6 +318,7 @@ with st.sidebar:
             ] or [float('inf')]
         )
     )
+    print(sorted_eval_district)
 
     if "eval_term" not in st.session_state or not st.session_state["eval_term"] or st.session_state[
         "eval_term"] not in all_eval_terms:
@@ -309,21 +331,36 @@ with st.sidebar:
     st.subheader("Step 2: Download all labeled data", divider="rainbow")
     st.download_button(
         label="Download CSV",
-        data=get_firebase_csv_data(selected_state),
+        data=get_firebase_data(selected_state).to_csv(index=True),
         file_name=f"{selected_state}_data.csv",
         mime="text/csv",
     )
 
 # Load the data for the town.
-current_district = st.session_state["current_district"]
-if (st.session_state["eval_term"], current_district) not in all_data_by_town[town_name]:
+if (st.session_state["eval_term"], st.session_state["current_district"]) not in all_data_by_town[town_name]:
     st.session_state["eval_term"] = sorted_eval_district[0][0]
     st.session_state["current_district"] = sorted_eval_district[0][1]
-    current_district = sorted_eval_district[0][1]
 
-visualized_data = all_data_by_town[town_name][(st.session_state["eval_term"], current_district)]
+# Skip the data if it's already labeled
+if "analyst_name" in st.session_state and st.session_state["analyst_name"]:
+    labelled_data = get_firebase_data(selected_state, {"analyst_name": ["==", st.session_state["analyst_name"]],
+                                                       "town": ["==", town_name]})
+    while any(
+            (row["eval_term"] == format_eval_term[st.session_state["eval_term"]]
+             and row["district_full_name"] == Place.from_str(st.session_state["current_district"]).district_full_name
+             and row["district_short_name"] == Place.from_str(st.session_state["current_district"]).district_short_name
+             and row["town"] == town_name)
+            for _, row in labelled_data.iterrows()
+    ):
+        st.session_state["eval_term"], st.session_state["current_district"] = get_next_eval_district(
+            st.session_state["eval_term"],
+            st.session_state["current_district"],
+            sorted_eval_district,
+        )
 
-place = Place.from_str(current_district)
+visualized_data = all_data_by_town[town_name][(st.session_state["eval_term"], st.session_state["current_district"])]
+
+place = Place.from_str(st.session_state["current_district"])
 
 # loading info
 eval_term = visualized_data["eval_term"]
@@ -354,17 +391,14 @@ pdf_file = target_pdf(town_name, pdf_dir)
 doc = fitz.open(pdf_file)
 
 # Display the progress bar
-current_index = 0
-for i, item in enumerate(sorted_eval_district):
-    if item == (eval_term, current_district):
-        current_index = i + 1
-        break
-total_index = len(sorted_eval_district)
-col1, col2 = st.columns([5, 1])
-with col1:
-    st.progress(current_index / total_index)
-with col2:
-    st.write(f"Progress: {current_index}/{total_index} items")
+if "analyst_name" in st.session_state and st.session_state["analyst_name"]:
+    num_finished = len(get_firebase_data(selected_state, {"analyst_name": ["==", st.session_state["analyst_name"]]}))
+    num_total = len(all_results["eval"])
+    col1, col2 = st.columns([5, 1])
+    with col1:
+        st.progress(num_finished / num_total)
+    with col2:
+        st.write(f"Progress: {num_finished}/{num_total}")
 
 # Display the title
 norm = normalized_llm_output.llm_output.answer
@@ -384,7 +418,6 @@ st.html(
 
 
 def get_showed_pages(pages, interval):
-
     showed_pages = []
     for page in pages:
         showed_pages.extend(range(page - interval, page + interval + 1))
@@ -603,13 +636,6 @@ else:
 st.divider()
 
 
-def get_next_eval_district(current_eval_term, current_district, sorted_eval_district):
-    for i, item in enumerate(sorted_eval_district):
-        if item == (current_eval_term, current_district):
-            return sorted_eval_district[i + 1] if i + 1 < len(sorted_eval_district) else None
-    return None
-
-
 # Function to jump to the next item
 def jump_to_next_one():
     next_eval_district = get_next_eval_district(
@@ -632,18 +658,18 @@ with st.container(border=True):
 
     with correct_col:
         if st.button("Verified Correct", key="llm_correct", type="primary", use_container_width=True):
-            write_data("correct")
-            jump_to_next_one()
+            if write_data("correct"):
+                jump_to_next_one()
 
     with not_sure_col:
         if st.button("Not Enough Information", key="llm_not_sure", type="secondary", use_container_width=True):
-            write_data("not_sure")
-            jump_to_next_one()
+            if write_data("not_sure"):
+                jump_to_next_one()
 
     with wrong_col:
         if st.button("Verified Incorrect", key="llm_wrong", type="secondary", use_container_width=True):
-            write_data("wrong")
-            jump_to_next_one()
+            if write_data("wrong"):
+                jump_to_next_one()
 
 # Display the next item
 next_eval_district = get_next_eval_district(
