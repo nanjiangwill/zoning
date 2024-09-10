@@ -34,7 +34,7 @@ else:
 state_experiment_map = {
     "Connecticut": "results/textract_es_gpt4_connecticut_search_range_3",
     "Texas": "results/textract_es_gpt4_texas_search_range_3",
-    "North Carolina": "results/textract_es_gpt4_north_carolina_search_range_3_updated_prompt",
+    "North Carolina": "results/textract_es_claude_north_carolina_search_range_3_updated_prompt",
 }
 
 pdf_dir_map = {
@@ -158,6 +158,9 @@ def get_next_eval_district(current_eval_term, current_district, sorted_eval_dist
             return sorted_eval_district[i + 1] if i + 1 < len(sorted_eval_district) else None
     return None
 
+@st.cache_data(max_entries=5)
+def load_json_file(file_path):
+    return json.loads(open(file_path).read())
 
 if ("analyst_name" not in st.session_state or not st.session_state["analyst_name"]) and not modal.is_open():
     modal.open()
@@ -387,8 +390,12 @@ ground_truth_page = eval_result.ground_truth_page
 answer_correct = eval_result.answer_correct
 page_in_range = eval_result.page_in_range
 
+
+start = time.time()
 pdf_file = target_pdf(town_name, pdf_dir)
 doc = fitz.open(pdf_file)
+print(f"Time to load PDF: {time.time() - start:.2f}s")
+
 
 # Display the progress bar
 if "analyst_name" in st.session_state and st.session_state["analyst_name"]:
@@ -433,17 +440,21 @@ else:
     if len(showed_pages) == 0:
         showed_pages = entire_search_page_range.copy()
 
+    start = time.time()
     format_ocr_file = glob.glob(f"{experiment_dir}/format_ocr/{place.town}.json")
     assert len(format_ocr_file) == 1
     format_ocr_file = format_ocr_file[0]
     format_ocr_result = FormatOCR.model_construct(
         **json.loads(open(format_ocr_file).read())
     )
+    print(f"Time to load format OCR: {time.time() - start:.2f}s")
 
+    start = time.time()
     ocr_file = glob.glob(f"{ocr_dir_map[selected_state]}/{place.town}.json")
     assert len(ocr_file) == 1
     ocr_file = ocr_file[0]
-    ocr_info = json.loads(open(ocr_file).read())
+    ocr_info = load_json_file(ocr_file)
+    print(f"Time to load OCR: {time.time() - start:.2f}s")
 
     extract_blocks = [b for d in ocr_info for b in d["Blocks"]]
     edited_pages = []
@@ -687,8 +698,8 @@ else:
 
 st.link_button("PDF Link", pdf_file)
 
-# # button jump to the second last item for testing
-# if st.button("Jump to the second last item"):
-#     st.session_state["eval_term"] = sorted_eval_district[-2][0]
-#     st.session_state["current_district"] = sorted_eval_district[-2][1]
-#     st.rerun()
+# button jump to the second last item for testing
+if st.button("Jump to the second last item"):
+    st.session_state["eval_term"] = sorted_eval_district[-2][0]
+    st.session_state["current_district"] = sorted_eval_district[-2][1]
+    st.rerun()
