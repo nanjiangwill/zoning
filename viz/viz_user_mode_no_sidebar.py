@@ -120,7 +120,7 @@ def write_data(human_feedback: str) -> bool:
     return False
 
 
-def get_firebase_data(selected_state: str, filters: dict = None) -> pd.DataFrame:
+def get_firebase_data(selected_state: str, filters: dict = {}) -> pd.DataFrame:
     key_order = [
         "eval_term",
         "state",
@@ -142,7 +142,8 @@ def get_firebase_data(selected_state: str, filters: dict = None) -> pd.DataFrame
     # Iterate through documents and extract data
     data = []
     for doc in docs:
-        ordered_dict = OrderedDict((k, doc.to_dict().get(k, "")) for k in key_order)
+        doc_data = doc.to_dict() or {}
+        ordered_dict = OrderedDict((k, doc_data.get(k, "")) for k in key_order)
         data.append(ordered_dict)
 
     sorted_data = sorted(data, key=lambda x: x.get("eval_term", ""))
@@ -161,13 +162,6 @@ def show_town(place):
     town = place.split("__")[0]
     jstr = "-".join([i[0].upper() + i[1:] for i in town.split("-")])
     return f"{jstr}"
-
-
-def filtered_by_place(results, place):
-    return {
-        k: [result for result in results[k] if str(result.place) == str(place)]
-        for k in results
-    }
 
 
 def filtered_by_place(results, place):
@@ -314,7 +308,7 @@ if "analyst_name" in st.session_state and st.session_state["analyst_name"]:
         st.subheader("🎉 You've reached the end of the data!")
         st.stop()
 else:
-    town_name, eval_term, current_district = all_items[st.session_state["current_item_index"]]
+    town_name, eval_term, current_district = st.session_state["all_items"][st.session_state["current_item_index"]]
     st.session_state["town_name"] = format_town_map[town_name]
     st.session_state["eval_term"] = eval_term
     st.session_state["current_district"] = current_district
@@ -391,7 +385,7 @@ def get_showed_pages(pages, interval):
 
 showed_pages = get_showed_pages(highlight_text_pages, 1)
 
-if len(showed_pages) == 0 and normalized_llm_output.normalized_answer == None:
+if len(showed_pages) == 0 and normalized_llm_output.normalized_answer is None:
     st.write("LLM does not find any page related")
 
 else:
@@ -649,8 +643,17 @@ else:
 
 st.link_button("PDF Link", pdf_file)
 
-# button jump to the second last item for testing
-if st.button("Jump to the second last item"):
-    st.session_state["eval_term"] = sorted_eval_district[-2][0]
-    st.session_state["current_district"] = sorted_eval_district[-2][1]
-    st.rerun()
+# button jump to the second last item of the current town for testing
+if st.button("Jump to the second last item of the current town"):
+    current_town = st.session_state["town_name"]
+    current_town_items = [item for item in st.session_state["all_items"] if item[1] == current_town]
+
+    # Check if there are at least two items for the current town
+    if len(current_town_items) >= 2:
+        # Get the second last item of the current town
+        second_last_item = current_town_items[-2]
+        idx, town_name, eval_term, current_district = second_last_item
+        st.session_state["current_item_index"] = idx
+        st.rerun()
+    else:
+        st.toast("Not enough items for the current town to jump to the second last item.")
