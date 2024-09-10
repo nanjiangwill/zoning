@@ -32,7 +32,3 @@ zoning/~*
 .vscode
 .idea
 key.json
-results/textract_es_gpt4_north_carolina_search_range_3/__search0830_subset
-results/textract_es_gpt4_north_carolina_search_range_3/__search0830_full
-results/textract_es_gpt4_north_carolina_search_range_3_old_thesaurus
-viz_v2
