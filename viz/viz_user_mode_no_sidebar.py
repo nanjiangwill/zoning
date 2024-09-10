@@ -151,17 +151,117 @@ def get_firebase_data(selected_state: str, filters: dict = None) -> pd.DataFrame
     df = pd.DataFrame(sorted_data)
     return df
 
-
-def get_next_eval_district(current_eval_term, current_district, sorted_eval_district):
-    for i, item in enumerate(sorted_eval_district):
-        if item == (current_eval_term, current_district):
-            return sorted_eval_district[i + 1] if i + 1 < len(sorted_eval_district) else None
-    return None
-
 @st.cache_data(ttl=3600)
 def load_json_file(file_path):
     with open(file_path, 'r') as file:
         return json.loads(file.read())
+
+
+def show_town(place):
+    town = place.split("__")[0]
+    jstr = "-".join([i[0].upper() + i[1:] for i in town.split("-")])
+    return f"{jstr}"
+
+
+def filtered_by_place(results, place):
+    return {
+        k: [result for result in results[k] if str(result.place) == str(place)]
+        for k in results
+    }
+
+
+def filtered_by_place(results, place):
+    return {
+        k: [result for result in results[k] if str(result.place) == str(place)]
+        for k in results
+    }
+
+
+def filtered_by_place_and_eval(results, place, eval_term):
+    return {
+        k: [result for result in results[k] if str(result.place) == str(place) and result.eval_term == eval_term]
+        for k in results
+    }
+
+
+def get_town_by_place(place):
+    return Place.from_str(place).town
+
+
+def get_sorted_eval_district(all_data_by_town, town_name):
+    return sorted(
+        (
+            (eval_term, town_district)
+            for (eval_term, town_district) in all_data_by_town[town_name]
+        ),
+        key=lambda pair: min(
+            [
+                item[1]
+                for item in
+                (all_data_by_town[town_name][pair]["llm"][0].llm_outputs[0].extracted_text or [])
+                if isinstance(item[1], int)
+            ] or [float('inf')]
+        ))
+
+
+def get_next_unlabeled_item(current_index, all_items):
+    for idx in range(current_index, len(all_items)):
+        town, eval_term, district = all_items[idx]
+        # Check if this item has been labeled
+        labelled_data = get_firebase_data(
+            selected_state,
+            {
+                "analyst_name": ["==", st.session_state["analyst_name"]],
+                "town": ["==", town]
+            }
+        )
+        item_labeled = any(
+            (row["eval_term"] == format_eval_term[eval_term]
+             and row["district_full_name"] == Place.from_str(district).district_full_name
+             and row["district_short_name"] == Place.from_str(district).district_short_name
+             and row["town"] == town)
+            for _, row in labelled_data.iterrows()
+        )
+        if not item_labeled:
+            # Return this item and index
+            return idx, town, eval_term, district
+    # No more items
+    return None
+
+
+# Setup default data
+selected_state = "North Carolina"
+experiment_dir = state_experiment_map[selected_state]
+pdf_dir = pdf_dir_map[selected_state]
+all_results = {
+    k: [
+        X.model_construct(**json.loads(open(i).read()))
+        for i in sorted(glob.glob(f"{experiment_dir}/{k}/*.json"))
+    ]
+    for k, X in [
+        ("search", SearchResult),
+        ("prompt", PromptResult),
+        ("llm", LLMInferenceResult),
+        ("normalization", NormalizedLLMInferenceResult),
+        ("eval", EvalResult),
+    ]
+}
+all_eval_terms = sorted(list(set([i.eval_term for i in all_results["eval"]])))
+all_places = sorted(list(set(str(i.place) for i in all_results["eval"])))
+all_towns = sorted(list(set([i.place.town for i in all_results["eval"]])))
+print(all_towns)
+
+all_data_by_town = {
+    town_name: {
+        (eval_term, place): {"place": place, "eval_term": eval_term} | filtered_by_place_and_eval(all_results,
+                                                                                                  place, eval_term)
+        for place in all_places if get_town_by_place(place) == town_name
+        for eval_term in all_eval_terms}
+    for town_name in all_towns
+}
+
+format_town_map = {town_name: show_town(town_name) for town_name in all_towns}
+inverse_format_town_map = {k: v for v, k in format_town_map.items()}
 
 
 if ("analyst_name" not in st.session_state or not st.session_state["analyst_name"]) and not modal_name.is_open():
@@ -180,188 +280,44 @@ if modal_name.is_open():
                 st.session_state["start_time"] = time.time()
                 modal_name.close()
 
-if "town_name" not in st.session_state:
-    st.session_state["town_name"] = ""
-if "eval_term" not in st.session_state:
-    st.session_state["eval_term"] = ""
-if "current_district" not in st.session_state:
-    st.session_state["current_district"] = ""
+if "all_items" not in st.session_state:
+    all_items = []
+    for town in all_towns:
+        sorted_eval_district = get_sorted_eval_district(all_data_by_town, town)
+        for (eval_term, district) in sorted_eval_district:
+            all_items.append((town, eval_term, district))
+    st.session_state["all_items"] = all_items
+if "current_item_index" not in st.session_state:
+    st.session_state["current_item_index"] = 0
+
 if "start_time" not in st.session_state:
     st.session_state["start_time"] = time.time()
 
-radio_town_name = None
-# Sidebar config
-with st.sidebar:
-    # Step 0: input analyst name
-    if "analyst_name" not in st.session_state:
-        analyst_name = st.text_input("Please Enter your name", placeholder="")
-        if analyst_name:
-            st.session_state["analyst_name"] = analyst_name
-            st.rerun()
-    if "analyst_name" in st.session_state:
-        st.sidebar.subheader(f"Hello, {st.session_state['analyst_name']}!")
-
-    selected_state = st.selectbox(
-        "Select a state",
-        [
-            "North Carolina",
-            "Connecticut",
-            "Texas",
-        ],
-        index=0,
-    )
-
-
-    def format_state(state):
-        return state.lower().replace(" ", "_")
-
-
-    experiment_dir = state_experiment_map[selected_state]
-    pdf_dir = pdf_dir_map[selected_state]
-
-    all_results = {
-        k: [
-            X.model_construct(**json.loads(open(i).read()))
-            for i in sorted(glob.glob(f"{experiment_dir}/{k}/*.json"))
-        ]
-        for k, X in [
-            ("search", SearchResult),
-            ("prompt", PromptResult),
-            ("llm", LLMInferenceResult),
-            ("normalization", NormalizedLLMInferenceResult),
-            ("eval", EvalResult),
-        ]
-    }
-
-    all_eval_terms = sorted(list(set([i.eval_term for i in all_results["eval"]])))
-    all_places = sorted(list(set(str(i.place) for i in all_results["eval"])))
-    all_towns = sorted(list(set([i.place.town for i in all_results["eval"]])))
-    print(all_towns)
-
-
-    def show_town(place):
-        town = place.split("__")[0]
-        jstr = "-".join([i[0].upper() + i[1:] for i in town.split("-")])
-        return f"{jstr}"
-
-
-    format_town_map = {town_name: show_town(town_name) for town_name in all_towns}
-
-    inverse_format_town_map = {k: v for v, k in format_town_map.items()}
-
-
-    def filtered_by_eval(results, eval_term):
-        return {
-            k: [result for result in results[k] if result.eval_term == eval_term]
-            for k in results
-        }
-
-
-    def filtered_by_place(results, place):
-        return {
-            k: [result for result in results[k] if str(result.place) == str(place)]
-            for k in results
-        }
-
-
-    def filtered_by_place_and_eval(results, place, eval_term):
-        return {
-            k: [result for result in results[k] if str(result.place) == str(place) and result.eval_term == eval_term]
-            for k in results
-        }
-
-
-    def get_town_by_place(place):
-        return Place.from_str(place).town
-
-
-    all_data_by_town = {
-        town_name: {
-            (eval_term, place): {"place": place, "eval_term": eval_term} | filtered_by_place_and_eval(all_results,
-                                                                                                      place, eval_term)
-            for place in all_places if get_town_by_place(place) == town_name
-            for eval_term in all_eval_terms}
-        for town_name in all_towns
-    }
-
-    # Step 1: Select one town
-    st.divider()
-    st.subheader("Step 1: Select one town", divider="rainbow")
-
-    if st.session_state["town_name"] not in format_town_map:
-        st.session_state["town_name"] = format_town_map[all_towns[0]]
-    town_name = st.radio(
-        "All available towns",
-        (
-            format_town_map[town_name]
-            for town_name in all_towns
-        ),
-        # key="town_name",
-        index=[
-            format_town_map[town_name]
-            for town_name in all_towns
-        ].index(st.session_state["town_name"]),
-    )
-    st.session_state["town_name"] = town_name
-    radio_town_name = [
-        format_town_map[town_name]
-        for town_name in all_towns
-    ]
-    town_name = inverse_format_town_map[st.session_state["town_name"]]
-
-    sorted_eval_district = sorted(
-        (
-            (eval_term, town_district)
-            for (eval_term, town_district) in all_data_by_town[town_name]
-        ),
-        key=lambda pair: min(
-            [
-                item[1]
-                for item in
-                (all_data_by_town[town_name][pair]["llm"][0].llm_outputs[0].extracted_text or [])
-                if isinstance(item[1], int)
-            ] or [float('inf')]
-        )
-    )
-    print(sorted_eval_district)
-
-    if "eval_term" not in st.session_state or not st.session_state["eval_term"] or st.session_state[
-        "eval_term"] not in all_eval_terms:
-        st.session_state["eval_term"] = sorted_eval_district[0][0]
-
-    if "current_district" not in st.session_state or not st.session_state["current_district"] or st.session_state[
-        "current_district"] not in all_places:
-        st.session_state["current_district"] = sorted_eval_district[0][1]
-
-    st.subheader("Step 2: Download all labeled data", divider="rainbow")
-    st.download_button(
-        label="Download CSV",
-        data=get_firebase_data(selected_state).to_csv(index=True),
-        file_name=f"{selected_state}_data.csv",
-        mime="text/csv",
-    )
-
-# Load the data for the town.
-if (st.session_state["eval_term"], st.session_state["current_district"]) not in all_data_by_town[town_name]:
-    st.session_state["eval_term"] = sorted_eval_district[0][0]
-    st.session_state["current_district"] = sorted_eval_district[0][1]
+# st.subheader("Step 2: Download all labeled data", divider="rainbow")
+# st.download_button(
+#     label="Download CSV",
+#     data=get_firebase_data(selected_state).to_csv(index=True),
+#     file_name=f"{selected_state}_data.csv",
+#     mime="text/csv",
+# )
 
 # Skip the data if it's already labeled
 if "analyst_name" in st.session_state and st.session_state["analyst_name"]:
-    labelled_data = get_firebase_data(selected_state, {"analyst_name": ["==", st.session_state["analyst_name"]],
-                                                       "town": ["==", town_name]})
-    while any(
-            (row["eval_term"] == format_eval_term[st.session_state["eval_term"]]
-             and row["district_full_name"] == Place.from_str(st.session_state["current_district"]).district_full_name
-             and row["district_short_name"] == Place.from_str(st.session_state["current_district"]).district_short_name
-             and row["town"] == town_name)
-            for _, row in labelled_data.iterrows()
-    ):
-        st.session_state["eval_term"], st.session_state["current_district"] = get_next_eval_district(
-            st.session_state["eval_term"],
-            st.session_state["current_district"],
-            sorted_eval_district,
-        )
+    next_item = get_next_unlabeled_item(st.session_state["current_item_index"], st.session_state["all_items"])
+    if next_item:
+        idx, town_name, eval_term, current_district = next_item
+        st.session_state["current_item_index"] = idx
+        st.session_state["town_name"] = format_town_map[town_name]
+        st.session_state["eval_term"] = eval_term
+        st.session_state["current_district"] = current_district
+    else:
+        st.subheader("🎉 You've reached the end of the data!")
+        st.stop()
+else:
+    town_name, eval_term, current_district = all_items[st.session_state["current_item_index"]]
+    st.session_state["town_name"] = format_town_map[town_name]
+    st.session_state["eval_term"] = eval_term
+    st.session_state["current_district"] = current_district
 
 visualized_data = all_data_by_town[town_name][(st.session_state["eval_term"], st.session_state["current_district"])]
 
@@ -652,19 +608,16 @@ st.divider()
 
 # Function to jump to the next item
 def jump_to_next_one():
-    next_eval_district = get_next_eval_district(
-        st.session_state["eval_term"],
-        st.session_state["current_district"],
-        sorted_eval_district,
-    )
-    if next_eval_district:
-        st.session_state["eval_term"] = next_eval_district[0]
-        st.session_state["current_district"] = next_eval_district[1]
-    # If no more towns, we've reached the end
+    next_item = get_next_unlabeled_item(st.session_state["current_item_index"], st.session_state["all_items"])
+    if next_item:
+        idx, town_name, eval_term, current_district = next_item
+        st.session_state["current_item_index"] = idx
+        st.session_state["town_name"] = format_town_map[town_name]
+        st.session_state["eval_term"] = eval_term
+        st.session_state["current_district"] = current_district
     else:
-        st.toast("You've reached the end of the data!", icon="🎉")
+        st.subheader("🎉 You've reached the end of the data!")
         st.stop()
-
 
 with st.container(border=True):
     correct_col, not_sure_col, wrong_col = st.columns(3)
@@ -685,18 +638,14 @@ with st.container(border=True):
                 jump_to_next_one()
 
 # Display the next item
-next_eval_district = get_next_eval_district(
-    st.session_state["eval_term"],
-    st.session_state["current_district"],
-    sorted_eval_district,
-)
-
-if next_eval_district:
-    next_place = Place.from_str(next_eval_district[1])
+next_item = get_next_unlabeled_item(st.session_state["current_item_index"], st.session_state["all_items"])
+if next_item:
+    next_place = Place.from_str(next_item[2])
     st.write(
-        f"Next item: {format_eval_term[next_eval_district[0]]} for the {next_place.district_full_name} ({next_place.district_short_name}) District in {town}")
+        f"Next item: {format_eval_term[next_item[1]]} for the {next_place.district_full_name} ({next_place.district_short_name}) District in {show_town(next_place.town)}"
+    )
 else:
-    st.write("No more items.")
+    st.write("No more items to label")
 
 st.link_button("PDF Link", pdf_file)
 
