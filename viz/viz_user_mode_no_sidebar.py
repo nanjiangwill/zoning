@@ -632,11 +632,13 @@ with st.container(border=True):
                 jump_to_next_one()
 
 # Display the next item
-next_item = get_next_unlabeled_item(st.session_state["current_item_index"], st.session_state["all_items"])
+next_item = None  # default to None
+if "analyst_name" in st.session_state and st.session_state["analyst_name"]:
+    next_item = get_next_unlabeled_item(st.session_state["current_item_index"], st.session_state["all_items"])
 if next_item:
-    next_place = Place.from_str(next_item[2])
+    next_place = Place.from_str(next_item[3])
     st.write(
-        f"Next item: {format_eval_term[next_item[1]]} for the {next_place.district_full_name} ({next_place.district_short_name}) District in {show_town(next_place.town)}"
+        f"Next item: {format_eval_term[next_item[2]]} for the {next_place.district_full_name} ({next_place.district_short_name}) District in {format_town_map[next_item[1]]}"
     )
 else:
     st.write("No more items to label")
