@@ -66,7 +66,7 @@ format_eval_term = {
 inverse_format_eval_term = {k: v for v, k in format_eval_term.items()}
 
 # Modal for entering the name
-modal = Modal(
+modal_name = Modal(
     "Please enter your name to continue:",
     key="demo-modal",
 
@@ -164,11 +164,11 @@ def load_json_file(file_path):
         return json.loads(file.read())
 
 
-if ("analyst_name" not in st.session_state or not st.session_state["analyst_name"]) and not modal.is_open():
-    modal.open()
+if ("analyst_name" not in st.session_state or not st.session_state["analyst_name"]) and not modal_name.is_open():
+    modal_name.open()
 
-if modal.is_open():
-    with modal.container():
+if modal_name.is_open():
+    with modal_name.container():
         name_input = st.text_input("Your Name")
         submit_button = st.button("Submit")
 
@@ -178,7 +178,7 @@ if modal.is_open():
             else:
                 st.session_state["analyst_name"] = name_input
                 st.session_state["start_time"] = time.time()
-                modal.close()
+                modal_name.close()
 
 if "town_name" not in st.session_state:
     st.session_state["town_name"] = ""
@@ -454,10 +454,8 @@ else:
     ocr_file = glob.glob(f"{ocr_dir_map[selected_state]}/{place.town}.json")
     assert len(ocr_file) == 1
     ocr_file = ocr_file[0]
-    print(ocr_file)
-    # ocr_info = 
     start = time.time()
-    if "ocr_info" not in st.session_state:
+    if "ocr_info" not in st.session_state or not st.session_state["ocr_info"]:
         st.session_state["ocr_info"] = load_json_file(ocr_file)
     print(f"Time to load OCR: {time.time() - start:.2f}s")
 
@@ -662,7 +660,6 @@ def jump_to_next_one():
     if next_eval_district:
         st.session_state["eval_term"] = next_eval_district[0]
         st.session_state["current_district"] = next_eval_district[1]
-        # st.rerun()
     # If no more towns, we've reached the end
     else:
         st.toast("You've reached the end of the data!", icon="🎉")
