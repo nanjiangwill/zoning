@@ -158,9 +158,11 @@ def get_next_eval_district(current_eval_term, current_district, sorted_eval_dist
             return sorted_eval_district[i + 1] if i + 1 < len(sorted_eval_district) else None
     return None
 
-@st.cache_data(max_entries=5)
+@st.cache_data(ttl=3600)
 def load_json_file(file_path):
-    return json.loads(open(file_path).read())
+    with open(file_path, 'r') as file:
+        return json.loads(file.read())
+
 
 if ("analyst_name" not in st.session_state or not st.session_state["analyst_name"]) and not modal.is_open():
     modal.open()
@@ -449,14 +451,17 @@ else:
     )
     print(f"Time to load format OCR: {time.time() - start:.2f}s")
 
-    start = time.time()
     ocr_file = glob.glob(f"{ocr_dir_map[selected_state]}/{place.town}.json")
     assert len(ocr_file) == 1
     ocr_file = ocr_file[0]
-    ocr_info = load_json_file(ocr_file)
+    print(ocr_file)
+    # ocr_info = 
+    start = time.time()
+    if "ocr_info" not in st.session_state:
+        st.session_state["ocr_info"] = load_json_file(ocr_file)
     print(f"Time to load OCR: {time.time() - start:.2f}s")
 
-    extract_blocks = [b for d in ocr_info for b in d["Blocks"]]
+    extract_blocks = [b for d in st.session_state["ocr_info"] for b in d["Blocks"]]
     edited_pages = []
     for shown_page_num, show_page in enumerate(showed_pages):
         page = doc.load_page(show_page - 1)
@@ -657,7 +662,7 @@ def jump_to_next_one():
     if next_eval_district:
         st.session_state["eval_term"] = next_eval_district[0]
         st.session_state["current_district"] = next_eval_district[1]
-        st.rerun()
+        # st.rerun()
     # If no more towns, we've reached the end
     else:
         st.toast("You've reached the end of the data!", icon="🎉")
