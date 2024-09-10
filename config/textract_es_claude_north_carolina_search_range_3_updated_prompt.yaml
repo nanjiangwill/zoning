@@ -1,0 +1,27 @@
+# @package _global_
+defaults:
+  - base
+  - _self_
+
+global_config:
+  experiment_name: textract_es_claude_north_carolina_search_range_3_updated_prompt
+  target_state: north_carolina
+  eval_terms: ['max_height', 'max_lot_coverage', 'min_lot_size', 'min_parking_spaces', 'min_unit_size']
+
+llm_config:
+  llm_name: claude-3-5-sonnet-20240620
+
+ocr_config:
+  run_ocr: false
+
+district_extraction_config:
+  run_district_extraction: false
+
+index_config:
+  index_range: 3
+
+search_config:
+  num_results: 5
+  is_district_fuzzy: false
+  is_eval_term_fuzzy: false
+  preprocess_search_target: True

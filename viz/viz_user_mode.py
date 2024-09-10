@@ -36,7 +36,7 @@ else:
 state_experiment_map = {
     "Connecticut": "results/textract_es_gpt4_connecticut_search_range_3",
     "Texas": "results/textract_es_gpt4_texas_search_range_3",
-    "North Carolina": "results/textract_es_gpt4_north_carolina_search_range_3_updated_prompt",
+    "North Carolina": "results/textract_es_claude_north_carolina_search_range_3_updated_prompt",
 }
 
 pdf_dir_map = {

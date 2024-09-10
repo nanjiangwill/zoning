@@ -85,7 +85,7 @@ prompt_config:
 
 llm_config:
   llm_name: gpt-4-1106-preview
-  max_tokens: 256
+  max_tokens: 512
   formatted_response: false
   cache_dir: .diskcache
 

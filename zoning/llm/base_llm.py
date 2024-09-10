@@ -146,7 +146,8 @@ class LLM(ABC):
         for ip_idx in range(len(prompt_result.input_prompts)):
             system_prompt = prompt_result.input_prompts[ip_idx].system_prompt
             user_prompt = prompt_result.input_prompts[ip_idx].user_prompt
-
+            if user_prompt == "Input: \n\n \n\n Output:":
+                continue
             # we query the llm
             input_prompt, raw_model_response = await self.call_llm(
                 self.get_prompt(system_prompt, user_prompt)

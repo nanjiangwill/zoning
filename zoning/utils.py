@@ -18,6 +18,8 @@ def target_name(target, dir):
 
     return f"{dir}/{target}.json"
 
+def handle_slash_in_target_name(target: str) -> str:
+    return target.replace("/", " ")
 
 def target_pdf(target, dir):
     """Target can be town or term_district."""
@@ -136,8 +138,12 @@ def post_processing_llm_output(model_response: str | None) -> dict | None:
         return None
     try:
         # TODO: this is something that came with new gpt update. This is a bandaid solution that i'll look into later
-        if model_response[:7] == "```json":
-            model_response = model_response[7:-4]
+        if "{" in model_response and "}" in model_response:
+            start_index = model_response.index("{")
+            end_index = model_response.rindex("}") + 1
+            model_response = model_response[start_index:end_index]
+        # if model_response[:7] == "```json":
+        #     model_response = model_response[7:-4]
         json_body = json.loads(model_response)
         if json_body is None:
             # The model is allowed to return null if it cannot find the answer,
