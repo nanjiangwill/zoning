@@ -34,7 +34,7 @@ else:
 state_experiment_map = {
     "Connecticut": "results/textract_es_gpt4_connecticut_search_range_3",
     "Texas": "results/textract_es_gpt4_texas_search_range_3",
-    "North Carolina": "results/textract_es_claude_north_carolina_search_range_3_updated_prompt_subset",
+    "North Carolina": "results/textract_es_claude_north_carolina_search_range_3_updated_prompt",
 }
 
 pdf_dir_map = {
@@ -151,11 +151,6 @@ def get_firebase_data(selected_state: str, filters: dict = {}) -> pd.DataFrame:
     # Create a DataFrame from the data
     df = pd.DataFrame(sorted_data)
     return df
-
-@st.cache_data(ttl=3600)
-def load_json_file(file_path):
-    with open(file_path, 'r') as file:
-        return json.loads(file.read())
 
 
 def show_town(place):
@@ -398,11 +393,11 @@ else:
         **json.loads(open(format_ocr_file).read())
     )
 
-    ocr_file = glob.glob(f"{ocr_dir_map[selected_state]}/{place.town}.json")
-    assert len(ocr_file) == 1
-    ocr_file = ocr_file[0]
     if "ocr_info" not in st.session_state or not st.session_state["ocr_info"]:
-        st.session_state["ocr_info"] = load_json_file(ocr_file)
+        ocr_file = glob.glob(f"{ocr_dir_map[selected_state]}/{place.town}.json")
+        assert len(ocr_file) == 1
+        ocr_file = ocr_file[0]
+        st.session_state["ocr_info"] = json.loads(open(ocr_file).read())
 
     extract_blocks = [b for d in st.session_state["ocr_info"] for b in d["Blocks"]]
     edited_pages = []
@@ -612,6 +607,7 @@ def jump_to_next_one():
     next_item = get_next_unlabeled_item(st.session_state["current_item_index"] + 1, st.session_state["all_items"])
     if next_item:
         if st.session_state["town_name"] != format_town_map[next_item[1]]:
+            st.session_state["ocr_info"] = None  # Reset the OCR info
             st.session_state["finish-town-opened"] = True
             st.session_state["model_bext_town_text"] = \
                 (f"🎉 You've finished the data for {st.session_state['town_name']}!\n"
