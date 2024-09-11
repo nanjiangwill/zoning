@@ -34,7 +34,7 @@ else:
 state_experiment_map = {
     "Connecticut": "results/textract_es_gpt4_connecticut_search_range_3",
     "Texas": "results/textract_es_gpt4_texas_search_range_3",
-    "North Carolina": "results/textract_es_claude_north_carolina_search_range_3_updated_prompt",
+    "North Carolina": "results/textract_es_claude_north_carolina_search_range_3_updated_prompt_subset",
 }
 
 pdf_dir_map = {
@@ -243,7 +243,6 @@ all_results = {
 all_eval_terms = sorted(list(set([i.eval_term for i in all_results["eval"]])))
 all_places = sorted(list(set(str(i.place) for i in all_results["eval"])))
 all_towns = sorted(list(set([i.place.town for i in all_results["eval"]])))
-print(all_towns)
 
 all_data_by_town = {
     town_name: {
@@ -342,12 +341,8 @@ ground_truth_page = eval_result.ground_truth_page
 answer_correct = eval_result.answer_correct
 page_in_range = eval_result.page_in_range
 
-
-start = time.time()
 pdf_file = target_pdf(town_name, pdf_dir)
 doc = fitz.open(pdf_file)
-print(f"Time to load PDF: {time.time() - start:.2f}s")
-
 
 # Display the progress bar
 if "analyst_name" in st.session_state and st.session_state["analyst_name"]:
@@ -392,22 +387,18 @@ else:
     if len(showed_pages) == 0:
         showed_pages = entire_search_page_range.copy()
 
-    start = time.time()
     format_ocr_file = glob.glob(f"{experiment_dir}/format_ocr/{place.town}.json")
     assert len(format_ocr_file) == 1
     format_ocr_file = format_ocr_file[0]
     format_ocr_result = FormatOCR.model_construct(
         **json.loads(open(format_ocr_file).read())
     )
-    print(f"Time to load format OCR: {time.time() - start:.2f}s")
 
     ocr_file = glob.glob(f"{ocr_dir_map[selected_state]}/{place.town}.json")
     assert len(ocr_file) == 1
     ocr_file = ocr_file[0]
-    start = time.time()
     if "ocr_info" not in st.session_state or not st.session_state["ocr_info"]:
         st.session_state["ocr_info"] = load_json_file(ocr_file)
-    print(f"Time to load OCR: {time.time() - start:.2f}s")
 
     extract_blocks = [b for d in st.session_state["ocr_info"] for b in d["Blocks"]]
     edited_pages = []
@@ -601,9 +592,27 @@ st.divider()
 
 
 # Function to jump to the next item
+model_next_town = Modal(
+            "",
+            key="finish-town",
+            padding=20,
+            max_width=744
+        )
+if "finish-town-opened" not in st.session_state:
+    st.session_state["finish-town-opened"] = False
+if st.session_state["finish-town-opened"]:
+    with model_next_town.container():
+        st.subheader(st.session_state["model_bext_town_text"])
+
 def jump_to_next_one():
-    next_item = get_next_unlabeled_item(st.session_state["current_item_index"], st.session_state["all_items"])
+    next_item = get_next_unlabeled_item(st.session_state["current_item_index"] + 1, st.session_state["all_items"])
     if next_item:
+        if st.session_state["town_name"] != format_town_map[next_item[1]]:
+            st.session_state["finish-town-opened"] = True
+            st.session_state["model_bext_town_text"] = \
+                (f"🎉 You've finished the data for {st.session_state['town_name']}!\n"
+                 f"Next town: {format_town_map[next_item[1]]}.")
+
         idx, town_name, eval_term, current_district = next_item
         st.session_state["current_item_index"] = idx
         st.session_state["town_name"] = format_town_map[town_name]
@@ -615,26 +624,28 @@ def jump_to_next_one():
 
 with st.container(border=True):
     correct_col, not_sure_col, wrong_col = st.columns(3)
+    def button_callback(feedback):
+        def _button_callback():
+            if write_data(feedback):
+                jump_to_next_one()
+        return _button_callback
 
     with correct_col:
-        if st.button("Verified Correct", key="llm_correct", type="primary", use_container_width=True):
-            if write_data("correct"):
-                jump_to_next_one()
+        st.button("Verified Correct", key="llm_correct", type="primary", use_container_width=True,
+                  on_click=button_callback("correct"))
 
     with not_sure_col:
-        if st.button("Not Enough Information", key="llm_not_sure", type="secondary", use_container_width=True):
-            if write_data("not_sure"):
-                jump_to_next_one()
+        st.button("Not Enough Information", key="llm_not_sure", type="secondary", use_container_width=True,
+                  on_click=button_callback("not_sure"))
 
     with wrong_col:
-        if st.button("Verified Incorrect", key="llm_wrong", type="secondary", use_container_width=True):
-            if write_data("wrong"):
-                jump_to_next_one()
+        st.button("Verified Incorrect", key="llm_wrong", type="secondary", use_container_width=True,
+                  on_click=button_callback("wrong"))
 
 # Display the next item
 next_item = None  # default to None
 if "analyst_name" in st.session_state and st.session_state["analyst_name"]:
-    next_item = get_next_unlabeled_item(st.session_state["current_item_index"], st.session_state["all_items"])
+    next_item = get_next_unlabeled_item(st.session_state["current_item_index"] + 1, st.session_state["all_items"])
 if next_item:
     next_place = Place.from_str(next_item[3])
     st.write(
@@ -644,18 +655,3 @@ else:
     st.write("No more items to label")
 
 st.link_button("PDF Link", pdf_file)
-
-# button jump to the second last item of the current town for testing
-if st.button("Jump to the second last item of the current town"):
-    current_town = st.session_state["town_name"]
-    current_town_items = [item for item in st.session_state["all_items"] if item[1] == current_town]
-
-    # Check if there are at least two items for the current town
-    if len(current_town_items) >= 2:
-        # Get the second last item of the current town
-        second_last_item = current_town_items[-2]
-        idx, town_name, eval_term, current_district = second_last_item
-        st.session_state["current_item_index"] = idx
-        st.rerun()
-    else:
-        st.toast("Not enough items for the current town to jump to the second last item.")
