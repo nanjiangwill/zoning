@@ -286,14 +286,6 @@ if "current_item_index" not in st.session_state:
 if "start_time" not in st.session_state:
     st.session_state["start_time"] = time.time()
 
-# st.subheader("Step 2: Download all labeled data", divider="rainbow")
-# st.download_button(
-#     label="Download CSV",
-#     data=get_firebase_data(selected_state).to_csv(index=True),
-#     file_name=f"{selected_state}_data.csv",
-#     mime="text/csv",
-# )
-
 # Skip the data if it's already labeled
 if "analyst_name" in st.session_state and st.session_state["analyst_name"]:
     next_item = get_next_unlabeled_item(st.session_state["current_item_index"], st.session_state["all_items"])
@@ -305,6 +297,12 @@ if "analyst_name" in st.session_state and st.session_state["analyst_name"]:
         st.session_state["current_district"] = current_district
     else:
         st.subheader("🎉 You've reached the end of the data!")
+        st.download_button(
+            label="Download all labeled data (CSV)",
+            data=get_firebase_data(selected_state).to_csv(index=True),
+            file_name=f"{selected_state}_data.csv",
+            mime="text/csv",
+        )
         st.stop()
 else:
     town_name, eval_term, current_district = st.session_state["all_items"][st.session_state["current_item_index"]]
@@ -348,12 +346,18 @@ doc = fitz.open(pdf_file)
 if "analyst_name" in st.session_state and st.session_state["analyst_name"]:
     num_finished = len(get_firebase_data(selected_state, {"analyst_name": ["==", st.session_state["analyst_name"]]}))
     num_total = len(all_results["eval"])
-    col1, col2 = st.columns([5, 1])
+    col1, col2, col3 = st.columns([9, 1, 2])
     with col1:
         st.progress(num_finished / num_total)
     with col2:
         st.write(f"Progress: {num_finished}/{num_total}")
-
+    with col3:
+        st.download_button(
+            label="Download all labeled data (CSV)",
+            data=get_firebase_data(selected_state).to_csv(index=True),
+            file_name=f"{selected_state}_data.csv",
+            mime="text/csv",
+        )
 # Display the title
 norm = normalized_llm_output.llm_output.answer
 
