@@ -11,12 +11,12 @@ ipykernel
 matplotlib
 omegaconf
 openai
+orjson # for visualization
 pre-commit
 PyMuPDF # for visualization
 python-dotenv
 streamlit # for visualization
 streamlit-modal # for visualization
-orjson # for visualization
 typer
 wandb
 watchdog

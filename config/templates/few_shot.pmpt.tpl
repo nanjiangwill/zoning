@@ -18,8 +18,8 @@ we are only interested in the requirement of {{term}} for single-family homes.
 However, if it is referring to a specific district, like Multi Family Residential (MFR),
 General Commercial (GC), etc., we are still interested in the requirement of {{term}}
 for {{zone_name}} ({{zone_abbreviation}}). Remeber, the text given to you is a
-document that is part of a larger document, which means you might find answer that is 
-not for the zone "{{zone_name}} ({{zone_abbreviation}})" but for other zones. 
+document that is part of a larger document, which means you might find answer that is
+not for the zone "{{zone_name}} ({{zone_abbreviation}})" but for other zones.
 Double-check your answer to ensure it corresponds to the correct zone district "{{zone_name}}"
 
 # Schema

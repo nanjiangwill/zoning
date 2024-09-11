@@ -18,8 +18,10 @@ def target_name(target, dir):
 
     return f"{dir}/{target}.json"
 
+
 def handle_slash_in_target_name(target: str) -> str:
     return target.replace("/", " ")
+
 
 def target_pdf(target, dir):
     """Target can be town or term_district."""

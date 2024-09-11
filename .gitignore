@@ -1,7 +1,10 @@
 .diskcache
 .env
+.idea
 .mypy_cache
 .streamlit
+.venv
+.vscode
 Procfile
 data/*/eval
 data/*/format_ocr
@@ -14,6 +17,7 @@ data/*/prompt
 data/*/search
 data/.DS_Store
 hydra_outputs
+key.json
 old_eval.py
 old_results
 results/*/district_extraction
@@ -28,7 +32,3 @@ zoning/*/__pycache__
 zoning/__pycache__
 zoning/prompt/old_templates
 zoning/~*
-.venv
-.vscode
-.idea
-key.json

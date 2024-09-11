@@ -9,10 +9,9 @@ import fitz  # PyMuPDF
 # import json
 import orjson as json
 import pandas as pd
-import requests
 import streamlit as st
-from streamlit_modal import Modal
 from google.cloud import firestore
+from streamlit_modal import Modal
 
 from zoning.class_types import (
     EvalResult,
@@ -142,6 +141,7 @@ def get_firebase_csv_data(selected_state: str):
 
     return df.to_csv(index=True)
 
+
 # if not st.session_state["analyst_name"] and not modal.is_open():
 #     modal.open()
 
@@ -184,7 +184,6 @@ with st.sidebar:
     if "analyst_name" in st.session_state:
         st.sidebar.subheader(f"Hello, {st.session_state['analyst_name']}!")
         st.session_state["start_time"] = time.time()
-    
 
     selected_state = st.selectbox(
         "Select a state",
@@ -225,10 +224,9 @@ with st.sidebar:
         town = place.split("__")[0]
         jstr = "-".join([i[0].upper() + i[1:] for i in town.split("-")])
         return f"{jstr}"
-        
-    
+
     format_town_map = {town_name: show_town(town_name) for town_name in all_towns}
-    
+
     inverse_format_town_map = {k: v for v, k in format_town_map.items()}
 
     def filtered_by_eval(results, eval_term):
@@ -242,6 +240,7 @@ with st.sidebar:
             k: [result for result in results[k] if str(result.place) == str(place)]
             for k in results
         }
+
     def get_town_by_place(place):
         return Place.from_str(place).town
 
@@ -249,8 +248,9 @@ with st.sidebar:
         town_name: {
             eval_term: {
                 place: {"place": place, "eval_term": eval_term}
-            | filtered_by_eval(filtered_by_place(all_results, place), eval_term)
-                for place in all_places if get_town_by_place(place) == town_name
+                | filtered_by_eval(filtered_by_place(all_results, place), eval_term)
+                for place in all_places
+                if get_town_by_place(place) == town_name
             }
             for eval_term in all_eval_terms
         }
@@ -271,23 +271,15 @@ with st.sidebar:
         st.session_state["town_name"] = format_town_map[all_towns[0]]
     town_name = st.radio(
         "All available towns",
-        (
-            format_town_map[town_name]
-            for town_name in all_towns
-        ),
+        (format_town_map[town_name] for town_name in all_towns),
         # key="town_name",
-        index=[
-            format_town_map[town_name]
-            for town_name in all_towns
-        ].index(st.session_state["town_name"]),
+        index=[format_town_map[town_name] for town_name in all_towns].index(
+            st.session_state["town_name"]
+        ),
     )
     st.session_state["town_name"] = town_name
-    radio_town_name = [
-            format_town_map[town_name]
-            for town_name in all_towns
-        ]
+    radio_town_name = [format_town_map[town_name] for town_name in all_towns]
     town_name = inverse_format_town_map[st.session_state["town_name"]]
-
 
     eval_term = inverse_format_eval_term[st.session_state["eval_term"]]
 
@@ -307,20 +299,22 @@ with st.sidebar:
     st.divider()
     st.subheader("Step 2: Select Field", divider="rainbow")
 
-    
     radio_eval_term = [
-            format_eval_term[i]
-            for i in [
-                "floor_to_area_ratio",
-                "max_height",
-                "max_lot_coverage",
-                "max_lot_coverage_pavement",
-                "min_lot_size",
-                "min_parking_spaces",
-                "min_unit_size",
-            ]
+        format_eval_term[i]
+        for i in [
+            "floor_to_area_ratio",
+            "max_height",
+            "max_lot_coverage",
+            "max_lot_coverage_pavement",
+            "min_lot_size",
+            "min_parking_spaces",
+            "min_unit_size",
         ]
-    if "eval_term" not in st.session_state or st.session_state["eval_term"] not in radio_eval_term:
+    ]
+    if (
+        "eval_term" not in st.session_state
+        or st.session_state["eval_term"] not in radio_eval_term
+    ):
         st.session_state["eval_term"] = radio_eval_term[0]
     eval_term = st.radio(
         "All available fields",
@@ -357,7 +351,9 @@ with st.sidebar:
     #     ]
 
     # Step 2: Select one data to check
-    selected_town_data = [i for _, i in sorted(all_data_by_town[town_name][eval_term].items())]
+    selected_town_data = [
+        i for _, i in sorted(all_data_by_town[town_name][eval_term].items())
+    ]
 
     st.divider()
     st.subheader("Step 3: Select one district to check", divider="rainbow")
@@ -373,34 +369,46 @@ with st.sidebar:
         # jstr = "-".join([i[0].upper() + i[1:] for i in town.split("-")])
         return f"{district_full_name} ({district_short_name})"
 
-    format_town_district_map = {place: show_fullname_shortname(place) for place in all_places}
-    inverse_format_town_district_map = {k: v for v, k in format_town_district_map.items()}
-
+    format_town_district_map = {
+        place: show_fullname_shortname(place) for place in all_places
+    }
+    inverse_format_town_district_map = {
+        k: v for v, k in format_town_district_map.items()
+    }
 
     sorted_district = {}
     for town_district in all_town_districts:
         sorted_district[format_town_district_map[town_district]] = min(
             [
                 item[1]
-                for item in (all_data_by_town[town_name][eval_term][town_district]["llm"][0].llm_outputs[0].extracted_text or [])
+                for item in (
+                    all_data_by_town[town_name][eval_term][town_district]["llm"][0]
+                    .llm_outputs[0]
+                    .extracted_text
+                    or []
+                )
                 if isinstance(item[1], int)
-            ] or [float('inf')]
+            ]
+            or [float("inf")]
         )
-    
+
     sorted_districts = sorted(sorted_district.items(), key=lambda x: x[1])
     sorted_all_town_districts = [i[0] for i in sorted_districts]
 
     radio_current_district = sorted_all_town_districts
-    if "current_district" not in st.session_state or st.session_state["current_district"] not in radio_current_district:
+    if (
+        "current_district" not in st.session_state
+        or st.session_state["current_district"] not in radio_current_district
+    ):
         st.session_state["current_district"] = radio_current_district[0]
 
     current_district = st.radio(
         "All available districts (sorted by information pages)",
         sorted_all_town_districts,
         # key="current_district",
-        index=sorted_all_town_districts.index(st.session_state["current_district"])
+        index=sorted_all_town_districts.index(st.session_state["current_district"]),
     )
-    
+
     st.session_state["current_district"] = current_district
     st.subheader("Step 4: Download all labeled data", divider="rainbow")
     st.download_button(
@@ -411,7 +419,9 @@ with st.sidebar:
     )
 
 # Load the data for the town.
-current_district = inverse_format_town_district_map[st.session_state["current_district"]]
+current_district = inverse_format_town_district_map[
+    st.session_state["current_district"]
+]
 
 visualized_data = all_data_by_town[town_name][eval_term][
     current_district
@@ -553,7 +563,6 @@ st.html(
 # current_page = highlight_text_pages[0]
 
 
-
 def get_showed_pages(pages, interval):
     showed_pages = []
     for page in pages:
@@ -630,7 +639,10 @@ else:
             eval_term_boxs = [
                 [i[0], i[1]]
                 for i in text_boundingbox
-                if any(j.lower() in i[0].lower() for j in expand_term(thesarus_file, eval_term))
+                if any(
+                    j.lower() in i[0].lower()
+                    for j in expand_term(thesarus_file, eval_term)
+                )
             ]
             llm_answer_boxs = [
                 [i[0], i[1]]
@@ -669,16 +681,17 @@ else:
             def extend_rect(rect):
                 # Extend vertically (maintain width, enlarge height to page height)
                 vertical_extension = fitz.Rect(rect.x0, 0, rect.x1, page_rect.height)
-                
+
                 # Extend horizontally (maintain height, enlarge width to page width)
                 horizontal_extension = fitz.Rect(0, rect.y0, page_rect.width, rect.y1)
-                
+
                 # Combine both extensions
                 return (vertical_extension, horizontal_extension)
+
             def merge_rects(rects):
                 if not rects:
                     return []
-                
+
                 merged = [rects[0]]
                 for rect in rects[1:]:
                     if any(rect.intersects(m) for m in merged):
@@ -701,23 +714,40 @@ else:
             llm_answer_rects = [get_normalized_rect(b) for _, b in llm_answer_boxs]
             llm_answer_rects = merge_rects(llm_answer_rects)
 
-            extended_district_rects = [i for rect in district_rects for i in extend_rect(rect)]
-            extended_eval_term_rects = [i for rect in eval_term_rects for i in extend_rect(rect)]
+            extended_district_rects = [
+                i for rect in district_rects for i in extend_rect(rect)
+            ]
+            extended_eval_term_rects = [
+                i for rect in eval_term_rects for i in extend_rect(rect)
+            ]
 
-            overlap_exists = any(llm_rect.intersects(rect) for llm_rect in llm_answer_rects for rect in extended_district_rects + extended_eval_term_rects)
+            overlap_exists = any(
+                llm_rect.intersects(rect)
+                for llm_rect in llm_answer_rects
+                for rect in extended_district_rects + extended_eval_term_rects
+            )
 
-            
-            
             to_be_highlighted_district_rects = []
             to_be_highlighted_eval_term_rects = []
             to_be_highlighted_llm_answer_rects = []
             if overlap_exists:
                 for llm_rect in llm_answer_rects:
-                    if any(llm_rect.intersects(rect) for rect in extended_district_rects + extended_eval_term_rects):
+                    if any(
+                        llm_rect.intersects(rect)
+                        for rect in extended_district_rects + extended_eval_term_rects
+                    ):
                         # Draw only overlapping district and eval term rects
-                        overlapping_district_rects = [rect for rect in district_rects if any(llm_rect.intersects(i) for i in extend_rect(rect))]
-                        overlapping_eval_term_rects = [rect for rect in eval_term_rects if any(llm_rect.intersects(i) for i in extend_rect(rect))]
-                        
+                        overlapping_district_rects = [
+                            rect
+                            for rect in district_rects
+                            if any(llm_rect.intersects(i) for i in extend_rect(rect))
+                        ]
+                        overlapping_eval_term_rects = [
+                            rect
+                            for rect in eval_term_rects
+                            if any(llm_rect.intersects(i) for i in extend_rect(rect))
+                        ]
+
                         for rect in overlapping_district_rects:
                             to_be_highlighted_district_rects.append([rect, 0.1])
                         for rect in overlapping_eval_term_rects:
@@ -725,9 +755,15 @@ else:
 
                         to_be_highlighted_llm_answer_rects.append([llm_rect, 0.5])
             else:
-                to_be_highlighted_district_rects = [[rect, 0.15] for rect in district_rects]
-                to_be_highlighted_eval_term_rects = [[rect, 0.15] for rect in eval_term_rects]
-                to_be_highlighted_llm_answer_rects = [[rect, 0.15] for rect in llm_answer_rects]
+                to_be_highlighted_district_rects = [
+                    [rect, 0.15] for rect in district_rects
+                ]
+                to_be_highlighted_eval_term_rects = [
+                    [rect, 0.15] for rect in eval_term_rects
+                ]
+                to_be_highlighted_llm_answer_rects = [
+                    [rect, 0.15] for rect in llm_answer_rects
+                ]
 
             for rect, opacity in to_be_highlighted_district_rects:
                 page.draw_rect(
@@ -737,7 +773,7 @@ else:
                     stroke_opacity=0,
                     fill_opacity=opacity,
                 )
-            
+
             for rect, opacity in to_be_highlighted_eval_term_rects:
                 page.draw_rect(
                     rect,
@@ -746,7 +782,7 @@ else:
                     stroke_opacity=0,
                     fill_opacity=opacity,
                 )
-            
+
             for rect, opacity in to_be_highlighted_llm_answer_rects:
                 page.draw_rect(
                     rect,
@@ -755,8 +791,6 @@ else:
                     stroke_opacity=0,
                     fill_opacity=opacity,
                 )
-                
-            
 
         zoom = 2
         mat = fitz.Matrix(zoom, zoom)
@@ -796,17 +830,20 @@ else:
 
 st.divider()
 
+
 def jump_to_next_one():
     # Get the current indices
     time.sleep(1)
     current_town_index = radio_town_name.index(st.session_state["town_name"])
     current_eval_term_index = radio_eval_term.index(st.session_state["eval_term"])
-    current_district_index = radio_current_district.index(st.session_state["current_district"])
-    
+    current_district_index = radio_current_district.index(
+        st.session_state["current_district"]
+    )
+
     current_town = st.session_state["town_name"]
     current_eval_term = st.session_state["eval_term"]
     current_district = st.session_state["current_district"]
-    
+
     if current_district_index < len(radio_current_district) - 1:
         next_district = radio_current_district[current_district_index + 1]
         st.session_state["current_district"] = next_district
@@ -815,7 +852,11 @@ def jump_to_next_one():
     elif current_eval_term_index < len(radio_eval_term) - 1:
         next_eval_term = radio_eval_term[current_eval_term_index + 1]
         st.session_state["eval_term"] = next_eval_term
-        next_districts = list(all_data_by_town[inverse_format_town_map[current_town]][inverse_format_eval_term[next_eval_term]].keys())
+        next_districts = list(
+            all_data_by_town[inverse_format_town_map[current_town]][
+                inverse_format_eval_term[next_eval_term]
+            ].keys()
+        )
         st.session_state["current_district"] = next_districts[0]
         st.rerun()
     # If no more eval terms, try to move to the next town
@@ -823,13 +864,18 @@ def jump_to_next_one():
         next_town = radio_town_name[current_town_index + 1]
         st.session_state["town_name"] = next_town
         st.session_state["eval_term"] = radio_eval_term[0]
-        next_districts = list(all_data_by_town[inverse_format_town_map[next_town]][inverse_format_eval_term[radio_eval_term[0]]].keys())
+        next_districts = list(
+            all_data_by_town[inverse_format_town_map[next_town]][
+                inverse_format_eval_term[radio_eval_term[0]]
+            ].keys()
+        )
         st.session_state["current_district"] = next_districts[0]
         st.rerun()
     # If no more towns, we've reached the end
     else:
         st.toast("You've reached the end of the data!", icon="🎉")
         st.stop()
+
 
 with st.container(border=True):
     # st.subheader("Current data")

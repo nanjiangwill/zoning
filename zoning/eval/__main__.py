@@ -147,10 +147,12 @@ def main(config: ZoningConfig):
 
         all_page_results = [d.page_in_range for d in eval_term_data]
 
-        if len(all_page_results) == 0:  
+        if len(all_page_results) == 0:
             page_in_range = 0
         else:
-            page_in_range = sum([1 for d in all_page_results if d]) / len(all_page_results)
+            page_in_range = sum([1 for d in all_page_results if d]) / len(
+                all_page_results
+            )
 
         print("=============================================")
         print(f"Evaluated term: {term}")
