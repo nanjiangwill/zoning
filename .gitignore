@@ -21,6 +21,7 @@ hydra_outputs
 key.json
 old_eval.py
 old_results
+results/*/*/*.json
 results/*/district_extraction
 results/*/district_extraction_verification
 results/*/page_embedding

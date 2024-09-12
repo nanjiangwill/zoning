@@ -199,7 +199,7 @@ def get_sorted_eval_district_by_page_first_appeared(all_data_by_town, town_name)
                 .llm_outputs[0]
                 .extracted_text[0][1],
             )
-            if all_data_by_town[town_name][pair]["llm"][0].llm_outputs[0].extracted_text
+            if all_data_by_town[town_name][pair]["llm"][0].llm_outputs and all_data_by_town[town_name][pair]["llm"][0].llm_outputs[0].extracted_text
             else (
                 (
                     1,
@@ -224,10 +224,12 @@ for town in all_towns:
     )
     for eval_term, district in sorted_town_results:
         if (
-            all_data_by_town[town][(eval_term, district)]["llm"][0]
-            .llm_outputs[0]
-            .extracted_text
-            is not None
+            # all_data_by_town[town][(eval_term, district)]["llm"][0].llm_outputs and
+            # all_data_by_town[town][(eval_term, district)]["llm"][0]
+            # .llm_outputs[0]
+            # .extracted_text
+            # is not None
+            all_data_by_town[town][(eval_term, district)]["search"][0].entire_search_page_range
         ):
             sorted_all_results.append((town, eval_term, district))
 

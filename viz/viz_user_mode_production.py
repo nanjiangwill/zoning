@@ -32,25 +32,22 @@ db = firestore.Client.from_service_account_info(
     st.secrets["firebase"]["my_project_settings"]
     )
 
-
 # Data Loading path
-state_experiment_map = {
-    "Connecticut": "results/textract_es_gpt4_connecticut_search_range_3",
-    "Texas": "results/textract_es_gpt4_texas_search_range_3",
-    "North Carolina": "results/textract_es_claude_north_carolina_search_range_3_updated_prompt",
-}
+# state_experiment_map = {
+#     "North Carolina": "results/textract_es_claude_north_carolina_search_range_3_updated_prompt",
+# }
 
-pdf_dir_map = {
-    "Connecticut": "data/connecticut/pdfs",
-    "Texas": "data/texas/pdfs",
-    "North Carolina": "data/north_carolina/pdfs",
-}
+# pdf_dir_map = {
+#     "Connecticut": "data/connecticut/pdfs",
+#     "Texas": "data/texas/pdfs",
+#     "North Carolina": "data/north_carolina/pdfs",
+# }
 
-ocr_dir_map = {
-    "Connecticut": "data/connecticut/ocr",
-    "Texas": "data/texas/ocr",
-    "North Carolina": "data/north_carolina/ocr",
-}
+# ocr_dir_map = {
+#     "Connecticut": "data/connecticut/ocr",
+#     "Texas": "data/texas/ocr",
+#     "North Carolina": "data/north_carolina/ocr",
+# }
 
 format_eval_term = {
     "floor_to_area_ratio": "Floor to Area Ratio",
@@ -125,54 +122,57 @@ if "analyst_name" not in st.session_state or not st.session_state["analyst_name"
 
 # Reading all data
 selected_state = "North Carolina"
-experiment_dir = state_experiment_map[selected_state]
-pdf_dir = pdf_dir_map[selected_state]
-ocr_dir = ocr_dir_map[selected_state]
+sorted_data_path = "results/textract_es_claude_north_carolina_search_range_3_updated_prompt/sorted_all_results_with_search.json"
 
-all_results = {
-    k: [
-        X.model_construct(**json.loads(open(i).read()))
-        for i in sorted(glob.glob(f"{experiment_dir}/{k}/*.json"))
-    ]
-    for k, X in [
-        ("search", SearchResult),
-        ("prompt", PromptResult),
-        ("llm", LLMInferenceResult),
-        ("normalization", NormalizedLLMInferenceResult),
-        ("eval", EvalResult),
-    ]
-}
+sorted_all_results = json.loads(open(sorted_data_path).read())
+# experiment_dir = state_experiment_map[selected_state]
+# pdf_dir = pdf_dir_map[selected_state]
+# ocr_dir = ocr_dir_map[selected_state]
 
-all_eval_terms = sorted(list(set([i.eval_term for i in all_results["eval"]])))
-all_places = sorted(list(set(str(i.place) for i in all_results["eval"])))
-all_towns = sorted(list(set([i.place.town for i in all_results["eval"]])))
+# all_results = {
+#     k: [
+#         X.model_construct(**json.loads(open(i).read()))
+#         for i in sorted(glob.glob(f"{experiment_dir}/{k}/*.json"))
+#     ]
+#     for k, X in [
+#         ("search", SearchResult),
+#         ("prompt", PromptResult),
+#         ("llm", LLMInferenceResult),
+#         ("normalization", NormalizedLLMInferenceResult),
+#         ("eval", EvalResult),
+#     ]
+# }
 
-
-def get_town_by_place(place: str):
-    return Place.from_str(place).town
-
-
-def filtered_by_place_and_eval(results, place, eval_term):
-    return {
-        k: [
-            result
-            for result in results[k]
-            if str(result.place) == str(place) and result.eval_term == eval_term
-        ]
-        for k in results
-    }
+all_towns = sorted(list(set([i[0] for i in sorted_all_results])))
+all_eval_terms = sorted(list(set([i[1] for i in sorted_all_results])))
+all_places = sorted(list(set([i[2] for i in sorted_all_results])))
 
 
-all_data_by_town = {
-    town_name: {
-        (eval_term, place): {"place": place, "eval_term": eval_term}
-        | filtered_by_place_and_eval(all_results, place, eval_term)
-        for place in all_places
-        if get_town_by_place(place) == town_name
-        for eval_term in all_eval_terms
-    }
-    for town_name in all_towns
-}
+# def get_town_by_place(place: str):
+#     return Place.from_str(place).town
+
+
+# def filtered_by_place_and_eval(results, place, eval_term):
+#     return {
+#         k: [
+#             result
+#             for result in results[k]
+#             if str(result.place) == str(place) and result.eval_term == eval_term
+#         ]
+#         for k in results
+#     }
+
+
+# all_data_by_town = {
+#     town_name: {
+#         (eval_term, place): {"place": place, "eval_term": eval_term}
+#         | filtered_by_place_and_eval(all_results, place, eval_term)
+#         for place in all_places
+#         if get_town_by_place(place) == town_name
+#         for eval_term in all_eval_terms
+#     }
+#     for town_name in all_towns
+# }
 
 
 def format_town(town_name):
@@ -184,52 +184,52 @@ format_town_map = {town_name: format_town(town_name) for town_name in all_towns}
 inverse_format_town_map = {k: v for v, k in format_town_map.items()}
 
 
-def get_sorted_eval_district_by_page_first_appeared(all_data_by_town, town_name):
-    return sorted(
-        (
-            (eval_term, town_district)
-            for (eval_term, town_district) in all_data_by_town[town_name]
-        ),
-        key=lambda pair: (
-            (
-                0,
-                all_data_by_town[town_name][pair]["llm"][0]
-                .llm_outputs[0]
-                .extracted_text[0][1],
-            )
-            if all_data_by_town[town_name][pair]["llm"] and all_data_by_town[town_name][pair]["llm"][0].llm_outputs and all_data_by_town[town_name][pair]["llm"][0].llm_outputs[0].extracted_text
-            else (
-                (
-                    1,
-                    all_data_by_town[town_name][pair]["search"][
-                        0
-                    ].entire_search_page_range[0],
-                )
-                if all_data_by_town[town_name][pair]["search"] and all_data_by_town[town_name][pair]["search"][
-                    0
-                ].entire_search_page_range
-                else (2, float("inf"))
-            )
-        ),
-    )
+# def get_sorted_eval_district_by_page_first_appeared(all_data_by_town, town_name):
+#     return sorted(
+#         (
+#             (eval_term, town_district)
+#             for (eval_term, town_district) in all_data_by_town[town_name]
+#         ),
+#         key=lambda pair: (
+#             (
+#                 0,
+#                 all_data_by_town[town_name][pair]["llm"][0]
+#                 .llm_outputs[0]
+#                 .extracted_text[0][1],
+#             )
+#             if all_data_by_town[town_name][pair]["llm"] and all_data_by_town[town_name][pair]["llm"][0].llm_outputs and all_data_by_town[town_name][pair]["llm"][0].llm_outputs[0].extracted_text
+#             else (
+#                 (
+#                     1,
+#                     all_data_by_town[town_name][pair]["search"][
+#                         0
+#                     ].entire_search_page_range[0],
+#                 )
+#                 if all_data_by_town[town_name][pair]["search"] and all_data_by_town[town_name][pair]["search"][
+#                     0
+#                 ].entire_search_page_range
+#                 else (2, float("inf"))
+#             )
+#         ),
+#     )
 
 
-# We sort the data by the page their information is first appeared
-sorted_all_results = []
-for town in all_towns:
-    sorted_town_results = get_sorted_eval_district_by_page_first_appeared(
-        all_data_by_town, town
-    )
-    for eval_term, district in sorted_town_results:
-        if (
-            all_data_by_town[town][(eval_term, district)]["llm"] and 
-            all_data_by_town[town][(eval_term, district)]["llm"][0].llm_outputs and
-            all_data_by_town[town][(eval_term, district)]["llm"][0]
-            .llm_outputs[0]
-            .extracted_text
-            is not None
-        ):
-            sorted_all_results.append((town, eval_term, district))
+# # We sort the data by the page their information is first appeared
+# sorted_all_results = []
+# for town in all_towns:
+#     sorted_town_results = get_sorted_eval_district_by_page_first_appeared(
+#         all_data_by_town, town
+#     )
+#     for eval_term, district in sorted_town_results:
+#         if (
+#             all_data_by_town[town][(eval_term, district)]["llm"] and 
+#             all_data_by_town[town][(eval_term, district)]["llm"][0].llm_outputs and
+#             all_data_by_town[town][(eval_term, district)]["llm"][0]
+#             .llm_outputs[0]
+#             .extracted_text
+#             is not None
+#         ):
+#             sorted_all_results.append((town, eval_term, district))
 
 
 # Display the progress bar
@@ -402,11 +402,30 @@ st.session_state["start_time"] = time.time()
 
 
 # Show the selected data
-visualized_data = all_data_by_town[town_name][(eval_term, district)]
+visualized_data = sorted_all_results[idx]
+
+s3_prefix = "https://zoning-nan.s3.us-east-2.amazonaws.com/results/north_carolina_claude"
+eval_term = "max_height"
+district = "alamance__CO__Conservation"
+
+current_viewing_data_name = f"{eval_term}__{district.replace(' ', '+')}.json"
+
+visualized_data = {
+    k: [
+        X.model_construct(**json.loads(requests.get(f"{s3_prefix}/{k}/{current_viewing_data_name}").text))
+    ]
+    for k, X in [
+        ("search", SearchResult),
+        ("prompt", PromptResult),
+        ("llm", LLMInferenceResult),
+        ("normalization", NormalizedLLMInferenceResult),
+        ("eval", EvalResult),
+    ]
+}
 
 place = Place.from_str(district)
 # loading info
-eval_term = visualized_data["eval_term"]
+# eval_term = visualized_data["eval_term"]
 search_result = visualized_data["search"][0]
 prompt_result = visualized_data["prompt"][0]
 input_prompt = prompt_result.input_prompts[0]
@@ -446,7 +465,7 @@ def download_file_with_progress(url):
         progress = len(data) / total_size
         progress_bar.progress(progress)
         progress_text.text(
-            f"Downloaded: {len(data) / (1024 * 1024):.2f} MB / {total_size / (1024 * 1024):.2f} MB"
+            f"Downloaded: {len(data) / (1024 * 1024):.2f} MB / {total_size / (1024 * 1024):.2f} MB (Will only download once for one town)"
         )
 
     return data
@@ -464,101 +483,7 @@ def get_showed_pages(pages, interval):
         showed_pages.extend(range(page - interval, page + interval + 1))
     return sorted(list(set(showed_pages)))
 
-
-showed_pages = get_showed_pages(highlight_text_pages, 1)
-pdf_file = f"https://zoning-nan.s3.us-east-2.amazonaws.com/pdf/north_carolina/{town_name}-zoning-code.pdf"
-if entire_search_page_range == []:
-    st.html(
-        f"""
-        <h2 style="text-align: center; font-size: 2.5em;">
-            <em>{format_eval_term[eval_term]}</em> for the
-            <em>{place.district_full_name} ({place.district_short_name})</em>
-            District in <em>{town}</em>
-        </h2>
-        <h2><em>Zoning Agent does not find any page related in zoning file</em></h2>
-    """
-    )
-
-elif len(showed_pages) == 0 and normalized_llm_output.normalized_answer is None:
-    st.html(
-        f"""
-        <h2 style="text-align: center; font-size: 2.5em;">
-            <em>{format_eval_term[eval_term]}</em> for the
-            <em>{place.district_full_name} ({place.district_short_name})</em>
-            District in <em>{town}</em>
-        </h2>
-        <h2>Value: <em>LLM does not provide an answer</em></h2>
-        <h4>Rationale: {llm_output.rationale}</h4>
-    """
-    )
-
-    if "doc" not in st.session_state or st.session_state["doc"] is None:
-        with st.spinner("Downloading PDF for new town..."):
-            file_content = download_file_with_progress(pdf_file)
-        st.session_state["doc"] = fitz.open(stream=file_content, filetype="pdf")
-        #     st.session_state["doc"] = doc
-    to_be_displayed_pages = []
-    for display_page_num, display_page in enumerate(entire_search_page_range):
-        page = st.session_state["doc"].load_page(display_page - 1)
-        page_rect = page.rect
-        zoom = 2
-        mat = fitz.Matrix(zoom, zoom)
-        # Render the page to a PIL Image
-        pix = page.get_pixmap(matrix=mat, clip=page_rect)
-        img_bytes = pix.pil_tobytes(format="PNG")
-        to_be_displayed_pages.append(img_bytes)
-
-    page_img_cols = st.columns(3)
-    for k in range(len(to_be_displayed_pages) // 3 + 1):
-        for j in range(3):
-            i = k * 3 + j
-            if i >= len(to_be_displayed_pages):
-                continue
-            page_img_cols[j].image(
-                to_be_displayed_pages[i],
-                use_column_width=True,
-            )
-
-else:
-    st.html(
-        f"""
-        <h2 style="text-align: center; font-size: 2.5em;">
-            <em>{format_eval_term[eval_term]}</em> for the
-            <em>{place.district_full_name} ({place.district_short_name})</em>
-            District in <em>{town}</em>
-        </h2>
-        <h2>Value: <em>{norm}</em></h2>
-        <h4>Rationale: {llm_output.rationale}</h4>
-    """
-    )
-
-    if "doc" not in st.session_state or st.session_state["doc"] is None:
-        with st.spinner("Downloading PDF for new town..."):
-            file_content = download_file_with_progress(pdf_file)
-        st.session_state["doc"] = fitz.open(stream=file_content, filetype="pdf")
-        #     st.session_state["doc"] = doc
-
-    if len(showed_pages) == 0:
-        showed_pages = entire_search_page_range.copy()
-
-    format_ocr_file = glob.glob(f"{experiment_dir}/format_ocr/{place.town}.json")
-    assert len(format_ocr_file) == 1
-    format_ocr_file = format_ocr_file[0]
-    format_ocr_result = FormatOCR.model_construct(
-        **json.loads(open(format_ocr_file).read())
-    )
-
-    if "ocr_info" not in st.session_state or not st.session_state["ocr_info"]:
-        # ocr_file = glob.glob(f"{ocr_dir_map[selected_state]}/{place.town}.json")
-        # assert len(ocr_file) == 1
-        # ocr_file = ocr_file[0]
-        # st.session_state["ocr_info"] = json.loads(open(ocr_file).read())
-
-        ocr_file_url = f"https://zoning-nan.s3.us-east-2.amazonaws.com/ocr/north_carolina/{place.town}.json"
-        with st.spinner("Downloading OCR info for new town..."):
-            file_content = download_file_with_progress(ocr_file_url)
-        st.session_state["ocr_info"] = json.loads(file_content)
-    extract_blocks = [b for d in st.session_state["ocr_info"] for b in d["Blocks"]]
+def get_edited_pages(showed_pages, format_ocr_result, extract_blocks, llm_output, place, selected_state):
     edited_pages = []
     for shown_page_num, show_page in enumerate(showed_pages):
         page = st.session_state["doc"].load_page(show_page - 1)
@@ -601,11 +526,14 @@ else:
                     for j in expand_term(thesarus_file, eval_term)
                 )
             ]
-            llm_answer_boxs = [
-                [i[0], i[1]]
-                for i in text_boundingbox
-                if any(j[0].split("\n")[-1] in i[0] for j in llm_output.extracted_text)
-            ]  # TODO
+            if llm_output is not None:
+                llm_answer_boxs = [
+                    [i[0], i[1]]
+                    for i in text_boundingbox
+                    if any(j[0].split("\n")[-1] in i[0] for j in llm_output.extracted_text)
+                ]  # TODO
+            else:
+                llm_answer_boxs = []
             district_color = (1, 0, 0)  # RGB values for red (1,0,0 is full red)
             eval_term_color = (0, 0, 1)  # RGB values for blue (0,0,1 is full blue)
             llm_answer_color = (0, 1, 0)  # RGB values for green (0,1,0 is full green)
@@ -755,6 +683,108 @@ else:
         pix = page.get_pixmap(matrix=mat, clip=page_rect)
         img_bytes = pix.pil_tobytes(format="PNG")
         edited_pages.append(img_bytes)
+    return edited_pages
+
+showed_pages = get_showed_pages(highlight_text_pages, 1)
+pdf_file = f"https://zoning-nan.s3.us-east-2.amazonaws.com/pdf/north_carolina/{town_name}-zoning-code.pdf"
+ocr_file_url = f"https://zoning-nan.s3.us-east-2.amazonaws.com/ocr/north_carolina/{place.town}.json"
+
+if entire_search_page_range == []:
+    st.html(
+        f"""
+        <h2 style="text-align: center; font-size: 2.5em;">
+            <em>{format_eval_term[eval_term]}</em> for the
+            <em>{place.district_full_name} ({place.district_short_name})</em>
+            District in <em>{town}</em>
+        </h2>
+        <h2><em>Zoning Agent does not find any page related in zoning file</em></h2>
+    """
+    )
+
+elif len(showed_pages) == 0 and normalized_llm_output.normalized_answer is None:
+    st.html(
+        f"""
+        <h2 style="text-align: center; font-size: 2.5em;">
+            <em>{format_eval_term[eval_term]}</em> for the
+            <em>{place.district_full_name} ({place.district_short_name})</em>
+            District in <em>{town}</em>
+        </h2>
+        <h2>Value: <em>LLM does not provide an answer</em></h2>
+        <h4>Rationale: {llm_output.rationale}</h4>
+    """
+    )
+
+    if "doc" not in st.session_state or st.session_state["doc"] is None:
+        with st.spinner("Downloading PDF for new town..."):
+            file_content = download_file_with_progress(pdf_file)
+        st.session_state["doc"] = fitz.open(stream=file_content, filetype="pdf")
+        #     st.session_state["doc"] = doc
+    if "ocr_info" not in st.session_state or not st.session_state["ocr_info"]:
+        # ocr_file = glob.glob(f"{ocr_dir_map[selected_state]}/{place.town}.json")
+        # assert len(ocr_file) == 1
+        # ocr_file = ocr_file[0]
+        # st.session_state["ocr_info"] = json.loads(open(ocr_file).read())
+        with st.spinner("Downloading OCR info for new town..."):
+            file_content = download_file_with_progress(ocr_file_url)
+        st.session_state["ocr_info"] = json.loads(file_content)
+    if "format_ocr_result" not in st.session_state or st.session_state["format_ocr_result"] is None:
+        with st.spinner("Downloading Format OCR info for new town..."):
+            file_content = download_file_with_progress(f"{s3_prefix}/format_ocr/{town_name}.json")
+        st.session_state["format_ocr_result"] = FormatOCR.model_construct(**json.loads(file_content))
+
+    extract_blocks = [b for d in st.session_state["ocr_info"] for b in d["Blocks"]]
+    showed_pages = entire_search_page_range.copy()
+    to_be_highlighted_pages = get_edited_pages(showed_pages, st.session_state["format_ocr_result"], extract_blocks, None, place, selected_state)
+
+
+    page_img_cols = st.columns(3)
+    for k in range(len(to_be_highlighted_pages) // 3 + 1):
+        for j in range(3):
+            i = k * 3 + j
+            if i >= len(to_be_highlighted_pages):
+                continue
+            page_img_cols[j].image(
+                to_be_highlighted_pages[i],
+                use_column_width=True,
+            )
+
+else:
+    st.html(
+        f"""
+        <h2 style="text-align: center; font-size: 2.5em;">
+            <em>{format_eval_term[eval_term]}</em> for the
+            <em>{place.district_full_name} ({place.district_short_name})</em>
+            District in <em>{town}</em>
+        </h2>
+        <h2>Value: <em>{norm}</em></h2>
+        <h4>Rationale: {llm_output.rationale}</h4>
+    """
+    )
+
+    if len(showed_pages) == 0:
+        showed_pages = entire_search_page_range.copy()
+
+    
+    if "doc" not in st.session_state or st.session_state["doc"] is None:
+        with st.spinner("Downloading PDF for new town..."):
+            file_content = download_file_with_progress(pdf_file)
+        st.session_state["doc"] = fitz.open(stream=file_content, filetype="pdf")
+        #     st.session_state["doc"] = doc
+    if "ocr_info" not in st.session_state or not st.session_state["ocr_info"]:
+        # ocr_file = glob.glob(f"{ocr_dir_map[selected_state]}/{place.town}.json")
+        # assert len(ocr_file) == 1
+        # ocr_file = ocr_file[0]
+        # st.session_state["ocr_info"] = json.loads(open(ocr_file).read())
+        with st.spinner("Downloading OCR info for new town..."):
+            file_content = download_file_with_progress(ocr_file_url)
+        st.session_state["ocr_info"] = json.loads(file_content)
+    if "format_ocr_result" not in st.session_state or st.session_state["format_ocr_result"] is None:
+        with st.spinner("Downloading Format OCR info for new town..."):
+            file_content = download_file_with_progress(f"{s3_prefix}/format_ocr/{town_name}.json")
+        st.session_state["format_ocr_result"] = FormatOCR.model_construct(**json.loads(file_content))
+
+    extract_blocks = [b for d in st.session_state["ocr_info"] for b in d["Blocks"]]
+    edited_pages = get_edited_pages(showed_pages, st.session_state["format_ocr_result"], extract_blocks, llm_output, place, selected_state)
 
     page_img_cols = st.columns(3)
 
@@ -832,6 +862,7 @@ def jump_to_next_one():
         if st.session_state["current_town"] != next_town_name:
             st.session_state["doc"] = None
             st.session_state["ocr_info"] = None  # Reset the OCR info
+            st.session_state["format_ocr_result"] = None
             st.session_state["finish-town-opened"] = True
             st.session_state["model_bext_town_text"] = (
                 f"🎉 You've finished the data for {town_name}!\n"
