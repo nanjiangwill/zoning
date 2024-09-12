@@ -405,8 +405,6 @@ st.session_state["start_time"] = time.time()
 visualized_data = sorted_all_results[idx]
 
 s3_prefix = "https://zoning-nan.s3.us-east-2.amazonaws.com/results/north_carolina_claude"
-eval_term = "max_height"
-district = "alamance__CO__Conservation"
 
 current_viewing_data_name = f"{eval_term}__{district.replace(' ', '+')}.json"
 
@@ -483,10 +481,13 @@ def get_showed_pages(pages, interval):
         showed_pages.extend(range(page - interval, page + interval + 1))
     return sorted(list(set(showed_pages)))
 
-def get_edited_pages(showed_pages, format_ocr_result, extract_blocks, llm_output, place, selected_state):
+def get_edited_pages(showed_pages, format_ocr_result, extract_blocks, llm_output, place, eval_term, selected_state):
     edited_pages = []
+    pdfdata = st.session_state["doc"].tobytes()
+    temp = fitz.open("pdf", pdfdata)
     for shown_page_num, show_page in enumerate(showed_pages):
-        page = st.session_state["doc"].load_page(show_page - 1)
+        # Load the page and create a copy
+        page = temp.load_page(show_page - 1)
         page_rect = page.rect
         # for zoom in
         page_info = [i for i in format_ocr_result.pages if i["page"] == str(show_page)]
@@ -734,7 +735,7 @@ elif len(showed_pages) == 0 and normalized_llm_output.normalized_answer is None:
 
     extract_blocks = [b for d in st.session_state["ocr_info"] for b in d["Blocks"]]
     showed_pages = entire_search_page_range.copy()
-    to_be_highlighted_pages = get_edited_pages(showed_pages, st.session_state["format_ocr_result"], extract_blocks, None, place, selected_state)
+    to_be_highlighted_pages = get_edited_pages(showed_pages, st.session_state["format_ocr_result"], extract_blocks, None, place, eval_term, selected_state)
 
 
     page_img_cols = st.columns(3)
@@ -784,7 +785,8 @@ else:
         st.session_state["format_ocr_result"] = FormatOCR.model_construct(**json.loads(file_content))
 
     extract_blocks = [b for d in st.session_state["ocr_info"] for b in d["Blocks"]]
-    edited_pages = get_edited_pages(showed_pages, st.session_state["format_ocr_result"], extract_blocks, llm_output, place, selected_state)
+
+    edited_pages = get_edited_pages(showed_pages, st.session_state["format_ocr_result"], extract_blocks, llm_output, place, eval_term, selected_state)
 
     page_img_cols = st.columns(3)
 
