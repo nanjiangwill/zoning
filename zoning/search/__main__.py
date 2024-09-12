@@ -17,9 +17,8 @@ def preprocess_search_target(town_file, district_file, eval_terms, output_file):
             continue
         town, district_short_name, district_full_name = district.split("__")
         for term in eval_terms:
-            search_targets.append(
-                f"{term}__{town}__{district_short_name}__{district_full_name}"
-            )
+            target = f"{term}__{town}__{district_short_name}__{district_full_name}"
+            search_targets.append(target.replace("/", " "))
     with open(output_file, "w") as f:
         json.dump(sorted(search_targets), f, indent=4)
 

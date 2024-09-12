@@ -58,22 +58,25 @@ def eval_fn(d: NormalizedLLMInferenceResult, gt, experiment_dir, target) -> Eval
 
     answer_correct = None
 
-    assert len(d.normalized_llm_outputs) == 1
+    assert not d.normalized_llm_outputs or len(d.normalized_llm_outputs) == 1
 
-    o = d.normalized_llm_outputs[0]
-    if ground_truth is None and ground_truth_orig is None:
-        if o.normalized_answer is None:
-            answer_correct = True
+    o = d.normalized_llm_outputs[0] if d.normalized_llm_outputs else None
+    if o:
+        if ground_truth is None and ground_truth_orig is None:
+            if o.normalized_answer is None:
+                answer_correct = True
+            else:
+                answer_correct = False
         else:
-            answer_correct = False
+            if o.normalized_answer and (
+                ground_truth in o.normalized_answer
+                or ground_truth_orig in o.normalized_answer
+            ):
+                answer_correct = True
+            else:
+                answer_correct = False
     else:
-        if o.normalized_answer and (
-            ground_truth in o.normalized_answer
-            or ground_truth_orig in o.normalized_answer
-        ):
-            answer_correct = True
-        else:
-            answer_correct = False
+        answer_correct = None
 
     return EvalResult(
         place=d.place,

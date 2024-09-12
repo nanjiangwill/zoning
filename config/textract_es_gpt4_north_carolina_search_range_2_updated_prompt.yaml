@@ -22,4 +22,4 @@ search_config:
   num_results: 5
   is_district_fuzzy: false
   is_eval_term_fuzzy: false
-  preprocess_search_target: False
+  preprocess_search_target: True

@@ -18,7 +18,7 @@ global_config:
   result_output_dir: results/${global_config.target_state}/${global_config.experiment_name} # helper variable, just used to parse
 
   pdf_dir: ${global_config.data_dir}/pdfs   # normally we dont redo pdf collection, we just save them in data
-  ocr_dir: ${global_config.data_dir}/ocr    # normally we dont redo ocr collection, we just save them in data, not in experiment results
+  ocr_dir: ${global_config.data_dir}/original_ocr    # normally we dont redo ocr collection, we just save them in data, not in experiment results
 
   format_ocr_dir: ${global_config.experiment_dir}/format_ocr
   page_embedding_dir: ${global_config.experiment_dir}/page_embedding

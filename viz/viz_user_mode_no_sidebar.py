@@ -7,6 +7,7 @@ from collections import OrderedDict
 import fitz  # PyMuPDF
 import orjson as json
 import pandas as pd
+import requests
 import streamlit as st
 from firebase_admin import exceptions as FirebaseError
 from google.api_core.exceptions import GoogleAPIError
@@ -72,7 +73,7 @@ st.set_page_config(page_title="Zoning", layout="wide")
 # Input Name
 # Modal for entering the name
 modal_name = Modal(
-    "Please enter your name to continue:", key="demo-modal", padding=20, max_width=744
+    "Zoning Agent Instructions", key="demo-modal", padding=20, max_width=744
 )
 
 if (
@@ -82,9 +83,36 @@ if (
 
 if modal_name.is_open():
     with modal_name.container():
-        name_input = st.text_input("Your Name")
-        submit_button = st.button("Submit")
+        with st.chat_message("system", avatar="🖥️"):
+            st.subheader("How to use the Zoning Agent")
+            st.write(
+                """
+            1. Login with your name and click on the "Start" button
+            2. Read title for item carefully, it contains the current eval term and the district name
+            3. You will find the LLM answer and related PDF pages below to help you with the labeling decision
+            3.1. Information will be downloaded automatically when you click on the "Start" button
+            4. There will be highlights on the PDF page to help you with the labeling decision
+            5. After carefully reviewing the data, you need to click\n
+            • `"Verified Correct"` if the LLM answer is correct\n
+            • `"Verified Incorrect"` if the LLM answer is incorrect\n
+            • `"Not Enough Information"` if you are not sure about the answer\n
+            6. It will automatically jump to the next item
+            7. Gather feedback to help improve the Zoning Agent!
+            8. You can download the labeled data by clicking the "Download all labeled data (CSV)" button
+            9. You can leave any time and resume later
+            """
+            )
+            st.subheader("Meaning of the highlights")
+            st.write(
+                """
+            1. :red[Red] highlights indicate the district of the zoning regulation.
+            2. :blue[Blue] highlights indicate the eval term of the zoning regulation.
+            3. :green[Green] highlights indicate the LLM answer of the zoning regulation.
+            """
+            )
 
+        name_input = st.text_input("Your Name")
+        submit_button = st.button("Start")
         if submit_button:
             if not name_input:
                 st.warning("Please enter a valid name")
@@ -195,7 +223,13 @@ for town in all_towns:
         all_data_by_town, town
     )
     for eval_term, district in sorted_town_results:
-        sorted_all_results.append((town, eval_term, district))
+        if (
+            all_data_by_town[town][(eval_term, district)]["llm"][0]
+            .llm_outputs[0]
+            .extracted_text
+            is not None
+        ):
+            sorted_all_results.append((town, eval_term, district))
 
 
 # Display the progress bar
@@ -206,6 +240,7 @@ def get_firebase_data(selected_state: str, filters: dict = {}) -> pd.DataFrame:
         "town",
         "district_full_name",
         "district_short_name",
+        "llm_answer",
         "human_feedback",
         "analyst_name",
         "date",
@@ -230,6 +265,52 @@ def get_firebase_data(selected_state: str, filters: dict = {}) -> pd.DataFrame:
     # Create a DataFrame from the data
     df = pd.DataFrame(sorted_data)
     return df
+
+
+def prepare_data_for_download(selected_state: str, filters: dict = {}):
+    all_labelled_data = get_firebase_data(selected_state, filters)
+    # Group the data by district (combining full name and short name)
+    grouped_data = all_labelled_data.groupby(
+        ["state", "town", "district_full_name", "district_short_name"]
+    )
+
+    # Create a list to store the merged data
+    merged_data = []
+
+    # Iterate through each group
+    for (state, town, district_full, district_short), group in grouped_data:
+        # Create a dictionary to store the merged row
+        merged_row = {
+            "State": state,
+            "Town": format_town(town),
+            "District Full Name": district_full,
+            "District Short Name": district_short,
+        }
+
+        # Iterate through each row in the group
+        for _, row in group.iterrows():
+            # Add the eval_term as a column, with its llm_answer and human_feedback as the values
+            merged_row[f"{row['eval_term']} LLM Answer"] = row["llm_answer"]
+            merged_row[f"{row['eval_term']} Human Feedback"] = row["human_feedback"]
+
+        # Add analyst name and date (assuming these are the same for all rows in a group)
+        merged_row["Analyst Name"] = group["analyst_name"].iloc[0]
+        merged_row["Date"] = group["date"].iloc[0]
+
+        # Append the merged row to our list
+        merged_data.append(merged_row)
+
+    # Convert the merged data back to a DataFrame
+    merged_df = pd.DataFrame(merged_data)
+
+    # Reorder columns to have eval terms after district information
+    eval_terms = [col for col in merged_df.columns if col in format_eval_term.values()]
+    other_cols = [col for col in merged_df.columns if col not in eval_terms]
+    column_order = other_cols[:4] + eval_terms + other_cols[4:]
+
+    merged_df = merged_df[column_order]
+
+    return merged_df
 
 
 def get_next_unlabeled_item(
@@ -307,7 +388,7 @@ else:
     st.subheader("🎉 You've reached the end of the data!")
     st.download_button(
         label="Download all labeled data (CSV)",
-        data=get_firebase_data(
+        data=prepare_data_for_download(
             selected_state, {"analyst_name": ["==", st.session_state["analyst_name"]]}
         ).to_csv(index=True),
         file_name=f"{selected_state}_data.csv",
@@ -349,8 +430,27 @@ ground_truth_page = eval_result.ground_truth_page
 answer_correct = eval_result.answer_correct
 page_in_range = eval_result.page_in_range
 
-pdf_file = target_pdf(town_name, pdf_dir)
-doc = fitz.open(pdf_file)
+
+# pdf_file = target_pdf(town_name, pdf_dir)
+def download_file_with_progress(url):
+    response = requests.get(url, stream=True)
+    total_size = int(response.headers.get("content-length", 0))
+    block_size = 10 * 1024 * 1024  # 5 MB
+
+    progress_bar = st.progress(0)
+    progress_text = st.empty()
+
+    data = b""
+    for data_chunk in response.iter_content(block_size):
+        data += data_chunk
+        progress = len(data) / total_size
+        progress_bar.progress(progress)
+        progress_text.text(
+            f"Downloaded: {len(data) / (1024 * 1024):.2f} MB / {total_size / (1024 * 1024):.2f} MB"
+        )
+
+    return data
+
 
 # Display the title
 norm = normalized_llm_output.llm_output.answer
@@ -366,7 +466,7 @@ def get_showed_pages(pages, interval):
 
 
 showed_pages = get_showed_pages(highlight_text_pages, 1)
-
+pdf_file = f"https://zoning-nan.s3.us-east-2.amazonaws.com/pdf/north_carolina/{town_name}-zoning-code.pdf"
 if entire_search_page_range == []:
     st.html(
         f"""
@@ -392,9 +492,14 @@ elif len(showed_pages) == 0 and normalized_llm_output.normalized_answer is None:
     """
     )
 
+    if "doc" not in st.session_state or st.session_state["doc"] is None:
+        with st.spinner("Downloading PDF for new town..."):
+            file_content = download_file_with_progress(pdf_file)
+        st.session_state["doc"] = fitz.open(stream=file_content, filetype="pdf")
+        #     st.session_state["doc"] = doc
     to_be_displayed_pages = []
     for display_page_num, display_page in enumerate(entire_search_page_range):
-        page = doc.load_page(display_page - 1)
+        page = st.session_state["doc"].load_page(display_page - 1)
         page_rect = page.rect
         zoom = 2
         mat = fitz.Matrix(zoom, zoom)
@@ -427,6 +532,12 @@ else:
     """
     )
 
+    if "doc" not in st.session_state or st.session_state["doc"] is None:
+        with st.spinner("Downloading PDF for new town..."):
+            file_content = download_file_with_progress(pdf_file)
+        st.session_state["doc"] = fitz.open(stream=file_content, filetype="pdf")
+        #     st.session_state["doc"] = doc
+
     if len(showed_pages) == 0:
         showed_pages = entire_search_page_range.copy()
 
@@ -438,14 +549,19 @@ else:
     )
 
     if "ocr_info" not in st.session_state or not st.session_state["ocr_info"]:
-        ocr_file = glob.glob(f"{ocr_dir_map[selected_state]}/{place.town}.json")
-        assert len(ocr_file) == 1
-        ocr_file = ocr_file[0]
-        st.session_state["ocr_info"] = json.loads(open(ocr_file).read())
+        # ocr_file = glob.glob(f"{ocr_dir_map[selected_state]}/{place.town}.json")
+        # assert len(ocr_file) == 1
+        # ocr_file = ocr_file[0]
+        # st.session_state["ocr_info"] = json.loads(open(ocr_file).read())
+
+        ocr_file_url = f"https://zoning-nan.s3.us-east-2.amazonaws.com/ocr/north_carolina/{place.town}.json"
+        with st.spinner("Downloading OCR info for new town..."):
+            file_content = download_file_with_progress(ocr_file_url)
+        st.session_state["ocr_info"] = json.loads(file_content)
     extract_blocks = [b for d in st.session_state["ocr_info"] for b in d["Blocks"]]
     edited_pages = []
     for shown_page_num, show_page in enumerate(showed_pages):
-        page = doc.load_page(show_page - 1)
+        page = st.session_state["doc"].load_page(show_page - 1)
         page_rect = page.rect
         # for zoom in
         page_info = [i for i in format_ocr_result.pages if i["page"] == str(show_page)]
@@ -474,13 +590,14 @@ else:
                 [i[0], i[1]]
                 for i in text_boundingbox
                 if place.district_full_name.lower() in i[0].lower()
+                or place.district_full_name.lower() in " ".join(i[0].lower().split())
                 or place.district_short_name.lower() in i[0].lower().split()
             ]
             eval_term_boxs = [
                 [i[0], i[1]]
                 for i in text_boundingbox
                 if any(
-                    j.lower() in i[0].lower()
+                    j.lower() in " ".join(i[0].lower().split())
                     for j in expand_term(thesarus_file, eval_term)
                 )
             ]
@@ -589,20 +706,20 @@ else:
                         ]
 
                         for rect in overlapping_district_rects:
-                            to_be_highlighted_district_rects.append([rect, 0.1])
+                            to_be_highlighted_district_rects.append([rect, 0.2])
                         for rect in overlapping_eval_term_rects:
-                            to_be_highlighted_eval_term_rects.append([rect, 0.1])
+                            to_be_highlighted_eval_term_rects.append([rect, 0.2])
 
                         to_be_highlighted_llm_answer_rects.append([llm_rect, 0.5])
             else:
                 to_be_highlighted_district_rects = [
-                    [rect, 0.15] for rect in district_rects
+                    [rect, 0.1] for rect in district_rects
                 ]
                 to_be_highlighted_eval_term_rects = [
-                    [rect, 0.15] for rect in eval_term_rects
+                    [rect, 0.1] for rect in eval_term_rects
                 ]
                 to_be_highlighted_llm_answer_rects = [
-                    [rect, 0.15] for rect in llm_answer_rects
+                    [rect, 0.1] for rect in llm_answer_rects
                 ]
 
             for rect, opacity in to_be_highlighted_district_rects:
@@ -679,6 +796,7 @@ def write_data(human_feedback: str) -> bool:
         "district_full_name": district_full_name,
         "district_short_name": district_short_name,
         "eval_term": format_eval_term[eval_term],
+        "llm_answer": norm,
         "human_feedback": human_feedback,
         "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "elapsed_sec": elapsed_sec,
@@ -712,6 +830,7 @@ def jump_to_next_one():
     if next_next_item:
         idx, next_town_name, next_eval_term, next_district = next_next_item
         if st.session_state["current_town"] != next_town_name:
+            st.session_state["doc"] = None
             st.session_state["ocr_info"] = None  # Reset the OCR info
             st.session_state["finish-town-opened"] = True
             st.session_state["model_bext_town_text"] = (
@@ -720,6 +839,16 @@ def jump_to_next_one():
             )
     else:
         st.subheader("🎉 You've reached the end of the data!")
+        st.download_button(
+            label="Download all labeled data (CSV)",
+            data=prepare_data_for_download(
+                selected_state,
+                filters={"analyst_name": ["==", st.session_state["analyst_name"]]},
+            ).to_csv(index=True),
+            file_name=f"{selected_state}_data.csv",
+            mime="text/csv",
+        )
+
         st.stop()
 
 
@@ -789,12 +918,13 @@ else:
 
 st.link_button(f"PDF Link for {format_town_map[town_name]}", pdf_file)
 
-st.download_button(
-    label="Download all labeled data (CSV)",
-    data=get_firebase_data(
-        selected_state,
-        filters={"analyst_name": ["==", st.session_state["analyst_name"]]},
-    ).to_csv(index=True),
-    file_name=f"{selected_state}_data.csv",
-    mime="text/csv",
-)
+if finished_num_items > 0:
+    st.download_button(
+        label="Download all labeled data (CSV)",
+        data=prepare_data_for_download(
+            selected_state,
+            filters={"analyst_name": ["==", st.session_state["analyst_name"]]},
+        ).to_csv(index=True),
+        file_name=f"{selected_state}_data.csv",
+        mime="text/csv",
+    )

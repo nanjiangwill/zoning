@@ -12,6 +12,7 @@ data/*/index
 data/*/llm
 data/*/normalization
 data/*/ocr
+data/*/original_ocr
 data/*/pdfs
 data/*/prompt
 data/*/search

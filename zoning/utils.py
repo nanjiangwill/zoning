@@ -94,7 +94,14 @@ async def process_async(
             print(f"Error processing {target}")
             print(e)
 
-    async_tasks = [process_target(target) for target in targets]
+    max_workers = 10
+    semaphore = asyncio.Semaphore(max_workers)
+
+    async def bounded_process_target(target):
+        async with semaphore:
+            return await process_target(target)
+
+    async_tasks = [bounded_process_target(target) for target in targets]
 
     pbar = tqdm.tqdm(total=len(async_tasks))
     for f in asyncio.as_completed(async_tasks):
@@ -155,7 +162,11 @@ def post_processing_llm_output(model_response: str | None) -> dict | None:
     except (ValidationError, TypeError, json.JSONDecodeError) as exc:
         print("Error parsing response from model during extraction:", exc)
         print(f"Response: {model_response}")
-        return None
+        return {
+            "extracted_text": None,
+            "rationale": model_response,
+            "answer": None,
+        }
 
 
 def expand_term(thesarus_file: str, eval_term: str) -> Iterable[str]:
