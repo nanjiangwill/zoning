@@ -222,6 +222,8 @@ for town in all_towns:
     )
     for eval_term, district in sorted_town_results:
         if (
+            all_data_by_town[town][(eval_term, district)]["llm"] and 
+            all_data_by_town[town][(eval_term, district)]["llm"][0] and
             all_data_by_town[town][(eval_term, district)]["llm"][0]
             .llm_outputs[0]
             .extracted_text
