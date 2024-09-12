@@ -197,7 +197,7 @@ def get_sorted_eval_district_by_page_first_appeared(all_data_by_town, town_name)
                 .llm_outputs[0]
                 .extracted_text[0][1],
             )
-            if all_data_by_town[town_name][pair]["llm"][0].llm_outputs and all_data_by_town[town_name][pair]["llm"][0].llm_outputs[0].extracted_text
+            if all_data_by_town[town_name][pair]["llm"] and all_data_by_town[town_name][pair]["llm"][0].llm_outputs and all_data_by_town[town_name][pair]["llm"][0].llm_outputs[0].extracted_text
             else (
                 (
                     1,
@@ -205,7 +205,7 @@ def get_sorted_eval_district_by_page_first_appeared(all_data_by_town, town_name)
                         0
                     ].entire_search_page_range[0],
                 )
-                if all_data_by_town[town_name][pair]["search"][
+                if all_data_by_town[town_name][pair]["search"] and all_data_by_town[town_name][pair]["search"][
                     0
                 ].entire_search_page_range
                 else (2, float("inf"))
