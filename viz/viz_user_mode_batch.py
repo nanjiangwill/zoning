@@ -228,16 +228,22 @@ def build_batches_for_town(town_name, all_data_by_town):
             if combo['first_page'] - current_batch[-1]['first_page'] <= max_page_gap:
                 current_batch.append(combo)
             else:
+                # Sort current batch by eval_term before adding
+                current_batch.sort(key=lambda x: x['eval_term'])
                 batches_with_answer.append(current_batch)
                 current_batch = [combo]
 
     if current_batch:
+        current_batch.sort(key=lambda x: x['eval_term'])
         batches_with_answer.append(current_batch)
 
     # Group combinations without answer by eval_term
     batches_without_answer = []
-    for eval_term in set(c['eval_term'] for c in combinations_without_answer):
+    eval_terms = sorted(set(c['eval_term'] for c in combinations_without_answer))
+    for eval_term in eval_terms:
         batch = [c for c in combinations_without_answer if c['eval_term'] == eval_term]
+        # Sort batch by district or any other criteria if needed
+        batch.sort(key=lambda x: x['district'])
         batches_without_answer.append(batch)
 
     # Combine batches
@@ -359,11 +365,8 @@ def get_next_unlabeled_batch(labelled_data, all_batches):
     finished_num_batches = 0
 
     for idx, batch in enumerate(all_batches):
-        print(batch)
         batch_labelled = False
         for item in batch:
-            print(item)
-            print(labelled_data)
             item_labeled = (
                 (labelled_data["eval_term"] == format_eval_term[item['eval_term']])
                 & (
