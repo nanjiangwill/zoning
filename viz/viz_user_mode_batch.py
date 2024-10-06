@@ -416,6 +416,7 @@ with col2:
 if next_batch_info:
     idx, batch = next_batch_info
     st.session_state["current_batch"] = batch
+    st.session_state["current_batch_index"] = idx  # Store current batch index
 else:
     st.subheader("🎉 You've reached the end of the data!")
     st.download_button(
@@ -899,10 +900,12 @@ with st.container():
 labelled_data = get_firebase_data(
     selected_state, {"analyst_name": ["==", st.session_state["analyst_name"]]}
 )
-_, _, next_next_batch_info = get_next_unlabeled_batch(labelled_data, all_batches)
 
-if next_next_batch_info:
-    idx, next_batch = next_next_batch_info
+# Display the next batch preview
+next_batch_index = st.session_state["current_batch_index"] + 1
+
+if next_batch_index < len(all_batches):
+    next_batch = all_batches[next_batch_index]
     next_item = next_batch[0]
     next_place = Place.from_str(next_item['district'])
     st.html(
@@ -916,7 +919,6 @@ if next_next_batch_info:
     )
 else:
     st.write("No more items to label")
-
 
 # Link to PDF file
 pdf_file = f"https://zoning-nan.s3.us-east-2.amazonaws.com/pdf/north_carolina/{town_name}-zoning-code.pdf"
