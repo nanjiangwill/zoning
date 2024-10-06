@@ -441,6 +441,10 @@ st.session_state["current_town"] = town_name
 # Display a header for the batch
 st.markdown(f"## Batch {idx + 1} - Town: {format_town(town_name)}")
 
+# Initialize sets to collect pages and highlights
+all_showed_pages = set()
+all_highlight_info = []
+
 for item in batch:
     eval_term = item['eval_term']
     district = item['district']
@@ -449,25 +453,44 @@ for item in batch:
 
     # Loading info
     search_result = visualized_data["search"][0]
+    entire_search_page_range = search_result.entire_search_page_range
     llm_inference_result = visualized_data["llm"][0]
+    llm_output = llm_inference_result.llm_outputs[0]
     normalized_llm_inference_result = visualized_data["normalization"][0]
+    normalized_llm_output = normalized_llm_inference_result.normalized_llm_outputs[0]
+    norm = normalized_llm_output.llm_output.answer
     eval_result = visualized_data["eval"][0]
 
-    llm_output = llm_inference_result.llm_outputs[0]
-    normalized_llm_output = normalized_llm_inference_result.normalized_llm_outputs[0]
+    town_formatted = format_town(town_name)
 
-    entire_search_page_range = search_result.entire_search_page_range
+    # Collect pages to display
+    def get_showed_pages(pages, interval):
+        showed_pages = []
+        for page in pages:
+            showed_pages.extend(range(page - interval, page + interval + 1))
+        return sorted(list(set(showed_pages)))
 
     if llm_output.extracted_text is not None:
         highlight_text_pages = sorted(list(set([i[1] for i in llm_output.extracted_text])))
     else:
         highlight_text_pages = []
 
-    norm = normalized_llm_output.llm_output.answer
+    # Collect pages to display
+    showed_pages = get_showed_pages(highlight_text_pages, 1)
+    if len(showed_pages) == 0:
+        showed_pages = entire_search_page_range.copy()
 
-    town_formatted = format_town(town_name)
+    all_showed_pages.update(showed_pages)
 
-    # Display the title
+    # Collect highlight info
+    all_highlight_info.append({
+        'eval_term': eval_term,
+        'district': district,
+        'place': place,
+        'llm_output': llm_output,
+    })
+
+    # Display the title (result item)
     if entire_search_page_range == []:
         st.html(
             f"""
@@ -503,251 +526,274 @@ for item in batch:
             <h4>Rationale: {llm_output.rationale}</h4>
         """
         )
-        # Display the PDF pages
-        def get_showed_pages(pages, interval):
-            showed_pages = []
-            for page in pages:
-                showed_pages.extend(range(page - interval, page + interval + 1))
-            return sorted(list(set(showed_pages)))
 
-        showed_pages = get_showed_pages(highlight_text_pages, 1)
-        pdf_file = f"https://zoning-nan.s3.us-east-2.amazonaws.com/pdf/north_carolina/{town_name}-zoning-code.pdf"
+# Load the PDF document data if not already loaded
+if "pdf_data" not in st.session_state or st.session_state["pdf_data"] is None:
+    pdf_file = f"https://zoning-nan.s3.us-east-2.amazonaws.com/pdf/north_carolina/{town_name}-zoning-code.pdf"
+    with st.spinner("Downloading PDF for new town..."):
+        file_content = download_file_with_progress(pdf_file)
+    st.session_state["pdf_data"] = file_content
+# Load a fresh doc from the stored PDF data for the current batch
+doc = fitz.open(stream=st.session_state["pdf_data"], filetype="pdf")
 
-        if "doc" not in st.session_state or st.session_state["doc"] is None:
-            with st.spinner("Downloading PDF for new town..."):
-                file_content = download_file_with_progress(pdf_file)
-            st.session_state["doc"] = fitz.open(stream=file_content, filetype="pdf")
-            #     st.session_state["doc"] = doc
+# Load the OCR info if not already loaded
+if "ocr_info" not in st.session_state or not st.session_state["ocr_info"]:
+    ocr_file_url = f"https://zoning-nan.s3.us-east-2.amazonaws.com/ocr/north_carolina/{town_name}.json"
+    with st.spinner("Downloading OCR info for new town..."):
+        file_content = download_file_with_progress(ocr_file_url)
+    st.session_state["ocr_info"] = json.loads(file_content)
+extract_blocks = [b for d in st.session_state["ocr_info"] for b in d["Blocks"]]
 
-        if len(showed_pages) == 0:
-            showed_pages = entire_search_page_range.copy()
+# Load format_ocr_result
+format_ocr_file = glob.glob(f"{experiment_dir}/format_ocr/{town_name}.json")
+assert len(format_ocr_file) == 1
+format_ocr_file = format_ocr_file[0]
+format_ocr_result = FormatOCR.model_construct(
+    **json.loads(open(format_ocr_file).read())
+)
 
-        format_ocr_file = glob.glob(f"{experiment_dir}/format_ocr/{place.town}.json")
-        assert len(format_ocr_file) == 1
-        format_ocr_file = format_ocr_file[0]
-        format_ocr_result = FormatOCR.model_construct(
-            **json.loads(open(format_ocr_file).read())
+def get_normalized_rect(b, page_rect):
+    if selected_state == "Texas":
+        return fitz.Rect(
+            b["Left"] * page_rect.width,
+            b["Top"] * page_rect.height,
+            (b["Left"] + b["Width"]) * page_rect.width,
+            (b["Top"] + b["Height"]) * page_rect.height,
         )
+    elif selected_state == "Connecticut":
+        return fitz.Rect(
+            (1 - b["Top"] - b["Height"]) * page_rect.height,
+            b["Left"] * page_rect.width,
+            (1 - b["Top"]) * page_rect.height,
+            (b["Left"] + b["Width"]) * page_rect.width,
+        )
+    elif selected_state == "North Carolina":
+        return fitz.Rect(
+            b["Left"] * page_rect.width,
+            b["Top"] * page_rect.height,
+            (b["Left"] + b["Width"]) * page_rect.width,
+            (b["Top"] + b["Height"]) * page_rect.height,
+        )
+    else:
+        raise ValueError("State not supported")
 
-        if "ocr_info" not in st.session_state or not st.session_state["ocr_info"]:
-            # ocr_file = glob.glob(f"{ocr_dir_map[selected_state]}/{place.town}.json")
-            # assert len(ocr_file) == 1
-            # ocr_file = ocr_file[0]
-            # st.session_state["ocr_info"] = json.loads(open(ocr_file).read())
 
-            ocr_file_url = f"https://zoning-nan.s3.us-east-2.amazonaws.com/ocr/north_carolina/{place.town}.json"
-            with st.spinner("Downloading OCR info for new town..."):
-                file_content = download_file_with_progress(ocr_file_url)
-            st.session_state["ocr_info"] = json.loads(file_content)
-        extract_blocks = [b for d in st.session_state["ocr_info"] for b in d["Blocks"]]
-        edited_pages = []
-        for shown_page_num, show_page in enumerate(showed_pages):
-            page = st.session_state["doc"].load_page(show_page - 1)
-            page_rect = page.rect
-            # for zoom in
-            page_info = [i for i in format_ocr_result.pages if i["page"] == str(show_page)]
-            assert len(page_info) == 1
-            page_info = page_info[0]
+def extend_rect(rect, page_rect):
+    # Extend vertically
+    vertical_extension = fitz.Rect(rect.x0, 0, rect.x1, page_rect.height)
+    # Extend horizontally
+    horizontal_extension = fitz.Rect(0, rect.y0, page_rect.width, rect.y1)
+    return (vertical_extension, horizontal_extension)
 
-            load_ocr = False
 
-            for i in expand_term(thesarus_file, eval_term):
-                if i in page_info["text"].lower():
-                    load_ocr = True
-            if (
-                place.town.lower() in page_info["text"].lower()
-                or place.district_full_name.lower() in page_info["text"].lower()
-                or place.district_short_name.lower() in page_info["text"].lower()
-            ):
+def merge_rects(rects):
+    if not rects:
+        return []
+
+    merged = [rects[0]]
+    for rect in rects[1:]:
+        if any(rect.intersects(m) for m in merged):
+            new_merged = []
+            for m in merged:
+                if rect.intersects(m):
+                    rect = rect | m  # Union of rectangles
+                else:
+                    new_merged.append(m)
+            new_merged.append(rect)
+            merged = new_merged
+        else:
+            merged.append(rect)
+    return merged
+
+
+edited_pages = []
+for show_page in sorted(all_showed_pages):
+    page = doc.load_page(show_page - 1)
+    page_rect = page.rect
+
+    # Get page info from format_ocr_result
+    page_info = [i for i in format_ocr_result.pages if i["page"] == str(show_page)]
+    assert len(page_info) == 1
+    page_info = page_info[0]
+
+    # Decide whether to load OCR for this page
+    load_ocr = False
+    page_text_lower = page_info["text"].lower()
+    for item in all_highlight_info:
+        eval_term = item['eval_term']
+        place = item['place']
+        for term in expand_term(thesarus_file, eval_term):
+            if term in page_text_lower:
                 load_ocr = True
-            if load_ocr:
-                page_ocr_info = [w for w in extract_blocks if w["Page"] == show_page]
-                text_boundingbox = [
-                    (w["Text"], w["Geometry"]["BoundingBox"])
-                    for w in page_ocr_info
-                    if "Text" in w
-                ]
-                district_boxs = [
-                    [i[0], i[1]]
-                    for i in text_boundingbox
-                    if place.district_full_name.lower() in i[0].lower()
-                    or place.district_full_name.lower() in " ".join(i[0].lower().split())
-                    or place.district_short_name.lower() in i[0].lower().split()
-                ]
-                eval_term_boxs = [
+                break
+        if (
+            place.town.lower() in page_text_lower
+            or place.district_full_name.lower() in page_text_lower
+            or place.district_short_name.lower() in page_text_lower
+        ):
+            load_ocr = True
+
+    if load_ocr:
+        # Get OCR info for the page
+        page_ocr_info = [w for w in extract_blocks if w["Page"] == show_page]
+        text_boundingbox = [
+            (w["Text"], w["Geometry"]["BoundingBox"])
+            for w in page_ocr_info
+            if "Text" in w
+        ]
+
+        # Initialize lists for rectangles
+        district_rects = []
+        eval_term_rects = []
+        llm_answer_rects = []
+
+        # Apply highlights per item
+        for item in all_highlight_info:
+            eval_term = item['eval_term']
+            place = item['place']
+            llm_output = item['llm_output']
+
+            # Identify district boxes
+            district_boxes = [
+                [i[0], i[1]]
+                for i in text_boundingbox
+                if place.district_full_name.lower() in i[0].lower()
+                   or place.district_full_name.lower() in " ".join(i[0].lower().split())
+                   or place.district_short_name.lower() in i[0].lower().split()
+            ]
+            district_rects.extend([get_normalized_rect(b[1], page_rect) for b in district_boxes])
+
+            # Identify eval_term boxes
+            eval_term_boxes = [
+                [i[0], i[1]]
+                for i in text_boundingbox
+                if any(
+                    term.lower() in " ".join(i[0].lower().split())
+                    for term in expand_term(thesarus_file, eval_term)
+                )
+            ]
+            eval_term_rects.extend([get_normalized_rect(b[1], page_rect) for b in eval_term_boxes])
+
+            # Identify llm_answer boxes
+            if llm_output.extracted_text is not None:
+                llm_answer_boxes = [
                     [i[0], i[1]]
                     for i in text_boundingbox
                     if any(
-                        j.lower() in " ".join(i[0].lower().split())
-                        for j in expand_term(thesarus_file, eval_term)
+                        ext_text[0].split("\n")[-1] in i[0]
+                        for ext_text in llm_output.extracted_text
                     )
                 ]
-                llm_answer_boxs = [
-                    [i[0], i[1]]
-                    for i in text_boundingbox
-                    if any(j[0].split("\n")[-1] in i[0] for j in llm_output.extracted_text)
-                ]  # TODO
-                district_color = (1, 0, 0)  # RGB values for red (1,0,0 is full red)
-                eval_term_color = (0, 0, 1)  # RGB values for blue (0,0,1 is full blue)
-                llm_answer_color = (0, 1, 0)  # RGB values for green (0,1,0 is full green)
+                llm_answer_rects.extend([get_normalized_rect(b[1], page_rect) for b in llm_answer_boxes])
 
-                def get_normalized_rect(b):
-                    if selected_state == "Texas":
-                        return fitz.Rect(
-                            b["Left"] * page_rect.width,
-                            (b["Top"]) * page_rect.height,
-                            (b["Left"] + b["Width"]) * page_rect.width,
-                            (b["Top"] + b["Height"]) * page_rect.height,
-                        )
-                    elif selected_state == "Connecticut":
-                        return fitz.Rect(
-                            (1 - b["Top"] - b["Height"]) * page_rect.height,
-                            b["Left"] * page_rect.width,
-                            (1 - b["Top"]) * page_rect.height,
-                            (b["Left"] + b["Width"]) * page_rect.width,
-                        )
-                    elif selected_state == "North Carolina":
-                        return fitz.Rect(
-                            (b["Left"]) * page_rect.width,
-                            (b["Top"]) * page_rect.height,
-                            (b["Left"] + b["Width"]) * page_rect.width,
-                            (b["Top"] + b["Height"]) * page_rect.height,
-                        )
-                    else:
-                        raise ValueError("State not supported")
+        # Merge rectangles to avoid overlapping highlights
+        district_rects = merge_rects(district_rects)
+        eval_term_rects = merge_rects(eval_term_rects)
+        llm_answer_rects = merge_rects(llm_answer_rects)
 
-                def extend_rect(rect):
-                    # Extend vertically (maintain width, enlarge height to page height)
-                    vertical_extension = fitz.Rect(rect.x0, 0, rect.x1, page_rect.height)
+        # Extend rectangles
+        extended_district_rects = [
+            i for rect in district_rects for i in extend_rect(rect, page_rect)
+        ]
+        extended_eval_term_rects = [
+            i for rect in eval_term_rects for i in extend_rect(rect, page_rect)
+        ]
 
-                    # Extend horizontally (maintain height, enlarge width to page width)
-                    horizontal_extension = fitz.Rect(0, rect.y0, page_rect.width, rect.y1)
+        # Determine overlaps
+        overlap_exists = any(
+            llm_rect.intersects(rect)
+            for llm_rect in llm_answer_rects
+            for rect in extended_district_rects + extended_eval_term_rects
+        )
 
-                    # Combine both extensions
-                    return (vertical_extension, horizontal_extension)
+        to_be_highlighted_district_rects = []
+        to_be_highlighted_eval_term_rects = []
+        to_be_highlighted_llm_answer_rects = []
 
-                def merge_rects(rects):
-                    if not rects:
-                        return []
-
-                    merged = [rects[0]]
-                    for rect in rects[1:]:
-                        if any(rect.intersects(m) for m in merged):
-                            new_merged = []
-                            for m in merged:
-                                if rect.intersects(m):
-                                    rect = rect | m  # Union of rectangles
-                                else:
-                                    new_merged.append(m)
-                            new_merged.append(rect)
-                            merged = new_merged
-                        else:
-                            merged.append(rect)
-                    return merged
-
-                district_rects = [get_normalized_rect(b) for _, b in district_boxs]
-                district_rects = merge_rects(district_rects)
-                eval_term_rects = [get_normalized_rect(b) for _, b in eval_term_boxs]
-                eval_term_rects = merge_rects(eval_term_rects)
-                llm_answer_rects = [get_normalized_rect(b) for _, b in llm_answer_boxs]
-                llm_answer_rects = merge_rects(llm_answer_rects)
-
-                extended_district_rects = [
-                    i for rect in district_rects for i in extend_rect(rect)
-                ]
-                extended_eval_term_rects = [
-                    i for rect in eval_term_rects for i in extend_rect(rect)
-                ]
-
-                overlap_exists = any(
-                    llm_rect.intersects(rect)
-                    for llm_rect in llm_answer_rects
-                    for rect in extended_district_rects + extended_eval_term_rects
-                )
-
-                to_be_highlighted_district_rects = []
-                to_be_highlighted_eval_term_rects = []
-                to_be_highlighted_llm_answer_rects = []
-                if overlap_exists:
-                    for llm_rect in llm_answer_rects:
-                        if any(
-                            llm_rect.intersects(rect)
-                            for rect in extended_district_rects + extended_eval_term_rects
-                        ):
-                            # Draw only overlapping district and eval term rects
-                            overlapping_district_rects = [
-                                rect
-                                for rect in district_rects
-                                if any(llm_rect.intersects(i) for i in extend_rect(rect))
-                            ]
-                            overlapping_eval_term_rects = [
-                                rect
-                                for rect in eval_term_rects
-                                if any(llm_rect.intersects(i) for i in extend_rect(rect))
-                            ]
-
-                            for rect in overlapping_district_rects:
-                                to_be_highlighted_district_rects.append([rect, 0.2])
-                            for rect in overlapping_eval_term_rects:
-                                to_be_highlighted_eval_term_rects.append([rect, 0.2])
-
-                            to_be_highlighted_llm_answer_rects.append([llm_rect, 0.5])
-                else:
-                    to_be_highlighted_district_rects = [
-                        [rect, 0.1] for rect in district_rects
+        if overlap_exists:
+            for llm_rect in llm_answer_rects:
+                if any(
+                        llm_rect.intersects(rect)
+                        for rect in extended_district_rects + extended_eval_term_rects
+                ):
+                    overlapping_district_rects = [
+                        rect
+                        for rect in district_rects
+                        if any(llm_rect.intersects(i) for i in extend_rect(rect, page_rect))
                     ]
-                    to_be_highlighted_eval_term_rects = [
-                        [rect, 0.1] for rect in eval_term_rects
-                    ]
-                    to_be_highlighted_llm_answer_rects = [
-                        [rect, 0.1] for rect in llm_answer_rects
+                    overlapping_eval_term_rects = [
+                        rect
+                        for rect in eval_term_rects
+                        if any(llm_rect.intersects(i) for i in extend_rect(rect, page_rect))
                     ]
 
-                for rect, opacity in to_be_highlighted_district_rects:
-                    page.draw_rect(
-                        rect,
-                        fill=district_color,
-                        width=1,
-                        stroke_opacity=0,
-                        fill_opacity=opacity,
-                    )
+                    for rect in overlapping_district_rects:
+                        to_be_highlighted_district_rects.append([rect, 0.2])
+                    for rect in overlapping_eval_term_rects:
+                        to_be_highlighted_eval_term_rects.append([rect, 0.2])
 
-                for rect, opacity in to_be_highlighted_eval_term_rects:
-                    page.draw_rect(
-                        rect,
-                        fill=eval_term_color,
-                        width=1,
-                        stroke_opacity=0,
-                        fill_opacity=opacity,
-                    )
+                    to_be_highlighted_llm_answer_rects.append([llm_rect, 0.5])
+        else:
+            to_be_highlighted_district_rects = [
+                [rect, 0.1] for rect in district_rects
+            ]
+            to_be_highlighted_eval_term_rects = [
+                [rect, 0.1] for rect in eval_term_rects
+            ]
+            to_be_highlighted_llm_answer_rects = [
+                [rect, 0.1] for rect in llm_answer_rects
+            ]
 
-                for rect, opacity in to_be_highlighted_llm_answer_rects:
-                    page.draw_rect(
-                        rect,
-                        fill=llm_answer_color,
-                        width=1,
-                        stroke_opacity=0,
-                        fill_opacity=opacity,
-                    )
+        # Apply highlights
+        district_color = (1, 0, 0)  # Red
+        eval_term_color = (0, 0, 1)  # Blue
+        llm_answer_color = (0, 1, 0)  # Green
 
-            zoom = 2
-            mat = fitz.Matrix(zoom, zoom)
-            # Render the page to a PIL Image
-            pix = page.get_pixmap(matrix=mat, clip=page_rect)
-            img_bytes = pix.pil_tobytes(format="PNG")
-            edited_pages.append(img_bytes)
+        for rect, opacity in to_be_highlighted_district_rects:
+            page.draw_rect(
+                rect,
+                fill=district_color,
+                width=1,
+                stroke_opacity=0,
+                fill_opacity=opacity,
+            )
 
-        page_img_cols = st.columns(3)
+        for rect, opacity in to_be_highlighted_eval_term_rects:
+            page.draw_rect(
+                rect,
+                fill=eval_term_color,
+                width=1,
+                stroke_opacity=0,
+                fill_opacity=opacity,
+            )
 
-        for k in range(len(showed_pages) // 3 + 1):
-            for j in range(3):
-                i = k * 3 + j
-                if i >= len(showed_pages):
-                    continue
-                page_img_cols[j].image(
-                    edited_pages[i],
-                    use_column_width=True,
-                )
+        for rect, opacity in to_be_highlighted_llm_answer_rects:
+            page.draw_rect(
+                rect,
+                fill=llm_answer_color,
+                width=1,
+                stroke_opacity=0,
+                fill_opacity=opacity,
+            )
+
+    zoom = 2
+    mat = fitz.Matrix(zoom, zoom)
+    # Render the page to a PIL Image
+    pix = page.get_pixmap(matrix=mat, clip=page_rect)
+    img_bytes = pix.pil_tobytes(format="PNG")
+    edited_pages.append(img_bytes)
+
+# Display the pages without duplication
+page_img_cols = st.columns(3)
+for k in range(len(edited_pages) // 3 + 1):
+    for j in range(3):
+        i = k * 3 + j
+        if i >= len(edited_pages):
+            continue
+        page_img_cols[j].image(
+            edited_pages[i],
+            use_column_width=True,
+        )
 
 st.divider()
 
@@ -825,7 +871,7 @@ def jump_to_next_batch():
         st.session_state["current_batch"] = batch
         next_town_name = batch[0]['town_name']
         if st.session_state["current_town"] != next_town_name:
-            st.session_state["doc"] = None
+            st.session_state["pdf_data"] = None
             st.session_state["ocr_info"] = None  # Reset the OCR info
             st.session_state["finish-town-opened"] = True
             st.session_state["model_next_town_text"] = (
