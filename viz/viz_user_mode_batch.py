@@ -438,94 +438,97 @@ batch = st.session_state["current_batch"]
 town_name = batch[0]['town_name']
 st.session_state["current_town"] = town_name
 
-# Display a header for the batch
-st.markdown(f"## Batch {idx + 1} - Town: {format_town(town_name)}")
-
 # Initialize sets to collect pages and highlights
 all_showed_pages = set()
 all_highlight_info = []
 
-for item in batch:
-    eval_term = item['eval_term']
-    district = item['district']
-    place = Place.from_str(district)
-    visualized_data = all_data_by_town[town_name][(eval_term, district)]
+with st.sidebar:
+    st.markdown(f"# Town: {format_town(town_name)}")
 
-    # Loading info
-    search_result = visualized_data["search"][0]
-    entire_search_page_range = search_result.entire_search_page_range
-    llm_inference_result = visualized_data["llm"][0]
-    llm_output = llm_inference_result.llm_outputs[0]
-    normalized_llm_inference_result = visualized_data["normalization"][0]
-    normalized_llm_output = normalized_llm_inference_result.normalized_llm_outputs[0]
-    norm = normalized_llm_output.llm_output.answer
-    eval_result = visualized_data["eval"][0]
+    for item in batch:
+        eval_term = item['eval_term']
+        district = item['district']
+        place = Place.from_str(district)
+        visualized_data = all_data_by_town[town_name][(eval_term, district)]
 
-    town_formatted = format_town(town_name)
+        # Loading info
+        search_result = visualized_data["search"][0]
+        entire_search_page_range = search_result.entire_search_page_range
+        llm_inference_result = visualized_data["llm"][0]
+        llm_output = llm_inference_result.llm_outputs[0]
+        normalized_llm_inference_result = visualized_data["normalization"][0]
+        normalized_llm_output = normalized_llm_inference_result.normalized_llm_outputs[0]
+        norm = normalized_llm_output.llm_output.answer
+        eval_result = visualized_data["eval"][0]
 
-    # Collect pages to display
-    def get_showed_pages(pages, interval):
-        showed_pages = []
-        for page in pages:
-            showed_pages.extend(range(page - interval, page + interval + 1))
-        return sorted(list(set(showed_pages)))
+        town_formatted = format_town(town_name)
 
-    if llm_output.extracted_text is not None:
-        highlight_text_pages = sorted(list(set([i[1] for i in llm_output.extracted_text])))
-    else:
-        highlight_text_pages = []
+        # Collect pages to display
+        def get_showed_pages(pages, interval):
+            showed_pages = []
+            for page in pages:
+                showed_pages.extend(range(page - interval, page + interval + 1))
+            return sorted(list(set(showed_pages)))
 
-    # Collect pages to display
-    showed_pages = get_showed_pages(highlight_text_pages, 1)
-    if len(showed_pages) == 0:
-        showed_pages = entire_search_page_range.copy()
+        if llm_output.extracted_text is not None:
+            highlight_text_pages = sorted(list(set([i[1] for i in llm_output.extracted_text])))
+        else:
+            highlight_text_pages = []
 
-    all_showed_pages.update(showed_pages)
+        # Collect pages to display
+        showed_pages = get_showed_pages(highlight_text_pages, 1)
+        if len(showed_pages) == 0:
+            showed_pages = entire_search_page_range.copy()
 
-    # Collect highlight info
-    all_highlight_info.append({
-        'eval_term': eval_term,
-        'district': district,
-        'place': place,
-        'llm_output': llm_output,
-    })
+        all_showed_pages.update(showed_pages)
 
-    # Display the title (result item)
-    if entire_search_page_range == []:
-        st.html(
-            f"""
-            <h2 style="text-align: center; font-size: 2.5em;">
-                <em>{format_eval_term[eval_term]}</em> for the
-                <em>{place.district_full_name} ({place.district_short_name})</em>
-                District in <em>{town_formatted}</em>
-            </h2>
-            <h2><em>Zoning Agent does not find any page related in zoning file</em></h2>
-        """
-        )
-    elif len(highlight_text_pages) == 0 and normalized_llm_output.normalized_answer is None:
-        st.html(
-            f"""
-            <h2 style="text-align: center; font-size: 2.5em;">
-                <em>{format_eval_term[eval_term]}</em> for the
-                <em>{place.district_full_name} ({place.district_short_name})</em>
-                District in <em>{town_formatted}</em>
-            </h2>
-            <h2>Value: <em>LLM does not provide an answer</em></h2>
-            <h4>Rationale: {llm_output.rationale}</h4>
-        """
-        )
-    else:
-        st.html(
-            f"""
-            <h2 style="text-align: center; font-size: 2.5em;">
-                <em>{format_eval_term[eval_term]}</em> for the
-                <em>{place.district_full_name} ({place.district_short_name})</em>
-                District in <em>{town_formatted}</em>
-            </h2>
-            <h2>Value: <em>{norm}</em></h2>
-            <h4>Rationale: {llm_output.rationale}</h4>
-        """
-        )
+        # Collect highlight info
+        all_highlight_info.append({
+            'eval_term': eval_term,
+            'district': district,
+            'place': place,
+            'llm_output': llm_output,
+        })
+
+        # Display the title (result item)
+        if entire_search_page_range == []:
+            st.html(
+                f"""
+                <div style="border: 1px solid #ccc; padding: 10px; margin: 5px; border-radius: 5px;">
+                    <p style="font-size: 1.2em;">
+                        <b><em>{format_eval_term[eval_term]}</em> / {place.district_full_name} ({place.district_short_name})</b>
+                    </p>
+                    <p style="font-size: 1.2em;"><b>Value: <em>Zoning Agent does not find any page related in zoning file</em></b></p>
+                </div>
+            """
+            )
+        elif len(highlight_text_pages) == 0 and normalized_llm_output.normalized_answer is None:
+            st.html(
+                f"""
+                <div style="border: 1px solid #ccc; padding: 10px; margin: 5px; border-radius: 5px;">
+                    <p style="font-size: 1.2em;">
+                        <b><em>{format_eval_term[eval_term]}</em> / {place.district_full_name} ({place.district_short_name})</b>
+                    </p>
+                    <p style="font-size: 1.2em;"><b>Value: <em>LLM does not provide an answer</em></b></p>
+                    <p>Rationale: {llm_output.rationale}</p>
+                </div>
+            """
+            )
+        else:
+            st.html(
+                f"""
+                <div style="border: 1px solid #ccc; padding: 10px; margin: 5px; border-radius: 5px;">
+                    <p style="font-size: 1.2em;">
+                        <b>
+                        {format_eval_term[eval_term]} /
+                        {place.district_full_name} ({place.district_short_name})
+                        </b>
+                    </p>
+                    <p style="font-size: 1.2em;"><b>Value: <em>{norm}</em></b></p>
+                    <p>Rationale: {llm_output.rationale}</p>
+                </div>
+            """
+            )
 
 # Load the PDF document data if not already loaded
 if "pdf_data" not in st.session_state or st.session_state["pdf_data"] is None:
@@ -960,7 +963,7 @@ if next_batch_index < len(all_batches):
     st.html(
         f"""
         <h2 style="text-align: center; font-size: 2.5em;">
-            <em>Next batch starts with: {format_eval_term[next_item['eval_term']]}</em> for the
+            <em>Next item starts with: {format_eval_term[next_item['eval_term']]}</em> for the
             <em>{next_place.district_full_name} ({next_place.district_short_name})</em>
             District in <em>{format_town(next_item['town_name'])}</em>
         </h2>
