@@ -735,13 +735,13 @@ for show_page in sorted(all_showed_pages):
                     to_be_highlighted_llm_answer_rects.append([llm_rect, 0.5])
         else:
             to_be_highlighted_district_rects = [
-                [rect, 0.1] for rect in district_rects
+                [rect, 0.2] for rect in district_rects
             ]
             to_be_highlighted_eval_term_rects = [
-                [rect, 0.1] for rect in eval_term_rects
+                [rect, 0.2] for rect in eval_term_rects
             ]
             to_be_highlighted_llm_answer_rects = [
-                [rect, 0.1] for rect in llm_answer_rects
+                [rect, 0.2] for rect in llm_answer_rects
             ]
 
         # Apply highlights
@@ -752,28 +752,31 @@ for show_page in sorted(all_showed_pages):
         for rect, opacity in to_be_highlighted_district_rects:
             page.draw_rect(
                 rect,
-                fill=district_color,
-                width=1,
-                stroke_opacity=0,
-                fill_opacity=opacity,
+                color=district_color,
+                fill=None,
+                fill_opacity=0,
+                width=4,
+                stroke_opacity=opacity,
             )
 
         for rect, opacity in to_be_highlighted_eval_term_rects:
             page.draw_rect(
                 rect,
-                fill=eval_term_color,
-                width=1,
-                stroke_opacity=0,
-                fill_opacity=opacity,
+                color=eval_term_color,
+                fill=None,
+                fill_opacity=0,
+                width=4,
+                stroke_opacity=opacity,
             )
 
         for rect, opacity in to_be_highlighted_llm_answer_rects:
             page.draw_rect(
                 rect,
-                fill=llm_answer_color,
-                width=1,
-                stroke_opacity=0,
-                fill_opacity=opacity,
+                color=llm_answer_color,
+                fill=None,
+                fill_opacity=0,
+                width=4,
+                stroke_opacity=opacity,
             )
 
     zoom = 2
