@@ -34,7 +34,6 @@ else:
         st.secrets["firebase"]["my_project_settings"]
     )
 
-
 # Data Loading path
 state_experiment_map = {
     "Connecticut": "results/textract_es_gpt4_connecticut_search_range_3",
@@ -77,7 +76,7 @@ modal_name = Modal(
 )
 
 if (
-    "analyst_name" not in st.session_state or not st.session_state["analyst_name"]
+        "analyst_name" not in st.session_state or not st.session_state["analyst_name"]
 ) and not modal_name.is_open():
     modal_name.open()
 
@@ -124,7 +123,6 @@ if "analyst_name" not in st.session_state or not st.session_state["analyst_name"
     st.write("Please enter valid name to continue")
     st.stop()
 
-
 # Reading all data
 selected_state = "North Carolina"
 experiment_dir = state_experiment_map[selected_state]
@@ -168,7 +166,7 @@ def filtered_by_place_and_eval(results, place, eval_term):
 all_data_by_town = {
     town_name: {
         (eval_term, place): {"place": place, "eval_term": eval_term}
-        | filtered_by_place_and_eval(all_results, place, eval_term)
+                            | filtered_by_place_and_eval(all_results, place, eval_term)
         for place in all_places
         if get_town_by_place(place) == town_name
         for eval_term in all_eval_terms
@@ -251,6 +249,7 @@ def build_batches_for_town(town_name, all_data_by_town):
 
     return batches
 
+
 # Build all batches
 all_batches = []
 for town in all_towns:
@@ -294,6 +293,7 @@ def get_firebase_data(selected_state: str, filters: dict = {}) -> pd.DataFrame:
     # Create a DataFrame from the data with specified columns
     df = pd.DataFrame(sorted_data, columns=key_order)
     return df
+
 
 def prepare_data_for_download(selected_state: str, filters: dict = {}):
     all_labelled_data = get_firebase_data(selected_state, filters)
@@ -360,6 +360,7 @@ def download_file_with_progress(url):
 
     return data
 
+
 # Function to get the next unlabeled batch
 def get_next_unlabeled_batch(labelled_data, all_batches):
     finished_num_batches = 0
@@ -368,16 +369,16 @@ def get_next_unlabeled_batch(labelled_data, all_batches):
         batch_labelled = False
         for item in batch:
             item_labeled = (
-                (labelled_data["eval_term"] == format_eval_term[item['eval_term']])
-                & (
-                    labelled_data["district_full_name"]
-                    == Place.from_str(item['district']).district_full_name
-                )
-                & (
-                    labelled_data["district_short_name"]
-                    == Place.from_str(item['district']).district_short_name
-                )
-                & (labelled_data["town"] == item['town_name'])
+                    (labelled_data["eval_term"] == format_eval_term[item['eval_term']])
+                    & (
+                            labelled_data["district_full_name"]
+                            == Place.from_str(item['district']).district_full_name
+                    )
+                    & (
+                            labelled_data["district_short_name"]
+                            == Place.from_str(item['district']).district_short_name
+                    )
+                    & (labelled_data["town"] == item['town_name'])
             ).any()
             if item_labeled:
                 batch_labelled = True
@@ -429,7 +430,6 @@ else:
     )
     st.stop()
 
-
 # after reading all data, start the timer
 st.session_state["start_time"] = time.time()
 
@@ -463,12 +463,14 @@ with st.sidebar:
 
         town_formatted = format_town(town_name)
 
+
         # Collect pages to display
         def get_showed_pages(pages, interval):
             showed_pages = []
             for page in pages:
                 showed_pages.extend(range(page - interval, page + interval + 1))
             return sorted(list(set(showed_pages)))
+
 
         if llm_output.extracted_text is not None:
             highlight_text_pages = sorted(list(set([i[1] for i in llm_output.extracted_text])))
@@ -555,6 +557,7 @@ format_ocr_result = FormatOCR.model_construct(
     **json.loads(open(format_ocr_file).read())
 )
 
+
 def get_normalized_rect(b, page_rect):
     if selected_state == "Texas":
         return fitz.Rect(
@@ -630,9 +633,9 @@ for show_page in sorted(all_showed_pages):
                 load_ocr = True
                 break
         if (
-            place.town.lower() in page_text_lower
-            or place.district_full_name.lower() in page_text_lower
-            or place.district_short_name.lower() in page_text_lower
+                place.town.lower() in page_text_lower
+                or place.district_full_name.lower() in page_text_lower
+                or place.district_short_name.lower() in page_text_lower
         ):
             load_ocr = True
 
@@ -908,16 +911,18 @@ if st.session_state["finish-town-opened"]:
         st.header(st.session_state["model_next_town_text"])
         st.session_state["finish-town-opened"] = False  # Reset the flag
 
-
 # Buttons for labeling
 with st.container():
     correct_col, not_sure_col, wrong_col = st.columns(3)
+
 
     def button_callback(feedback):
         def _button_callback():
             if write_data(feedback):
                 jump_to_next_batch()
+
         return _button_callback
+
 
     with correct_col:
         st.button(
@@ -945,7 +950,6 @@ with st.container():
             use_container_width=True,
             on_click=button_callback("wrong"),
         )
-
 
 # Display the next batch preview
 # Update the labelled data
