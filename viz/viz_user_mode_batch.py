@@ -24,7 +24,7 @@ from zoning.class_types import (
     PromptResult,
     SearchResult,
 )
-from zoning.utils import expand_term, target_pdf
+from zoning.utils import expand_term
 
 # firestore config
 if sys.argv[1]:
