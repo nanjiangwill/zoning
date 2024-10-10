@@ -192,7 +192,10 @@ def build_batches_for_town(town_name, all_data_by_town):
     combinations_without_answer = []
 
     for (eval_term, district), data in town_data.items():
-        llm_output = data['llm'][0].llm_outputs[0]
+        try:
+            llm_output = data['llm'][0].llm_outputs[0]
+        except:
+            continue
 
         if llm_output.extracted_text is not None:
             # Get the page number where the information first appears
