@@ -989,7 +989,7 @@ def jump_to_next_batch():
         st.session_state["current_batch"] = batch
         next_town_name = batch[0]['town_name']
         if st.session_state["current_town"] != next_town_name:
-            st.session_state["pdf_data"] = None
+            st.session_state["doc"] = None
             st.session_state["ocr_info"] = None  # Reset the OCR info
             st.session_state["finish-town-opened"] = True
             st.session_state["model_next_town_text"] = (
