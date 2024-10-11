@@ -629,7 +629,7 @@ with st.sidebar:
         # answer_correct = eval_result.answer_correct
         # page_in_range = eval_result.page_in_range
 
-def get_edited_pages(all_showed_pages, all_highlight_info, format_ocr_result, extract_blocks, llm_output, place, eval_term, selected_state):
+def get_edited_pages(all_showed_pages, all_highlight_info, format_ocr_result, extract_blocks, selected_state):
 
     def get_normalized_rect(b, page_rect):
         if selected_state == "Texas":
@@ -886,7 +886,7 @@ if "format_ocr_result" not in st.session_state or st.session_state["format_ocr_r
 
 extract_blocks = [b for d in st.session_state["ocr_info"] for b in d["Blocks"]]
 to_be_highlighted_pages = get_edited_pages(all_showed_pages, all_highlight_info, st.session_state["format_ocr_result"], extract_blocks,
-                                           llm_output, place, eval_term, selected_state)
+                                           selected_state)
 
 page_img_cols = st.columns(3)
 for k in range(len(to_be_highlighted_pages) // 3 + 1):
