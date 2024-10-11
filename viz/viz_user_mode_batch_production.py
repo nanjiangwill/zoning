@@ -371,21 +371,27 @@ def build_batches_for_town(town_name, all_data_by_town):
 
 def get_next_unlabeled_batch(labelled_data, all_batches):
     finished_num_batches = 0
+    # If no data has been labeled yet, return the first batch
+    if labelled_data.empty:
+        if all_batches:
+            return len(all_batches), finished_num_batches, (0, all_batches[0])
+        else:
+            return 0, finished_num_batches, None
 
     for idx, batch in enumerate(all_batches):
         batch_labelled = False
         for item in batch:
+            # Safeguard against missing columns
+            if not all(column in labelled_data.columns for column in
+                       ["eval_term", "district_full_name", "district_short_name", "town"]):
+                batch_labelled = False
+                break
+
             item_labeled = (
-                (labelled_data["eval_term"] == format_eval_term[item['eval_term']])
-                & (
-                    labelled_data["district_full_name"]
-                    == Place.from_str(item['district']).district_full_name
-                )
-                & (
-                    labelled_data["district_short_name"]
-                    == Place.from_str(item['district']).district_short_name
-                )
-                & (labelled_data["town"] == item['town_name'])
+                    (labelled_data["eval_term"] == format_eval_term.get(item['eval_term'], item['eval_term']))
+                    & (labelled_data["district_full_name"] == Place.from_str(item['district']).district_full_name)
+                    & (labelled_data["district_short_name"] == Place.from_str(item['district']).district_short_name)
+                    & (labelled_data["town"] == item['town_name'])
             ).any()
             if item_labeled:
                 batch_labelled = True
