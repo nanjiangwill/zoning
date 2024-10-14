@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel
 
@@ -21,6 +21,9 @@ class GlobalConfig(BaseModel):
     pdf_dir: str
     ocr_dir: str
     format_ocr_dir: str
+    page_embedding_dir: str
+    district_extraction_dir: str
+    district_extraction_verification_dir: str
     index_dir: str
     search_dir: str
     prompt_dir: str
@@ -40,6 +43,7 @@ class OCRConfig(BaseModel):
 
     method: str
     run_ocr: bool
+    textract_region_name: str
     input_document_s3_bucket: str | None
     pdf_name_prefix_in_s3_bucket: str | None
     feature_types: List[str]
@@ -47,6 +51,18 @@ class OCRConfig(BaseModel):
 
 class FormatOCRConfig(BaseModel):
     temp: str
+
+
+class DistrictExtractionConfig(BaseModel):
+    run_district_extraction: bool
+    embedding_model: str
+    llm_model: str
+    templates_dir: str
+    system_prompt_file: str
+    user_prompt_file: str
+    verification_es_endpoint: str
+    target_districts_file: str
+    district_page_mapping_file: str
 
 
 class IndexConfig(BaseModel):
@@ -95,6 +111,7 @@ class ZoningConfig(BaseModel):
     global_config: GlobalConfig = None
     ocr_config: OCRConfig = None
     format_ocr_config: OCRConfig = None
+    district_extraction_config: DistrictExtractionConfig = None
     index_config: IndexConfig = None
     search_config: SearchConfig = None
     prompt_config: PromptConfig = None
@@ -107,6 +124,9 @@ class ZoningConfig(BaseModel):
         self.global_config = GlobalConfig(**self.config["global_config"])
         self.ocr_config = OCRConfig(**self.config["ocr_config"])
         self.format_ocr_config = FormatOCRConfig(**self.config["format_ocr_config"])
+        self.district_extraction_config = DistrictExtractionConfig(
+            **self.config["district_extraction_config"]
+        )
         self.index_config = IndexConfig(**self.config["index_config"])
         self.search_config = SearchConfig(**self.config["search_config"])
         self.prompt_config = PromptConfig(**self.config["prompt_config"])
@@ -145,7 +165,7 @@ class OCRPage(BaseModel):
             self.relations.setdefault(r, [])
             self.relations[r].append(entity)
 
-    def make_string(self) -> str:
+    def make_dict(self) -> Dict[str, str]:
         out = ""
         for e in self.ents:
             if e.typ == "LINE":
@@ -172,7 +192,7 @@ class OCRPage(BaseModel):
                         continue
                     seen.add(o.id)
                     out += o.text + "\n"
-        return out
+        return {"page": str(self.page), "text": out}
 
 
 class FormatOCR(BaseModel):
@@ -181,8 +201,33 @@ class FormatOCR(BaseModel):
     Linked to format_ocr.
     """
 
-    pages: List[str]
-    town_name: str
+    pages: List[Dict[str, str]]
+    town: str
+
+
+# =================
+# Page Embedding and District Extraction
+# =================
+class PageEmbeddingResult(BaseModel):
+    """Page embedding of a page in pdf.
+
+    linked to district_extraction
+    """
+
+    town: str
+    embedded_pages: List[Dict[str, str | List[float]]]
+
+
+class DistrictExtractionResult(BaseModel):
+    town: str
+    districts: List[Dict[str, str]]
+    districts_info_page: List[int]
+
+
+class DistrictExtractionVerificationResult(BaseModel):
+    town: str
+    valid_districts: List[str]
+    districts_info_page: List[int]
 
 
 # =================
@@ -209,6 +254,14 @@ class Place(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.town}__{self.district_short_name}__{self.district_full_name}"
+
+    def from_str(place_str):
+        town, district_short_name, district_full_name = place_str.split("__")
+        return Place(
+            town=town,
+            district_short_name=district_short_name,
+            district_full_name=district_full_name,
+        )
 
 
 class SearchQuery(BaseModel):
@@ -293,7 +346,7 @@ class LLMOutput(BaseModel):
     place: Place
     eval_term: str
     raw_model_response: str | None = None
-    extracted_text: Optional[List[str] | None] = None
+    extracted_text: Optional[List[Any]] = None
     rationale: Optional[str | None] = None
     answer: Optional[str | None] = None
 
@@ -352,8 +405,8 @@ class EvalResult(BaseModel):
     ground_truth: str | None
     ground_truth_orig: str | None
     ground_truth_page: str | None
-    answer_correct: List[bool] | None
-    page_in_range: List[bool] | None
+    answer_correct: bool | None
+    page_in_range: bool | None
 
     def model_post_init(self, __context):
         if isinstance(self.place, dict):

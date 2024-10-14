@@ -1,17 +1,22 @@
+-e .
 anthropic
 boto3
 datasets
 diskcache
 elasticsearch-dsl
+firebase_admin
+google-cloud-firestore
 hydra-core
 ipykernel
 matplotlib
 omegaconf
 openai
+orjson # for visualization
 pre-commit
 PyMuPDF # for visualization
 python-dotenv
 streamlit # for visualization
+streamlit-modal # for visualization
 typer
 wandb
 watchdog

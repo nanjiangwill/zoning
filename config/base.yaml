@@ -6,7 +6,7 @@ global_config:
   experiment_dir: results/${global_config.experiment_name} # helper variable, just used to parse
 
   target_state: connecticut
-  eval_terms: ["min_lot_size", "min_unit_size", "max_height"] # all available eval terms ['floor_to_area_ratio', 'max_height', 'max_lot_coverage', 'max_lot_coverage_pavement', 'min_lot_size', 'min_parking_spaces', 'min_unit_size']
+  eval_terms: ["min_lot_size", "min_unit_size", "max_height"] # all available eval terms ['floor_to_area_ratio', 'max_height', 'max_lot_coverage', 'max_lot_coverage_pavement', 'min_lot_size', 'min_parking_spaces', 'min_unit_size', 'units_per_acre']
 
   data_dir: data/${global_config.target_state}
   target_town_file: ${global_config.data_dir}/target_towns_names.json
@@ -18,9 +18,12 @@ global_config:
   result_output_dir: results/${global_config.target_state}/${global_config.experiment_name} # helper variable, just used to parse
 
   pdf_dir: ${global_config.data_dir}/pdfs   # normally we dont redo pdf collection, we just save them in data
-  ocr_dir: ${global_config.data_dir}/ocr    # normally we dont redo ocr collection, we just save them in data, not in experiment results
+  ocr_dir: ${global_config.data_dir}/original_ocr    # normally we dont redo ocr collection, we just save them in data, not in experiment results
 
   format_ocr_dir: ${global_config.experiment_dir}/format_ocr
+  page_embedding_dir: ${global_config.experiment_dir}/page_embedding
+  district_extraction_dir: ${global_config.experiment_dir}/district_extraction
+  district_extraction_verification_dir: ${global_config.experiment_dir}/district_extraction_verification
   index_dir: ${global_config.experiment_dir}/index
   search_dir: ${global_config.experiment_dir}/search
   prompt_dir: ${global_config.experiment_dir}/prompt
@@ -40,12 +43,24 @@ global_config:
 ocr_config:
   method: textract
   run_ocr: false
-  input_document_s3_bucket:
-  pdf_name_prefix_in_s3_bucket: zoning/${global_config.target_state}/
+  textract_region_name: us-east-2
+  input_document_s3_bucket: zoning-nan
+  pdf_name_prefix_in_s3_bucket: ${global_config.target_state}
   feature_types: ["TABLES"]  # allowed ["TABLES", "FORMS", "QUERIES", "SIGNATURES", "LAYOUT"]
 
 format_ocr_config:
   temp: x
+
+district_extraction_config:
+  run_district_extraction: false
+  embedding_model: text-embedding-3-small
+  llm_model: ${llm_config.llm_name}
+  templates_dir: ${prompt_config.templates_dir}
+  system_prompt_file: district_extraction_system
+  user_prompt_file: district_extraction_user
+  verification_es_endpoint: ${global_config.es_endpoint}
+  target_districts_file: ${global_config.target_district_file}
+  district_page_mapping_file: ${global_config.data_dir}/district_page_mapping.json
 
 index_config:
   method: keyword # allowed keyword/embedding
@@ -70,7 +85,7 @@ prompt_config:
 
 llm_config:
   llm_name: gpt-4-1106-preview
-  max_tokens: 256
+  max_tokens: 512
   formatted_response: false
   cache_dir: .diskcache
 

@@ -1,255 +1,278 @@
+Remember, {{term}} refers to the minimum lot size per dwelling unit, which is different from the overall minimum lot size.
+
+The range for {{term}} is typically between 200 and 5,000 sq ft. Please focus on values within this range when searching for {{term}} and provide the answer as a whole number with unit (e.g., 500 sq ft). However, bear in mind that values falling outside of these ranges are possible, so do not disregard them.
+
 Here are several examples that you can use as references.
 # Examples
 
 Input:
-NEW PAGE 11
-
-{{zone_abbreviation}} Zone
-
-CELL (2, 1):
-Field
-CELL (2, 2):
-Value
-CELL (3, 1):
-{{term}}
-CELL (3, 2):
-123456 sq ft
-CELL (4, 1):
-Apartment Area
-CELL (4, 2):
-10,000
-
-
-Output:
-{
-    "extracted_text": ["CELL (3, 2):\n123456 sq ft"],
-    "rationale": "The cell that corresponds to the value for {{term}} in this table has this answer.",
-    "answer": "123456"
-}
-
-Input:
-NEW PAGE 32
-
-Section 6.3 Industrial Area & Dimensional Requirements
-1 Public Sewer or Public Water
-2 Neither Public Sewer nor Public Water
-3 For proposed warehouse/manufacturing uses 35%, for all other uses 25%, subject to
-Commission's authority to permit greater coverage based on landscape, architectural design
-and site development elements that exceed minimum standard of the Regulation
-4
-Shall be in addition to requirements of 8.1.2 Landscaping and Buffers
-6-4
-
+NEW PAGE 74
+Article 4 Zoning Districts
+4.5 Commercial Zoning Districts
+4.5.4.
+Special Standards in the {{zone_abbreviation}} Zoning District
+D.
+Open Space
+Open space requirements for the residential portion of a multifamily or mixed commercial-residential
+project shall be the same and conform to the requirements for multifamily developments in the MR-
+4-12
 CELL (1, 1):
+Use
 CELL (1, 2):
-Table 6.3 Area, Height, Coverage and Setback Requirements
+District
 CELL (1, 3):
-Table 6.3 Area, Height, Coverage and Setback Requirements
+Lot Width (ft.)
 CELL (1, 4):
-Table 6.3 Area, Height, Coverage and Setback Requirements
+Minimum
+Lot Width (ft.)
 CELL (1, 5):
-Table 6.3 Area, Height, Coverage and Setback Requirements
+Lot Area per dwelling
+unit (s.f.)
 CELL (1, 6):
-Table 6.3 Area, Height, Coverage and Setback Requirements
+Minimum
+Lot Area per dwelling
+unit (s.f.)
 CELL (1, 7):
-Table 6.3 Area, Height, Coverage and Setback Requirements
 CELL (1, 8):
-Table 6.3 Area, Height, Coverage and Setback Requirements
+Yard
+(ft.)
 CELL (1, 9):
-CELL (1, 10):
 CELL (2, 1):
-Zone
 CELL (2, 2):
-Min
-Area
 CELL (2, 3):
-Min
-Width
+With
+Water and
+Sewer
 CELL (2, 4):
-Min
-Depth
+Without
+Water and
+Sewer
 CELL (2, 5):
-Max
-Stories
+With
+Water and
+Sewer
 CELL (2, 6):
-Max
-Height
+Without
+Water and
+Sewer
 CELL (2, 7):
-Max % Lot
-Coverage
-CELL (2, 8):
-Min
 Front
-Yard
-CELL (2, 9):
-Min
-Side
-Yard
-CELL (2, 10):
-Min
+CELL (2, 8):
 Rear
-Yard
+CELL (2, 9):
+Side
 CELL (3, 1):
-I
+All residential, except
 CELL (3, 2):
-20,000
-sq. ft.
+{{zone_abbreviation}}
 CELL (3, 3):
-100'
+60
 CELL (3, 4):
-100'
+60
 CELL (3, 5):
-2 1/2
+6,000
 CELL (3, 6):
-50'
+10,000
 CELL (3, 7):
-N/A
+25³
 CELL (3, 8):
-25'
+63
 CELL (3, 9):
-20'
-CELL (3, 10):
-20'
+51,2
 CELL (4, 1):
-{{zone_abbreviation}}
+multifamily
 CELL (4, 2):
-40,000
-sq. ft. 1
+XXXX
 CELL (4, 3):
-150'
+75
 CELL (4, 4):
-150'
+75
 CELL (4, 5):
-2 1/2
+7,500
 CELL (4, 6):
-50'
+10,000
 CELL (4, 7):
-25%³
+253
 CELL (4, 8):
-50'
+253
 CELL (4, 9):
-20'
-CELL (4, 10):
-20'
+102
 CELL (5, 1):
-{{zone_abbreviation}}
+Multifamily/ Mixed
 CELL (5, 2):
-60,000
-sq. ft. 2
+{{zone_abbreviation}}
 CELL (5, 3):
-200'
+100
 CELL (5, 4):
-200'
+150
 CELL (5, 5):
-2 1/2
+3,200
 CELL (5, 6):
-50'
+15,000
 CELL (5, 7):
-25%³
+Per District
 CELL (5, 8):
-50'
+Per District
 CELL (5, 9):
-20'
-CELL (5, 10):
-20'4
+CELL (6, 1):
+commercial- residential
+CELL (6, 2):
+XXXX
+CELL (6, 3):
+100
+CELL (6, 4):
+100
+CELL (6, 5):
+3,200
+CELL (6, 6):
+7,000
+CELL (6, 7):
+CELL (6, 8):
+CELL (6, 9):
 
 Output:
 {
     "extracted_text": [
-        "1 Public Sewer or Public Water",
-        "2 Neither Public Sewer nor Public Water",
-        "CELL (4, 2): \n40,000\nsq. ft.",
-        "CELL (5, 2): \n60,000\nsq. ft."
+        ["CELL (2, 5):\nWith\nWater and\nSewer", 74],
+        ["CELL (3, 5):\n6,000", 74],
+        ["CELL (2, 6):\nWithout\nWater and\nSewer", 74],
+        ["CELL (3, 6):\n10,000" 74]
     ],
-    "rationale": "From this page we can infer that the value is conditional on the presence of a public sewer or water system, and there are two different values for the current zone, depending on that.",
-    "answer": "40,000 sq ft (if public water or sewer); 60,000 sq ft (otherwise)"
+    "rationale": "For district {{zone_abbreviation}}, the section provides the information for {{term}}. It can be inferred that the {{term}} depends on whether the area has water and sewer.",
+    "answer": "6,000 sq ft (With Water and Sewer), 10,000 sq ft (Without Water and Sewer)"
+}
+
+Input:
+NEW PAGE 48
+$2.4 General Use District Standards
+Article 2. Zoning Districts
+Cluster Subdivision Standards
+Cluster Residential Subdivision
+CELL (1, 1):
+{{zone_abbreviation}}
+CELL (1, 2):
+Single- family
+Detached
+CELL (1, 3):
+Zero
+Lot Line
+CELL (1, 4):
+Alley-loaded
+CELL (1, 5):
+Two-family
+CELL (1, 6):
+Townhouse
+CELL (1, 7):
+Multi-family
+CELL (2, 1):
+Use
+CELL (2, 2):
+Permitted
+CELL (2, 3):
+Permitted
+CELL (2, 4):
+Permitted
+CELL (2, 5):
+Not Permitted
+CELL (2, 6):
+Not Permitted
+CELL (2, 7):
+Not Permitted
+CELL (6, 1):
+Lot (min.)
+Lot area (sq. ft.)
+Lot width (ft.)
+Water/sewer, public
+CELL (6, 2):
+43,560
+100
+Required
+CELL (6, 3):
+43,560
+100
+Required
+CELL (6, 4):
+43,560
+100
+Required
+CELL (6, 5):
+CELL (6, 6):
+CELL (6, 7):
+CELL (7, 1):
+Yards (min. ft.)
+Road yard
+Side yard (interior)
+Side yard (total)
+Side yard (road)
+Rear yard
+CELL (7, 2):
+15
+5
+10
+10
+15
+CELL (7, 3):
+15
+0
+10
+10
+15
+CELL (7, 4):
+10
+5
+10
+10
+15
+CELL (7, 5):
+CELL (7, 6):
+CELL (7, 7):
+
+Output:
+{
+    "extracted_text": null
+    "rationale": "The section mentions the minimum lot size for {{zone_abbreviation}}, but no {{term}} is provided.",
+    "answer": null
 }
 
 Input:
 NEW PAGE 66
-
-{{zone_abbreviation}} Zone
-
-{{term}} is 123 sq ft, side length is 10 ft
-
-NEW PAGE 67
-
-{{zone_abbreviation}} Zone - Senior Active Overlay
-
-{{term}} is 1523 sq ft
-
-DKEWKWKDS Zone
-
-{{term}} is 20,000 sq ft
-
-Output:
-{
-    "extracted_text": ["{{term}} is 123 sq ft"],
-    "rationale": "The section titled {{zone_abbreviation}} says the answer explicitly. We ignore sections that specify regulations for overlay districts within this district.",
-    "answer": "123 sq ft"
-}
-
-Input:
-NEW PAGE 47
-
-specified in Schedule A. The total floor area of all buildings and other structures on any lot, excluding basements, shall not exceed the percentage of the lot as specified in Schedule A.
-
-7.6 Minimum Floor Area - Dwelling: Each dwelling shall have a minimum floor area on the ground floor as specified in Schedule A.
-
-7.7 Corner Lots: On any corner lot, the required minimum street setback specified in Schedule A shall be applied to each street line.
-
-SCHEDULE A
-AREA, LOCATION AND BULK STANDARDS Line Standards Districts
-A
-B
-C
-
-{{term}} (in square feet)
-8,400
-5,500
-6,300
+SEC. 9-4-200.4 {{zone_abbreviation}} {{zone_name}} STANDARDS.
+(A) General district standards.
+(1) Single entity.
+(a) Each Mixed Use Institutional (MUI) district must be under the control of a single entity and have a controlling governmental interest or be a hospital, college or university.
+(b) Development of properties within the MUI may be accomplished or carried out by either the single entity or in collaboration with a private development partner.
+(2) MUI developments may consist of one, or several, lots. They may also occur in phases.
+(3) District dimensional standards.
+(a) Lot area (net). All uses: none.
+(b) Lot width (at the MBL). All uses: none.
+(c) Public street setback: 0 feet minimum.
+(d) Side setback: 0 feet minimum.
+(e) Rear setback: 0 feet minimum.
+(f) Height: 5 stories or 70 feet
+(4) District density standards.
+(a) Minimum habitable (mechanically conditioned) floor area per unit:
+1. One bedroom unit: 400 square feet.
+2. Two or more bedroom unit: 500 square feet.
+(b) Minimum parking: One space per unit.
+(5) Multiple principal uses may be allowed on a single lot within an MUI.
+(6) Residential uses may not exceed 25% of the total building square footage of an MUI. In the event of a phased development, this ratio will be enforced for each specific phase.
 
 Output:
 {
-    "extracted_text": ["6,300"],
-    "rationale": "The section {{term}} or its close synonyms says the answer explicitly.",
-    "answer": "6,300 sq ft"
+    "extracted_text": [
+        ["1. One bedroom unit: 400 square feet.", 66],
+        ["2. Two or more bedroom unit: 500 square feet.", 66]
+    ],
+    "rationale": "The section provides the information for {{term}} of the district {{zone_abbreviation}}. It can be inferred that the {{term}} is dependent on the unit's number of bedrooms.",
+    "answer": "400 sq ft (One bedroom unit), 500 sq ft (Two or more bedroom unit)"
 }
-
-
-Input:
-NEW PAGE 84
-
-SECTION 9A - Housing Opportunity Development (This Section Repealed - August 15, 2014)
-SECTION 9B - Housing Opportunity Development District (Effective July 1, 2014)
-
-Housing Opportunity Development:
-9B.1 Intent and Purpose:
-This Housing Opportunity Development ("HOD") District is intended to increase in the Town of Bethany the supply of housing that is within the economic means of moderate income households. The HOD District is a separate and independent zoning district and shall replace, not supplement, the existing zoning district of any property to which it is applied.
-
-9B.2 Permitted Uses:
-Principal Uses: Residential homes with a maximum of three dwelling units per building as part of a Housing Opportunity Development.
-Accessory Uses:
-Accessory buildings, structures, and uses.
-Agricultural or farming uses.
-Common or community buildings for residents and guests (not for residential purposes or temporary/transient occupancy).
-
-9B.3 Eligible Areas:
-Criteria for HOD Application:
-The total combined property shall be at least (30) acres in size.
-Frontage on Old Amity Road and Meyers Road.
-Owned by the same person or entity for at least three years prior to application.
-
-Output:
-{
-    "extracted_text": [The total combined property shall be at least (30) acres in size.],
-    "rationale": "The section state the {{term}}",
-    "answer": "30 acres"
-}
-
 
 Input:
 Multi-family building
 
 Output:
-null
+{
+    "extracted_text": null,
+    "rationale": "The section does not provide a specific value for {{term}}, and is not about single-family homes.",
+    "answer": null
+}

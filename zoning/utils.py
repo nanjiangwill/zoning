@@ -6,6 +6,7 @@ from functools import partial, wraps
 from typing import Iterable, List, TypeVar
 
 import tqdm
+from pydantic import ValidationError
 from tqdm.contrib.concurrent import thread_map
 from typer import Typer
 
@@ -18,10 +19,14 @@ def target_name(target, dir):
     return f"{dir}/{target}.json"
 
 
+def handle_slash_in_target_name(target: str) -> str:
+    return target.replace("/", " ")
+
+
 def target_pdf(target, dir):
     """Target can be town or term_district."""
 
-    return f"{dir}/{target}.pdf"
+    return f"{dir}/{target}-zoning-code.pdf"
 
 
 def prompt_file(prompt_name: str):
@@ -89,7 +94,14 @@ async def process_async(
             print(f"Error processing {target}")
             print(e)
 
-    async_tasks = [process_target(target) for target in targets]
+    max_workers = 10
+    semaphore = asyncio.Semaphore(max_workers)
+
+    async def bounded_process_target(target):
+        async with semaphore:
+            return await process_target(target)
+
+    async_tasks = [bounded_process_target(target) for target in targets]
 
     pbar = tqdm.tqdm(total=len(async_tasks))
     for f in asyncio.as_completed(async_tasks):
@@ -110,6 +122,7 @@ def page_coverage_text(searched_text: List[str]) -> str:
             page, text = chunk.split("\n", 1)
             page_text_dict[int(page)] = text
     all_pages = sorted(page_text_dict.keys())
+    # print("\n".join([f"NEW PAGE {page}\n{page_text_dict[page]}" for page in all_pages]))
     return "\n".join([f"NEW PAGE {page}\n{page_text_dict[page]}" for page in all_pages])
 
 
@@ -127,6 +140,66 @@ def page_coverage(searched_text: List[str]) -> List[List[int]]:
 
 def flatten(t: Iterable[Iterable[T]]) -> List[T]:
     return [item for sublist in t for item in sublist]
+
+
+def post_processing_llm_output(model_response: str | None) -> dict | None:
+    if model_response is None or model_response == "null":
+        return None
+    try:
+        # TODO: this is something that came with new gpt update. This is a bandaid solution that i'll look into later
+        if "{" in model_response and "}" in model_response:
+            start_index = model_response.index("{")
+            end_index = model_response.rindex("}") + 1
+            model_response = model_response[start_index:end_index]
+        # if model_response[:7] == "```json":
+        #     model_response = model_response[7:-4]
+        json_body = json.loads(model_response)
+        if json_body is None:
+            # The model is allowed to return null if it cannot find the answer,
+            # so just pass this onwards.
+            return None
+        return json_body
+    except (ValidationError, TypeError, json.JSONDecodeError) as exc:
+        print("Error parsing response from model during extraction:", exc)
+        print(f"Response: {model_response}")
+        return {
+            "extracted_text": None,
+            "rationale": model_response,
+            "answer": None,
+        }
+
+
+def expand_term(thesarus_file: str, eval_term: str) -> Iterable[str]:
+    # term = term.replace("_", " ").strip()
+    # logger.info(f"Term: {term}")  # Initial logging of the term
+    thesarus = get_thesaurus(thesarus_file)
+    min_variations = thesarus.get("min", [])
+    max_variations = thesarus.get("max", [])
+    expanded_count = 0
+    for query in thesarus.get(
+        eval_term, []
+    ):  # Iterate over thesaurus entries for the term
+        # query = query.replace("_", " ").strip()
+        if "min" in query or "minimum" in query:  # Handling minimum variations
+            for r in min_variations:
+                modified_query = query.replace(
+                    "min", r
+                )  # Replace 'min' with its variations
+                # logger.info(f"Yielding: {modified_query}")  # Log the value to be yielded
+                expanded_count += 1
+                yield modified_query
+        elif "max" in query or "maximum" in query:  # Handling maximum variations
+            for r in max_variations:
+                modified_query = query.replace(
+                    "max", r
+                )  # Replace 'max' with its variations
+                # logger.info(f"Yielding: {modified_query}")  # Log the value to be yielded
+                expanded_count += 1
+                yield modified_query
+        else:
+            # logger.info(f"Yielding: {query}")  # Log the unmodified query to be yielded
+            expanded_count += 1
+            yield query
 
 
 # Copied from https://github.com/tiangolo/typer/issues/88
