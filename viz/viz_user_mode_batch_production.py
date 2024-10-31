@@ -1,7 +1,6 @@
 import datetime
 import glob
 import os
-import sys
 import time
 from collections import OrderedDict
 
@@ -29,16 +28,10 @@ from zoning.utils import expand_term
 
 # firestore config
 
-# db = firestore.Client.from_service_account_info(
-#     st.secrets["firebase"]["my_project_settings"]
-# )
-# firestore config
-if sys.argv[1]:
-    db = firestore.Client.from_service_account_json(sys.argv[1])
-else:
-    db = firestore.Client.from_service_account_info(
-        st.secrets["firebase"]["my_project_settings"]
-    )
+db = firestore.Client.from_service_account_info(
+    st.secrets["firebase"]["my_project_settings"]
+)
+
 
 # Data Loading path
 state_experiment_map = {
@@ -378,7 +371,7 @@ def build_batches_for_town(town_name, all_data_by_town):
     for (eval_term, district), data in town_data.items():
         try:
             llm_output = data["llm"][0].llm_outputs[0]
-        except:
+        except Exception as e:
             continue
 
         if llm_output.extracted_text is not None:
@@ -643,12 +636,14 @@ def process_batch_with_progress(batch):
             ]
             for k, X in [
                 ("search", SearchResult),
-                # ("prompt", PromptResult),
+                ("prompt", PromptResult),
                 ("llm", LLMInferenceResult),
                 ("normalization", NormalizedLLMInferenceResult),
                 ("eval", EvalResult),
             ]
         }
+
+        st.session_state["current_batch_info"] = visualized_data
 
         # loading info
         search_result = visualized_data["search"][0]
@@ -660,9 +655,9 @@ def process_batch_with_progress(batch):
             0
         ]
         norm = normalized_llm_output.llm_output.answer
-        eval_result = visualized_data["eval"][0]
+        # eval_result = visualized_data["eval"][0]
 
-        town_formatted = format_town(town_name)
+        # town_formatted = format_town(town_name)
 
         # Collect pages to display
         def get_showed_pages(pages, interval):
@@ -1065,7 +1060,6 @@ st.html(final_html)
 # write data
 def write_data(human_feedback: str) -> bool:
     batch = st.session_state["current_batch"]
-
     # Store and reset the timer
     if "start_time" not in st.session_state:
         elapsed_sec = -1
@@ -1078,35 +1072,17 @@ def write_data(human_feedback: str) -> bool:
         st.toast("Please enter your name first", icon="🚨")
         return False
 
+    # Prepare all documents to write
+    docs_to_write = []
     for item in batch:
         town_name = item["town_name"]
         eval_term = item["eval_term"]
         place = Place.from_str(item["district"])
 
-        current_viewing_data_name = (
-            f"{item['eval_term']}__{item['district'].replace(' ', '+')}.json"
-        )
-        visualized_data = {
-            k: [
-                X.model_construct(
-                    **json.loads(
-                        requests.get(
-                            f"{s3_prefix}/{k}/{current_viewing_data_name}"
-                        ).text
-                    )
-                )
-            ]
-            for k, X in [
-                ("search", SearchResult),
-                ("prompt", PromptResult),
-                ("llm", LLMInferenceResult),
-                ("normalization", NormalizedLLMInferenceResult),
-                ("eval", EvalResult),
-            ]
-        }
-
         # loading info
-        normalized_llm_inference_result = visualized_data["normalization"][0]
+        normalized_llm_inference_result = st.session_state["current_batch_info"][
+            "normalization"
+        ][0]
         normalized_llm_output = normalized_llm_inference_result.normalized_llm_outputs[
             0
         ]
@@ -1127,18 +1103,22 @@ def write_data(human_feedback: str) -> bool:
             "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "elapsed_sec": elapsed_sec,
         }
+        docs_to_write.append(d)
 
-        try:
-            doc_ref = db.collection(selected_state)
-            _, result = doc_ref.add(d)
-            result.get()  # Wait for acknowledgment
-        except GoogleAPIError as e:
-            st.error(f"Error writing to Firestore: {e}")
-            return False
-        except FirebaseError as e:
-            st.error(f"Firebase SDK Error: {e}")
-            return False
-
+    # Write all documents in batch
+    try:
+        doc_ref = db.collection(selected_state)
+        batch_write = db.batch()
+        for d in docs_to_write:
+            doc_ref_new = doc_ref.document()
+            batch_write.set(doc_ref_new, d)
+        batch_write.commit()  # Commits the batch write
+    except GoogleAPIError as e:
+        st.error(f"Error writing to Firestore: {e}")
+        return False
+    except FirebaseError as e:
+        st.error(f"Firebase SDK Error: {e}")
+        return False
     st.session_state["start_time"] = time.time()  # Reset the timer
     st.toast("Going to next data in 2 seconds", icon="🚀")
     st.toast("Data successfully written to database!", icon="🎉")
