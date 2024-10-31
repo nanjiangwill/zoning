@@ -76,7 +76,7 @@ modal_name = Modal(
 )
 
 if (
-        "analyst_name" not in st.session_state or not st.session_state["analyst_name"]
+    "analyst_name" not in st.session_state or not st.session_state["analyst_name"]
 ) and not modal_name.is_open():
     modal_name.open()
 
@@ -166,7 +166,7 @@ def filtered_by_place_and_eval(results, place, eval_term):
 all_data_by_town = {
     town_name: {
         (eval_term, place): {"place": place, "eval_term": eval_term}
-                            | filtered_by_place_and_eval(all_results, place, eval_term)
+        | filtered_by_place_and_eval(all_results, place, eval_term)
         for place in all_places
         if get_town_by_place(place) == town_name
         for eval_term in all_eval_terms
@@ -193,29 +193,33 @@ def build_batches_for_town(town_name, all_data_by_town):
 
     for (eval_term, district), data in town_data.items():
         try:
-            llm_output = data['llm'][0].llm_outputs[0]
+            llm_output = data["llm"][0].llm_outputs[0]
         except:
             continue
 
         if llm_output.extracted_text is not None:
             # Get the page number where the information first appears
             first_page = llm_output.extracted_text[0][1]
-            combinations_with_answer.append({
-                'eval_term': eval_term,
-                'district': district,
-                'first_page': first_page,
-                'town_name': town_name,
-            })
+            combinations_with_answer.append(
+                {
+                    "eval_term": eval_term,
+                    "district": district,
+                    "first_page": first_page,
+                    "town_name": town_name,
+                }
+            )
         else:
             # RAG did not find an answer
-            combinations_without_answer.append({
-                'eval_term': eval_term,
-                'district': district,
-                'town_name': town_name,
-            })
+            combinations_without_answer.append(
+                {
+                    "eval_term": eval_term,
+                    "district": district,
+                    "town_name": town_name,
+                }
+            )
 
     # Sort combinations with answer by first_page
-    combinations_with_answer.sort(key=lambda x: x['first_page'])
+    combinations_with_answer.sort(key=lambda x: x["first_page"])
 
     # Group combinations into batches where the page numbers are within a certain gap
     batches_with_answer = []
@@ -226,25 +230,25 @@ def build_batches_for_town(town_name, all_data_by_town):
         if not current_batch:
             current_batch.append(combo)
         else:
-            if combo['first_page'] - current_batch[-1]['first_page'] <= max_page_gap:
+            if combo["first_page"] - current_batch[-1]["first_page"] <= max_page_gap:
                 current_batch.append(combo)
             else:
                 # Sort current batch by eval_term before adding
-                current_batch.sort(key=lambda x: x['eval_term'])
+                current_batch.sort(key=lambda x: x["eval_term"])
                 batches_with_answer.append(current_batch)
                 current_batch = [combo]
 
     if current_batch:
-        current_batch.sort(key=lambda x: x['eval_term'])
+        current_batch.sort(key=lambda x: x["eval_term"])
         batches_with_answer.append(current_batch)
 
     # Group combinations without answer by eval_term
     batches_without_answer = []
-    eval_terms = sorted(set(c['eval_term'] for c in combinations_without_answer))
+    eval_terms = sorted(set(c["eval_term"] for c in combinations_without_answer))
     for eval_term in eval_terms:
-        batch = [c for c in combinations_without_answer if c['eval_term'] == eval_term]
+        batch = [c for c in combinations_without_answer if c["eval_term"] == eval_term]
         # Sort batch by district or any other criteria if needed
-        batch.sort(key=lambda x: x['district'])
+        batch.sort(key=lambda x: x["district"])
         batches_without_answer.append(batch)
 
     # Combine batches
@@ -372,16 +376,16 @@ def get_next_unlabeled_batch(labelled_data, all_batches):
         batch_labelled = False
         for item in batch:
             item_labeled = (
-                    (labelled_data["eval_term"] == format_eval_term[item['eval_term']])
-                    & (
-                            labelled_data["district_full_name"]
-                            == Place.from_str(item['district']).district_full_name
-                    )
-                    & (
-                            labelled_data["district_short_name"]
-                            == Place.from_str(item['district']).district_short_name
-                    )
-                    & (labelled_data["town"] == item['town_name'])
+                (labelled_data["eval_term"] == format_eval_term[item["eval_term"]])
+                & (
+                    labelled_data["district_full_name"]
+                    == Place.from_str(item["district"]).district_full_name
+                )
+                & (
+                    labelled_data["district_short_name"]
+                    == Place.from_str(item["district"]).district_short_name
+                )
+                & (labelled_data["town"] == item["town_name"])
             ).any()
             if item_labeled:
                 batch_labelled = True
@@ -438,7 +442,7 @@ st.session_state["start_time"] = time.time()
 
 # Display the batch information
 batch = st.session_state["current_batch"]
-town_name = batch[0]['town_name']
+town_name = batch[0]["town_name"]
 st.session_state["current_town"] = town_name
 
 # Initialize sets to collect pages and highlights
@@ -449,8 +453,8 @@ with st.sidebar:
     st.markdown(f"# Town: {format_town(town_name)}")
 
     for item in batch:
-        eval_term = item['eval_term']
-        district = item['district']
+        eval_term = item["eval_term"]
+        district = item["district"]
         place = Place.from_str(district)
         visualized_data = all_data_by_town[town_name][(eval_term, district)]
 
@@ -460,12 +464,13 @@ with st.sidebar:
         llm_inference_result = visualized_data["llm"][0]
         llm_output = llm_inference_result.llm_outputs[0]
         normalized_llm_inference_result = visualized_data["normalization"][0]
-        normalized_llm_output = normalized_llm_inference_result.normalized_llm_outputs[0]
+        normalized_llm_output = normalized_llm_inference_result.normalized_llm_outputs[
+            0
+        ]
         norm = normalized_llm_output.llm_output.answer
         eval_result = visualized_data["eval"][0]
 
         town_formatted = format_town(town_name)
-
 
         # Collect pages to display
         def get_showed_pages(pages, interval):
@@ -474,9 +479,10 @@ with st.sidebar:
                 showed_pages.extend(range(page - interval, page + interval + 1))
             return sorted(list(set(showed_pages)))
 
-
         if llm_output.extracted_text is not None:
-            highlight_text_pages = sorted(list(set([i[1] for i in llm_output.extracted_text])))
+            highlight_text_pages = sorted(
+                list(set([i[1] for i in llm_output.extracted_text]))
+            )
         else:
             highlight_text_pages = []
 
@@ -488,12 +494,14 @@ with st.sidebar:
         all_showed_pages.update(showed_pages)
 
         # Collect highlight info
-        all_highlight_info.append({
-            'eval_term': eval_term,
-            'district': district,
-            'place': place,
-            'llm_output': llm_output,
-        })
+        all_highlight_info.append(
+            {
+                "eval_term": eval_term,
+                "district": district,
+                "place": place,
+                "llm_output": llm_output,
+            }
+        )
 
         # Display the title (result item)
         if entire_search_page_range == []:
@@ -507,7 +515,10 @@ with st.sidebar:
                 </div>
             """
             )
-        elif len(highlight_text_pages) == 0 and normalized_llm_output.normalized_answer is None:
+        elif (
+            len(highlight_text_pages) == 0
+            and normalized_llm_output.normalized_answer is None
+        ):
             st.html(
                 f"""
                 <div style="border: 1px solid #ccc; padding: 10px; margin: 5px; border-radius: 5px;">
@@ -629,16 +640,16 @@ for show_page in sorted(all_showed_pages):
     load_ocr = False
     page_text_lower = page_info["text"].lower()
     for item in all_highlight_info:
-        eval_term = item['eval_term']
-        place = item['place']
+        eval_term = item["eval_term"]
+        place = item["place"]
         for term in expand_term(thesarus_file, eval_term):
             if term in page_text_lower:
                 load_ocr = True
                 break
         if (
-                place.town.lower() in page_text_lower
-                or place.district_full_name.lower() in page_text_lower
-                or place.district_short_name.lower() in page_text_lower
+            place.town.lower() in page_text_lower
+            or place.district_full_name.lower() in page_text_lower
+            or place.district_short_name.lower() in page_text_lower
         ):
             load_ocr = True
 
@@ -658,19 +669,21 @@ for show_page in sorted(all_showed_pages):
 
         # Apply highlights per item
         for item in all_highlight_info:
-            eval_term = item['eval_term']
-            place = item['place']
-            llm_output = item['llm_output']
+            eval_term = item["eval_term"]
+            place = item["place"]
+            llm_output = item["llm_output"]
 
             # Identify district boxes
             district_boxes = [
                 [i[0], i[1]]
                 for i in text_boundingbox
                 if place.district_full_name.lower() in i[0].lower()
-                   or place.district_full_name.lower() in " ".join(i[0].lower().split())
-                   or place.district_short_name.lower() in i[0].lower().split()
+                or place.district_full_name.lower() in " ".join(i[0].lower().split())
+                or place.district_short_name.lower() in i[0].lower().split()
             ]
-            district_rects.extend([get_normalized_rect(b[1], page_rect) for b in district_boxes])
+            district_rects.extend(
+                [get_normalized_rect(b[1], page_rect) for b in district_boxes]
+            )
 
             # Identify eval_term boxes
             eval_term_boxes = [
@@ -681,7 +694,9 @@ for show_page in sorted(all_showed_pages):
                     for term in expand_term(thesarus_file, eval_term)
                 )
             ]
-            eval_term_rects.extend([get_normalized_rect(b[1], page_rect) for b in eval_term_boxes])
+            eval_term_rects.extend(
+                [get_normalized_rect(b[1], page_rect) for b in eval_term_boxes]
+            )
 
             # Identify llm_answer boxes
             if llm_output.extracted_text is not None:
@@ -693,7 +708,9 @@ for show_page in sorted(all_showed_pages):
                         for ext_text in llm_output.extracted_text
                     )
                 ]
-                llm_answer_rects.extend([get_normalized_rect(b[1], page_rect) for b in llm_answer_boxes])
+                llm_answer_rects.extend(
+                    [get_normalized_rect(b[1], page_rect) for b in llm_answer_boxes]
+                )
 
         # Merge rectangles to avoid overlapping highlights
         district_rects = merge_rects(district_rects)
@@ -722,18 +739,22 @@ for show_page in sorted(all_showed_pages):
         if overlap_exists:
             for llm_rect in llm_answer_rects:
                 if any(
-                        llm_rect.intersects(rect)
-                        for rect in extended_district_rects + extended_eval_term_rects
+                    llm_rect.intersects(rect)
+                    for rect in extended_district_rects + extended_eval_term_rects
                 ):
                     overlapping_district_rects = [
                         rect
                         for rect in district_rects
-                        if any(llm_rect.intersects(i) for i in extend_rect(rect, page_rect))
+                        if any(
+                            llm_rect.intersects(i) for i in extend_rect(rect, page_rect)
+                        )
                     ]
                     overlapping_eval_term_rects = [
                         rect
                         for rect in eval_term_rects
-                        if any(llm_rect.intersects(i) for i in extend_rect(rect, page_rect))
+                        if any(
+                            llm_rect.intersects(i) for i in extend_rect(rect, page_rect)
+                        )
                     ]
 
                     for rect in overlapping_district_rects:
@@ -743,9 +764,7 @@ for show_page in sorted(all_showed_pages):
 
                     to_be_highlighted_llm_answer_rects.append([llm_rect, 0.5])
         else:
-            to_be_highlighted_district_rects = [
-                [rect, 0.2] for rect in district_rects
-            ]
+            to_be_highlighted_district_rects = [[rect, 0.2] for rect in district_rects]
             to_be_highlighted_eval_term_rects = [
                 [rect, 0.2] for rect in eval_term_rects
             ]
@@ -827,13 +846,15 @@ def write_data(human_feedback: str) -> bool:
         return False
 
     for item in batch:
-        town_name = item['town_name']
-        district = item['district']
-        eval_term = item['eval_term']
+        town_name = item["town_name"]
+        district = item["district"]
+        eval_term = item["eval_term"]
         place = Place.from_str(district)
         visualized_data = all_data_by_town[town_name][(eval_term, district)]
         normalized_llm_inference_result = visualized_data["normalization"][0]
-        normalized_llm_output = normalized_llm_inference_result.normalized_llm_outputs[0]
+        normalized_llm_output = normalized_llm_inference_result.normalized_llm_outputs[
+            0
+        ]
         norm = normalized_llm_output.llm_output.answer
 
         district_full_name = place.district_full_name
@@ -881,7 +902,7 @@ def jump_to_next_batch():
     if next_batch_info:
         idx, batch = next_batch_info
         st.session_state["current_batch"] = batch
-        next_town_name = batch[0]['town_name']
+        next_town_name = batch[0]["town_name"]
         if st.session_state["current_town"] != next_town_name:
             st.session_state["pdf_data"] = None
             st.session_state["ocr_info"] = None  # Reset the OCR info
@@ -918,14 +939,12 @@ if st.session_state["finish-town-opened"]:
 with st.container():
     correct_col, not_sure_col, wrong_col = st.columns(3)
 
-
     def button_callback(feedback):
         def _button_callback():
             if write_data(feedback):
                 jump_to_next_batch()
 
         return _button_callback
-
 
     with correct_col:
         st.button(
@@ -966,7 +985,7 @@ next_batch_index = st.session_state["current_batch_index"] + 1
 if next_batch_index < len(all_batches):
     next_batch = all_batches[next_batch_index]
     next_item = next_batch[0]
-    next_place = Place.from_str(next_item['district'])
+    next_place = Place.from_str(next_item["district"])
     st.html(
         f"""
         <h2 style="text-align: center; font-size: 2.5em;">

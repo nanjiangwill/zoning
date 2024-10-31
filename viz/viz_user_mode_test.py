@@ -225,7 +225,7 @@ inverse_format_town_map = {k: v for v, k in format_town_map.items()}
 #     )
 #     for eval_term, district in sorted_town_results:
 #         if (
-#             all_data_by_town[town][(eval_term, district)]["llm"] and 
+#             all_data_by_town[town][(eval_term, district)]["llm"] and
 #             all_data_by_town[town][(eval_term, district)]["llm"][0].llm_outputs and
 #             all_data_by_town[town][(eval_term, district)]["llm"][0]
 #             .llm_outputs[0]
@@ -407,13 +407,19 @@ st.session_state["start_time"] = time.time()
 # Show the selected data
 visualized_data = sorted_all_results[idx]
 
-s3_prefix = "https://zoning-nan.s3.us-east-2.amazonaws.com/results/north_carolina_claude"
+s3_prefix = (
+    "https://zoning-nan.s3.us-east-2.amazonaws.com/results/north_carolina_claude"
+)
 
 current_viewing_data_name = f"{eval_term}__{district.replace(' ', '+')}.json"
 
 visualized_data = {
     k: [
-        X.model_construct(**json.loads(requests.get(f"{s3_prefix}/{k}/{current_viewing_data_name}").text))
+        X.model_construct(
+            **json.loads(
+                requests.get(f"{s3_prefix}/{k}/{current_viewing_data_name}").text
+            )
+        )
     ]
     for k, X in [
         ("search", SearchResult),
@@ -484,7 +490,16 @@ def get_showed_pages(pages, interval):
         showed_pages.extend(range(page - interval, page + interval + 1))
     return sorted(list(set(showed_pages)))
 
-def get_edited_pages(showed_pages, format_ocr_result, extract_blocks, llm_output, place, eval_term, selected_state):
+
+def get_edited_pages(
+    showed_pages,
+    format_ocr_result,
+    extract_blocks,
+    llm_output,
+    place,
+    eval_term,
+    selected_state,
+):
     edited_pages = []
     pdfdata = st.session_state["doc"].tobytes()
     temp = fitz.open("pdf", pdfdata)
@@ -534,7 +549,9 @@ def get_edited_pages(showed_pages, format_ocr_result, extract_blocks, llm_output
                 llm_answer_boxs = [
                     [i[0], i[1]]
                     for i in text_boundingbox
-                    if any(j[0].split("\n")[-1] in i[0] for j in llm_output.extracted_text)
+                    if any(
+                        j[0].split("\n")[-1] in i[0] for j in llm_output.extracted_text
+                    )
                 ]  # TODO
             else:
                 llm_answer_boxs = []
@@ -689,6 +706,7 @@ def get_edited_pages(showed_pages, format_ocr_result, extract_blocks, llm_output
         edited_pages.append(img_bytes)
     return edited_pages
 
+
 showed_pages = get_showed_pages(highlight_text_pages, 1)
 pdf_file = f"https://zoning-nan.s3.us-east-2.amazonaws.com/pdf/north_carolina/{town_name}-zoning-code.pdf"
 ocr_file_url = f"https://zoning-nan.s3.us-east-2.amazonaws.com/ocr/north_carolina/{place.town}.json"
@@ -731,15 +749,29 @@ elif len(showed_pages) == 0 and normalized_llm_output.normalized_answer is None:
         with st.spinner("Downloading OCR info for new town..."):
             file_content = download_file_with_progress(ocr_file_url)
         st.session_state["ocr_info"] = json.loads(file_content)
-    if "format_ocr_result" not in st.session_state or st.session_state["format_ocr_result"] is None:
+    if (
+        "format_ocr_result" not in st.session_state
+        or st.session_state["format_ocr_result"] is None
+    ):
         with st.spinner("Downloading Format OCR info for new town..."):
-            file_content = download_file_with_progress(f"{s3_prefix}/format_ocr/{town_name}.json")
-        st.session_state["format_ocr_result"] = FormatOCR.model_construct(**json.loads(file_content))
+            file_content = download_file_with_progress(
+                f"{s3_prefix}/format_ocr/{town_name}.json"
+            )
+        st.session_state["format_ocr_result"] = FormatOCR.model_construct(
+            **json.loads(file_content)
+        )
 
     extract_blocks = [b for d in st.session_state["ocr_info"] for b in d["Blocks"]]
     showed_pages = entire_search_page_range.copy()
-    to_be_highlighted_pages = get_edited_pages(showed_pages, st.session_state["format_ocr_result"], extract_blocks, None, place, eval_term, selected_state)
-
+    to_be_highlighted_pages = get_edited_pages(
+        showed_pages,
+        st.session_state["format_ocr_result"],
+        extract_blocks,
+        None,
+        place,
+        eval_term,
+        selected_state,
+    )
 
     page_img_cols = st.columns(3)
     for k in range(len(to_be_highlighted_pages) // 3 + 1):
@@ -768,7 +800,6 @@ else:
     if len(showed_pages) == 0:
         showed_pages = entire_search_page_range.copy()
 
-    
     if "doc" not in st.session_state or st.session_state["doc"] is None:
         with st.spinner("Downloading PDF for new town..."):
             file_content = download_file_with_progress(pdf_file)
@@ -782,14 +813,29 @@ else:
         with st.spinner("Downloading OCR info for new town..."):
             file_content = download_file_with_progress(ocr_file_url)
         st.session_state["ocr_info"] = json.loads(file_content)
-    if "format_ocr_result" not in st.session_state or st.session_state["format_ocr_result"] is None:
+    if (
+        "format_ocr_result" not in st.session_state
+        or st.session_state["format_ocr_result"] is None
+    ):
         with st.spinner("Downloading Format OCR info for new town..."):
-            file_content = download_file_with_progress(f"{s3_prefix}/format_ocr/{town_name}.json")
-        st.session_state["format_ocr_result"] = FormatOCR.model_construct(**json.loads(file_content))
+            file_content = download_file_with_progress(
+                f"{s3_prefix}/format_ocr/{town_name}.json"
+            )
+        st.session_state["format_ocr_result"] = FormatOCR.model_construct(
+            **json.loads(file_content)
+        )
 
     extract_blocks = [b for d in st.session_state["ocr_info"] for b in d["Blocks"]]
 
-    edited_pages = get_edited_pages(showed_pages, st.session_state["format_ocr_result"], extract_blocks, llm_output, place, eval_term, selected_state)
+    edited_pages = get_edited_pages(
+        showed_pages,
+        st.session_state["format_ocr_result"],
+        extract_blocks,
+        llm_output,
+        place,
+        eval_term,
+        selected_state,
+    )
 
     page_img_cols = st.columns(3)
 

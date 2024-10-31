@@ -1,6 +1,7 @@
 import datetime
 import glob
 import os
+import sys
 import time
 from collections import OrderedDict
 
@@ -28,15 +29,82 @@ from zoning.utils import expand_term
 
 # firestore config
 
-db = firestore.Client.from_service_account_info(
-    st.secrets["firebase"]["my_project_settings"]
-)
+# db = firestore.Client.from_service_account_info(
+#     st.secrets["firebase"]["my_project_settings"]
+# )
+# firestore config
+if sys.argv[1]:
+    db = firestore.Client.from_service_account_json(sys.argv[1])
+else:
+    db = firestore.Client.from_service_account_info(
+        st.secrets["firebase"]["my_project_settings"]
+    )
 
 # Data Loading path
 state_experiment_map = {
     "North Carolina": "results/textract_es_claude_north_carolina_search_range_3_updated_prompt",
 }
+scrollable_cards_style = """
+<style>
+    .container {
+        display: flex;
+        overflow-x: auto;
+        gap: 20px;
+        padding: 20px;
+        scrollbar-width: thin;
+        -webkit-overflow-scrolling: touch;
+    }
 
+    .card {
+        min-width: 300px;
+        max-width: 300px;
+        border: 1px solid #ccc;
+        padding: 20px;
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        flex: 0 0 auto;
+        color: black;
+    }
+
+    .title {
+        font-size: 1.2em;
+        margin-bottom: 15px;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        font-weight: bold;
+        color: #1a1a1a;
+    }
+
+    .title em {
+        color: #0066cc;
+    }
+
+    .value {
+        font-size: 1.2em;
+        margin-bottom: 15px;
+        color: black;
+    }
+
+    .value-label {
+        color: #0066cc;
+        font-weight: bold;
+    }
+
+    .rationale {
+        font-size: 0.9em;
+        color: black;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        line-height: 1.4;
+    }
+
+    .rationale-label {
+        color: #0066cc;
+        font-weight: bold;
+    }
+</style>
+"""
 # pdf_dir_map = {
 #     "Connecticut": "data/connecticut/pdfs",
 #     "Texas": "data/texas/pdfs",
@@ -72,7 +140,7 @@ modal_name = Modal(
 )
 
 if (
-        "analyst_name" not in st.session_state or not st.session_state["analyst_name"]
+    "analyst_name" not in st.session_state or not st.session_state["analyst_name"]
 ) and not modal_name.is_open():
     modal_name.open()
 
@@ -309,29 +377,33 @@ def build_batches_for_town(town_name, all_data_by_town):
 
     for (eval_term, district), data in town_data.items():
         try:
-            llm_output = data['llm'][0].llm_outputs[0]
+            llm_output = data["llm"][0].llm_outputs[0]
         except:
             continue
 
         if llm_output.extracted_text is not None:
             # Get the page number where the information first appears
             first_page = llm_output.extracted_text[0][1]
-            combinations_with_answer.append({
-                'eval_term': eval_term,
-                'district': district,
-                'first_page': first_page,
-                'town_name': town_name,
-            })
+            combinations_with_answer.append(
+                {
+                    "eval_term": eval_term,
+                    "district": district,
+                    "first_page": first_page,
+                    "town_name": town_name,
+                }
+            )
         else:
             # RAG did not find an answer
-            combinations_without_answer.append({
-                'eval_term': eval_term,
-                'district': district,
-                'town_name': town_name,
-            })
+            combinations_without_answer.append(
+                {
+                    "eval_term": eval_term,
+                    "district": district,
+                    "town_name": town_name,
+                }
+            )
 
     # Sort combinations with answer by first_page
-    combinations_with_answer.sort(key=lambda x: x['first_page'])
+    combinations_with_answer.sort(key=lambda x: x["first_page"])
 
     # Group combinations into batches where the page numbers are within a certain gap
     batches_with_answer = []
@@ -342,25 +414,25 @@ def build_batches_for_town(town_name, all_data_by_town):
         if not current_batch:
             current_batch.append(combo)
         else:
-            if combo['first_page'] - current_batch[-1]['first_page'] <= max_page_gap:
+            if combo["first_page"] - current_batch[-1]["first_page"] <= max_page_gap:
                 current_batch.append(combo)
             else:
                 # Sort current batch by eval_term before adding
-                current_batch.sort(key=lambda x: x['eval_term'])
+                current_batch.sort(key=lambda x: x["eval_term"])
                 batches_with_answer.append(current_batch)
                 current_batch = [combo]
 
     if current_batch:
-        current_batch.sort(key=lambda x: x['eval_term'])
+        current_batch.sort(key=lambda x: x["eval_term"])
         batches_with_answer.append(current_batch)
 
     # Group combinations without answer by eval_term
     batches_without_answer = []
-    eval_terms = sorted(set(c['eval_term'] for c in combinations_without_answer))
+    eval_terms = sorted(set(c["eval_term"] for c in combinations_without_answer))
     for eval_term in eval_terms:
-        batch = [c for c in combinations_without_answer if c['eval_term'] == eval_term]
+        batch = [c for c in combinations_without_answer if c["eval_term"] == eval_term]
         # Sort batch by district or any other criteria if needed
-        batch.sort(key=lambda x: x['district'])
+        batch.sort(key=lambda x: x["district"])
         batches_without_answer.append(batch)
 
     # Combine batches
@@ -382,16 +454,32 @@ def get_next_unlabeled_batch(labelled_data, all_batches):
         batch_labelled = False
         for item in batch:
             # Safeguard against missing columns
-            if not all(column in labelled_data.columns for column in
-                       ["eval_term", "district_full_name", "district_short_name", "town"]):
+            if not all(
+                column in labelled_data.columns
+                for column in [
+                    "eval_term",
+                    "district_full_name",
+                    "district_short_name",
+                    "town",
+                ]
+            ):
                 batch_labelled = False
                 break
 
             item_labeled = (
-                    (labelled_data["eval_term"] == format_eval_term.get(item['eval_term'], item['eval_term']))
-                    & (labelled_data["district_full_name"] == Place.from_str(item['district']).district_full_name)
-                    & (labelled_data["district_short_name"] == Place.from_str(item['district']).district_short_name)
-                    & (labelled_data["town"] == item['town_name'])
+                (
+                    labelled_data["eval_term"]
+                    == format_eval_term.get(item["eval_term"], item["eval_term"])
+                )
+                & (
+                    labelled_data["district_full_name"]
+                    == Place.from_str(item["district"]).district_full_name
+                )
+                & (
+                    labelled_data["district_short_name"]
+                    == Place.from_str(item["district"]).district_short_name
+                )
+                & (labelled_data["town"] == item["town_name"])
             ).any()
             if item_labeled:
                 batch_labelled = True
@@ -418,7 +506,7 @@ else:
     # Load all results by reading individual JSON files from their respective directories
     all_results = {
         k: [
-            X.model_construct(**json.loads(open(i, 'r').read()))
+            X.model_construct(**json.loads(open(i, "r").read()))
             for i in sorted(glob.glob(f"{experiment_dir}/{k}/*.json"))
         ]
         for k, X in [
@@ -439,7 +527,7 @@ else:
     all_data_by_town = {
         town_name: {
             (eval_term, place): {"place": place, "eval_term": eval_term}
-                                | filtered_by_place_and_eval(all_results, place, eval_term)
+            | filtered_by_place_and_eval(all_results, place, eval_term)
             for place in all_places
             if get_town_by_place(place) == town_name
             for eval_term in all_eval_terms
@@ -458,11 +546,11 @@ else:
     json_bytes = json.dumps(all_batches)
 
     # Write the bytes to a file
-    with open(batched_data_path, 'wb') as f:
+    with open(batched_data_path, "wb") as f:
         f.write(json_bytes)
 
 
-all_towns = sorted(list(set([i['town_name'] for batch in all_batches for i in batch])))
+all_towns = sorted(list(set([i["town_name"] for batch in all_batches for i in batch])))
 format_town_map = {town_name: format_town(town_name) for town_name in all_towns}
 inverse_format_town_map = {k: v for v, k in format_town_map.items()}
 
@@ -480,6 +568,7 @@ labelled_data = get_firebase_data(
 total_num_batches, finished_num_batches, next_batch_info = get_next_unlabeled_batch(
     labelled_data, all_batches
 )
+
 
 # Display the progress bar
 col1, col2 = st.columns([9, 1])
@@ -509,38 +598,57 @@ st.session_state["start_time"] = time.time()
 
 # Display the batch information
 batch = st.session_state["current_batch"]
-town_name = batch[0]['town_name']
+town_name = batch[0]["town_name"]
 st.session_state["current_town"] = town_name
-
+st.markdown(f"# Town: {format_town(town_name)}")
 # For visualized data
-s3_prefix = "https://zoning-nan.s3.us-east-2.amazonaws.com/results/north_carolina_claude"
+s3_prefix = (
+    "https://zoning-nan.s3.us-east-2.amazonaws.com/results/north_carolina_claude"
+)
 
 # Initialize sets to collect pages and highlights
 all_showed_pages = set()
 all_highlight_info = []
+display_info = []
 
-with st.sidebar:
-    st.markdown(f"# Town: {format_town(town_name)}")
 
-    for item in batch:
-        eval_term = item['eval_term']
-        district = item['district']
-        place = Place.from_str(item['district'])
+def process_batch_with_progress(batch):
+    # Initialize sets to collect pages and highlights
+    all_showed_pages = set()
+    all_highlight_info = []
+    display_info = []
 
-        current_viewing_data_name = f"{item['eval_term']}__{item['district'].replace(' ', '+')}.json"
+    # Create progress bar
+    progress_bar = st.progress(0)
+    progress_text = st.empty()
+    total_items = len(batch)
+
+    for idx, item in enumerate(batch):
+        eval_term = item["eval_term"]
+        district = item["district"]
+        place = Place.from_str(item["district"])
+
+        current_viewing_data_name = (
+            f"{item['eval_term']}__{item['district'].replace(' ', '+')}.json"
+        )
         visualized_data = {
             k: [
-                X.model_construct(**json.loads(requests.get(f"{s3_prefix}/{k}/{current_viewing_data_name}").text))
+                X.model_construct(
+                    **json.loads(
+                        requests.get(
+                            f"{s3_prefix}/{k}/{current_viewing_data_name}"
+                        ).text
+                    )
+                )
             ]
             for k, X in [
                 ("search", SearchResult),
-                ("prompt", PromptResult),
+                # ("prompt", PromptResult),
                 ("llm", LLMInferenceResult),
                 ("normalization", NormalizedLLMInferenceResult),
                 ("eval", EvalResult),
             ]
         }
-
 
         # loading info
         search_result = visualized_data["search"][0]
@@ -548,12 +656,13 @@ with st.sidebar:
         llm_inference_result = visualized_data["llm"][0]
         llm_output = llm_inference_result.llm_outputs[0]
         normalized_llm_inference_result = visualized_data["normalization"][0]
-        normalized_llm_output = normalized_llm_inference_result.normalized_llm_outputs[0]
+        normalized_llm_output = normalized_llm_inference_result.normalized_llm_outputs[
+            0
+        ]
         norm = normalized_llm_output.llm_output.answer
         eval_result = visualized_data["eval"][0]
 
         town_formatted = format_town(town_name)
-
 
         # Collect pages to display
         def get_showed_pages(pages, interval):
@@ -562,9 +671,10 @@ with st.sidebar:
                 showed_pages.extend(range(page - interval, page + interval + 1))
             return sorted(list(set(showed_pages)))
 
-
         if llm_output.extracted_text is not None:
-            highlight_text_pages = sorted(list(set([i[1] for i in llm_output.extracted_text])))
+            highlight_text_pages = sorted(
+                list(set([i[1] for i in llm_output.extracted_text]))
+            )
         else:
             highlight_text_pages = []
 
@@ -576,60 +686,80 @@ with st.sidebar:
         all_showed_pages.update(showed_pages)
 
         # Collect highlight info
-        all_highlight_info.append({
-            'eval_term': eval_term,
-            'district': district,
-            'place': place,
-            'llm_output': llm_output,
-        })
+        all_highlight_info.append(
+            {
+                "eval_term": eval_term,
+                "district": district,
+                "place": place,
+                "llm_output": llm_output,
+            }
+        )
 
         # Display the title (result item)
         if entire_search_page_range == []:
-            st.html(
+            display_info.append(
                 f"""
-                    <div style="border: 1px solid #ccc; padding: 10px; margin: 5px; border-radius: 5px;">
-                        <p style="font-size: 1.2em;">
-                            <b><em>{format_eval_term[eval_term]}</em> / {place.district_full_name} ({place.district_short_name})</b>
+                    <div class="card">
+                        <p class="title">
+                            <em>{format_eval_term[eval_term]}</em> / {place.district_full_name} ({place.district_short_name})
                         </p>
-                        <p style="font-size: 1.2em;"><b>Value: <em>Zoning Agent does not find any page related in zoning file</em></b></p>
+                        <p class="value"><span class="value-label">Value:</span> <em>Zoning Agent does not find any page related in zoning file</em></p>
                     </div>
                 """
             )
-        elif len(highlight_text_pages) == 0 and normalized_llm_output.normalized_answer is None:
-            st.html(
+        elif (
+            len(highlight_text_pages) == 0
+            and normalized_llm_output.normalized_answer is None
+        ):
+            display_info.append(
                 f"""
-                    <div style="border: 1px solid #ccc; padding: 10px; margin: 5px; border-radius: 5px;">
-                        <p style="font-size: 1.2em;">
-                            <b><em>{format_eval_term[eval_term]}</em> / {place.district_full_name} ({place.district_short_name})</b>
+                    <div class="card">
+                        <p class="title">
+                            <em>{format_eval_term[eval_term]}</em> / {place.district_full_name} ({place.district_short_name})
                         </p>
-                        <p style="font-size: 1.2em;"><b>Value: <em>LLM does not provide an answer</em></b></p>
-                        <p>Rationale: {llm_output.rationale}</p>
+                        <p class="value"><span class="value-label">Value:</span> <em>LLM does not provide an answer</em></p>
+                        <p class="rationale"><span class="rationale-label">Rationale:</span> {llm_output.rationale}</p>
                     </div>
                 """
             )
         else:
-            st.html(
+            display_info.append(
                 f"""
-                    <div style="border: 1px solid #ccc; padding: 10px; margin: 5px; border-radius: 5px;">
-                        <p style="font-size: 1.2em;">
-                            <b>
-                            {format_eval_term[eval_term]} /
-                            {place.district_full_name} ({place.district_short_name})
-                            </b>
+                    <div class="card">
+                        <p class="title">
+                            <em>{format_eval_term[eval_term]}</em> / {place.district_full_name} ({place.district_short_name})
                         </p>
-                        <p style="font-size: 1.2em;"><b>Value: <em>{norm}</em></b></p>
-                        <p>Rationale: {llm_output.rationale}</p>
+                        <p class="value"><span class="value-label">Value:</span> <em>{norm}</em></p>
+                        <p class="rationale"><span class="rationale-label">Rationale:</span> {llm_output.rationale}</p>
                     </div>
                 """
             )
 
-        # ground_truth = eval_result.ground_truth
-        # ground_truth_orig = eval_result.ground_truth_orig
-        # ground_truth_page = eval_result.ground_truth_page
-        # answer_correct = eval_result.answer_correct
-        # page_in_range = eval_result.page_in_range
+        # Update progress
+        progress = (idx + 1) / total_items
+        progress_bar.progress(progress)
+        progress_text.text(f"Processing item {idx + 1} of {total_items}")
 
-def get_edited_pages(all_showed_pages, all_highlight_info, format_ocr_result, extract_blocks, selected_state):
+    final_html = f"""
+{scrollable_cards_style}
+<div class="container">
+    {''.join(display_info)}
+</div>
+"""
+
+    return all_showed_pages, all_highlight_info, final_html
+
+
+all_showed_pages, all_highlight_info, final_html = process_batch_with_progress(batch)
+
+
+def get_edited_pages(
+    all_showed_pages,
+    all_highlight_info,
+    format_ocr_result,
+    extract_blocks,
+    selected_state,
+):
 
     def get_normalized_rect(b, page_rect):
         if selected_state == "Texas":
@@ -698,16 +828,16 @@ def get_edited_pages(all_showed_pages, all_highlight_info, format_ocr_result, ex
         load_ocr = False
         page_text_lower = page_info["text"].lower()
         for item in all_highlight_info:
-            eval_term = item['eval_term']
-            place = item['place']
+            eval_term = item["eval_term"]
+            place = item["place"]
             for term in expand_term(thesarus_file, eval_term):
                 if term in page_text_lower:
                     load_ocr = True
                     break
             if (
-                    place.town.lower() in page_text_lower
-                    or place.district_full_name.lower() in page_text_lower
-                    or place.district_short_name.lower() in page_text_lower
+                place.town.lower() in page_text_lower
+                or place.district_full_name.lower() in page_text_lower
+                or place.district_short_name.lower() in page_text_lower
             ):
                 load_ocr = True
         if load_ocr:
@@ -726,19 +856,22 @@ def get_edited_pages(all_showed_pages, all_highlight_info, format_ocr_result, ex
 
             # Apply highlights per item
             for item in all_highlight_info:
-                eval_term = item['eval_term']
-                place = item['place']
-                llm_output = item['llm_output']
+                eval_term = item["eval_term"]
+                place = item["place"]
+                llm_output = item["llm_output"]
 
                 # Identify district boxes
                 district_boxes = [
                     [i[0], i[1]]
                     for i in text_boundingbox
                     if place.district_full_name.lower() in i[0].lower()
-                       or place.district_full_name.lower() in " ".join(i[0].lower().split())
-                       or place.district_short_name.lower() in i[0].lower().split()
+                    or place.district_full_name.lower()
+                    in " ".join(i[0].lower().split())
+                    or place.district_short_name.lower() in i[0].lower().split()
                 ]
-                district_rects.extend([get_normalized_rect(b[1], page_rect) for b in district_boxes])
+                district_rects.extend(
+                    [get_normalized_rect(b[1], page_rect) for b in district_boxes]
+                )
 
                 # Identify eval_term boxes
                 eval_term_boxes = [
@@ -749,7 +882,9 @@ def get_edited_pages(all_showed_pages, all_highlight_info, format_ocr_result, ex
                         for term in expand_term(thesarus_file, eval_term)
                     )
                 ]
-                eval_term_rects.extend([get_normalized_rect(b[1], page_rect) for b in eval_term_boxes])
+                eval_term_rects.extend(
+                    [get_normalized_rect(b[1], page_rect) for b in eval_term_boxes]
+                )
 
                 # Identify llm_answer boxes
                 if llm_output.extracted_text is not None:
@@ -761,7 +896,9 @@ def get_edited_pages(all_showed_pages, all_highlight_info, format_ocr_result, ex
                             for ext_text in llm_output.extracted_text
                         )
                     ]
-                    llm_answer_rects.extend([get_normalized_rect(b[1], page_rect) for b in llm_answer_boxes])
+                    llm_answer_rects.extend(
+                        [get_normalized_rect(b[1], page_rect) for b in llm_answer_boxes]
+                    )
 
             # Merge rectangles to avoid overlapping highlights
             district_rects = merge_rects(district_rects)
@@ -790,18 +927,24 @@ def get_edited_pages(all_showed_pages, all_highlight_info, format_ocr_result, ex
             if overlap_exists:
                 for llm_rect in llm_answer_rects:
                     if any(
-                            llm_rect.intersects(rect)
-                            for rect in extended_district_rects + extended_eval_term_rects
+                        llm_rect.intersects(rect)
+                        for rect in extended_district_rects + extended_eval_term_rects
                     ):
                         overlapping_district_rects = [
                             rect
                             for rect in district_rects
-                            if any(llm_rect.intersects(i) for i in extend_rect(rect, page_rect))
+                            if any(
+                                llm_rect.intersects(i)
+                                for i in extend_rect(rect, page_rect)
+                            )
                         ]
                         overlapping_eval_term_rects = [
                             rect
                             for rect in eval_term_rects
-                            if any(llm_rect.intersects(i) for i in extend_rect(rect, page_rect))
+                            if any(
+                                llm_rect.intersects(i)
+                                for i in extend_rect(rect, page_rect)
+                            )
                         ]
 
                         for rect in overlapping_district_rects:
@@ -809,7 +952,7 @@ def get_edited_pages(all_showed_pages, all_highlight_info, format_ocr_result, ex
                         for rect in overlapping_eval_term_rects:
                             to_be_highlighted_eval_term_rects.append([rect, 0.2])
 
-                        to_be_highlighted_llm_answer_rects.append([llm_rect, 0.5])
+                        to_be_highlighted_llm_answer_rects.append([llm_rect, 0.4])
             else:
                 to_be_highlighted_district_rects = [
                     [rect, 0.2] for rect in district_rects
@@ -832,7 +975,7 @@ def get_edited_pages(all_showed_pages, all_highlight_info, format_ocr_result, ex
                     color=district_color,
                     fill=None,
                     fill_opacity=0,
-                    width=4,
+                    width=2,
                     stroke_opacity=opacity,
                 )
 
@@ -842,7 +985,7 @@ def get_edited_pages(all_showed_pages, all_highlight_info, format_ocr_result, ex
                     color=eval_term_color,
                     fill=None,
                     fill_opacity=0,
-                    width=4,
+                    width=2,
                     stroke_opacity=opacity,
                 )
 
@@ -852,7 +995,7 @@ def get_edited_pages(all_showed_pages, all_highlight_info, format_ocr_result, ex
                     color=llm_answer_color,
                     fill=None,
                     fill_opacity=0,
-                    width=4,
+                    width=2,
                     stroke_opacity=opacity,
                 )
 
@@ -866,7 +1009,9 @@ def get_edited_pages(all_showed_pages, all_highlight_info, format_ocr_result, ex
 
 
 pdf_file = f"https://zoning-nan.s3.us-east-2.amazonaws.com/pdf/north_carolina/{town_name}-zoning-code.pdf"
-ocr_file_url = f"https://zoning-nan.s3.us-east-2.amazonaws.com/ocr/north_carolina/{place.town}.json"
+ocr_file_url = (
+    f"https://zoning-nan.s3.us-east-2.amazonaws.com/ocr/north_carolina/{town_name}.json"
+)
 
 if "doc" not in st.session_state or st.session_state["doc"] is None:
     with st.spinner("Downloading PDF for new town..."):
@@ -879,16 +1024,28 @@ if "ocr_info" not in st.session_state or not st.session_state["ocr_info"]:
         file_content = download_file_with_progress(ocr_file_url)
     st.session_state["ocr_info"] = json.loads(file_content)
 
-if "format_ocr_result" not in st.session_state or st.session_state["format_ocr_result"] is None:
+if (
+    "format_ocr_result" not in st.session_state
+    or st.session_state["format_ocr_result"] is None
+):
     with st.spinner("Downloading Format OCR info for new town..."):
-        file_content = download_file_with_progress(f"{s3_prefix}/format_ocr/{town_name}.json")
-    st.session_state["format_ocr_result"] = FormatOCR.model_construct(**json.loads(file_content))
+        file_content = download_file_with_progress(
+            f"{s3_prefix}/format_ocr/{town_name}.json"
+        )
+    st.session_state["format_ocr_result"] = FormatOCR.model_construct(
+        **json.loads(file_content)
+    )
 
 extract_blocks = [b for d in st.session_state["ocr_info"] for b in d["Blocks"]]
-to_be_highlighted_pages = get_edited_pages(all_showed_pages, all_highlight_info, st.session_state["format_ocr_result"], extract_blocks,
-                                           selected_state)
-
+to_be_highlighted_pages = get_edited_pages(
+    all_showed_pages,
+    all_highlight_info,
+    st.session_state["format_ocr_result"],
+    extract_blocks,
+    selected_state,
+)
 page_img_cols = st.columns(3)
+
 for k in range(len(to_be_highlighted_pages) // 3 + 1):
     for j in range(3):
         i = k * 3 + j
@@ -900,6 +1057,9 @@ for k in range(len(to_be_highlighted_pages) // 3 + 1):
         )
 
 st.divider()
+
+# To display in Streamlit, use st.markdown with unsafe_allow_html=True
+st.html(final_html)
 
 
 # write data
@@ -919,14 +1079,22 @@ def write_data(human_feedback: str) -> bool:
         return False
 
     for item in batch:
-        town_name = item['town_name']
-        eval_term = item['eval_term']
-        place = Place.from_str(item['district'])
+        town_name = item["town_name"]
+        eval_term = item["eval_term"]
+        place = Place.from_str(item["district"])
 
-        current_viewing_data_name = f"{item['eval_term']}__{item['district'].replace(' ', '+')}.json"
+        current_viewing_data_name = (
+            f"{item['eval_term']}__{item['district'].replace(' ', '+')}.json"
+        )
         visualized_data = {
             k: [
-                X.model_construct(**json.loads(requests.get(f"{s3_prefix}/{k}/{current_viewing_data_name}").text))
+                X.model_construct(
+                    **json.loads(
+                        requests.get(
+                            f"{s3_prefix}/{k}/{current_viewing_data_name}"
+                        ).text
+                    )
+                )
             ]
             for k, X in [
                 ("search", SearchResult),
@@ -939,7 +1107,9 @@ def write_data(human_feedback: str) -> bool:
 
         # loading info
         normalized_llm_inference_result = visualized_data["normalization"][0]
-        normalized_llm_output = normalized_llm_inference_result.normalized_llm_outputs[0]
+        normalized_llm_output = normalized_llm_inference_result.normalized_llm_outputs[
+            0
+        ]
         norm = normalized_llm_output.llm_output.answer
 
         district_full_name = place.district_full_name
@@ -987,7 +1157,7 @@ def jump_to_next_batch():
     if next_batch_info:
         idx, batch = next_batch_info
         st.session_state["current_batch"] = batch
-        next_town_name = batch[0]['town_name']
+        next_town_name = batch[0]["town_name"]
         if st.session_state["current_town"] != next_town_name:
             st.session_state["doc"] = None
             st.session_state["ocr_info"] = None  # Reset the OCR info
@@ -1024,14 +1194,12 @@ if st.session_state["finish-town-opened"]:
 with st.container():
     correct_col, not_sure_col, wrong_col = st.columns(3)
 
-
     def button_callback(feedback):
         def _button_callback():
             if write_data(feedback):
                 jump_to_next_batch()
 
         return _button_callback
-
 
     with correct_col:
         st.button(
@@ -1072,7 +1240,7 @@ next_batch_index = st.session_state["current_batch_index"] + 1
 if next_batch_index < len(all_batches):
     next_batch = all_batches[next_batch_index]
     next_item = next_batch[0]
-    next_place = Place.from_str(next_item['district'])
+    next_place = Place.from_str(next_item["district"])
     st.html(
         f"""
         <h2 style="text-align: center; font-size: 2.5em;">
@@ -1099,4 +1267,3 @@ if finished_num_batches > 0:
         file_name=f"{selected_state}_data.csv",
         mime="text/csv",
     )
-
