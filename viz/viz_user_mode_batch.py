@@ -3,9 +3,7 @@ import glob
 import os
 import sys
 import time
-import uuid
 from collections import OrderedDict
-from typing import List
 
 import fitz  # PyMuPDF
 import orjson as json
@@ -538,7 +536,7 @@ else:
     for town in all_towns:
         town_batches = build_batches_for_town(town, all_data_by_town)
         all_batches.extend(town_batches)
-    print(all_batches)
+    # print(all_batches)
 
     # Save the batched data for future runs
     json_bytes = json.dumps(all_batches)
@@ -1048,24 +1046,14 @@ to_be_highlighted_pages = get_edited_pages(
     extract_blocks,
     selected_state,
 )
-page_img_cols = st.columns(3)
-
-for k in range(len(to_be_highlighted_pages) // 3 + 1):
-    for j in range(3):
-        i = k * 3 + j
-        if i >= len(to_be_highlighted_pages):
-            continue
-        page_img_cols[j].image(
-            to_be_highlighted_pages[i],
-            use_column_width=True,
-        )
-
-st.divider()
 
 
 # write data
-def write_data(human_feedback: str, checked_list: List[bool]) -> bool:
+def write_data(human_feedback: str, selected_idx: list[int]) -> bool:
     batch = st.session_state["current_batch"]
+    batch = [batch[i] for i in selected_idx]
+    if len(batch) == 0:
+        return True
     # Store and reset the timer
     if "start_time" not in st.session_state:
         elapsed_sec = -1
@@ -1080,9 +1068,7 @@ def write_data(human_feedback: str, checked_list: List[bool]) -> bool:
 
     # Prepare all documents to write
     docs_to_write = []
-    for idx, item in enumerate(batch):
-        if not checked_list[idx]:
-            continue
+    for item in batch:
         town_name = item["town_name"]
         eval_term = item["eval_term"]
         place = Place.from_str(item["district"])
@@ -1169,16 +1155,30 @@ def jump_to_next_batch():
         st.stop()
 
 
+def button_callback(feedback):
+    def _button_callback():
+        selected_idx = [
+            i for i in range(batch_number) if st.session_state[f"selected_{i}"]
+        ]
+        if write_data(feedback, selected_idx):
+            jump_to_next_batch()
+
+    return _button_callback
+
+
 # To display in Streamlit, use st.markdown with unsafe_allow_html=True
-with st.form("my_form"):
+with st.form("my_form", border=False):
     cols = st.columns(batch_number)
-    checkbox_list = []
     for i in range(batch_number):
-        with cols[i]:
-            checkbox_id = uuid.uuid4()
-            checkbox_val = st.checkbox("This is *correct*", key=f"selected_{checkbox_id}", value=True)
-            checkbox_list.append(checkbox_val)
-            st.markdown(dd[i], unsafe_allow_html=True)
+        if (
+            f"selected_{i}" in st.session_state
+            and st.session_state[f"selected_{i}"] == False
+        ):
+            st.session_state[f"selected_{i}"] = True
+    for i in range(batch_number):
+        cols[i].checkbox("This is *correct*", key=f"selected_{i}", value=True)
+        cols[i].markdown(dd[i], unsafe_allow_html=True)
+
     css = """
 <style>
     section.main>div {
@@ -1205,11 +1205,22 @@ with st.form("my_form"):
 """
 
     st.markdown(css, unsafe_allow_html=True)
-    submitted = st.form_submit_button("Submit", type="primary")
-    if submitted:
-        if write_data("correct", checkbox_list):
-            jump_to_next_batch()
-            st.rerun()
+
+    st.form_submit_button("Submit batch", on_click=button_callback("correct"))
+
+st.divider()
+
+page_img_cols = st.columns(3)
+
+for k in range(len(to_be_highlighted_pages) // 3 + 1):
+    for j in range(3):
+        i = k * 3 + j
+        if i >= len(to_be_highlighted_pages):
+            continue
+        page_img_cols[j].image(
+            to_be_highlighted_pages[i],
+            use_column_width=True,
+        )
 
 
 # Modal to notify about finishing a town
