@@ -3,7 +3,9 @@ import glob
 import os
 import sys
 import time
+import uuid
 from collections import OrderedDict
+from typing import List
 
 import fitz  # PyMuPDF
 import orjson as json
@@ -1062,7 +1064,7 @@ st.divider()
 
 
 # write data
-def write_data(human_feedback: str) -> bool:
+def write_data(human_feedback: str, checked_list: List[bool]) -> bool:
     batch = st.session_state["current_batch"]
     # Store and reset the timer
     if "start_time" not in st.session_state:
@@ -1078,7 +1080,9 @@ def write_data(human_feedback: str) -> bool:
 
     # Prepare all documents to write
     docs_to_write = []
-    for item in batch:
+    for idx, item in enumerate(batch):
+        if not checked_list[idx]:
+            continue
         town_name = item["town_name"]
         eval_term = item["eval_term"]
         place = Place.from_str(item["district"])
@@ -1165,20 +1169,16 @@ def jump_to_next_batch():
         st.stop()
 
 
-def button_callback(feedback):
-    def _button_callback():
-        if write_data(feedback):
-            jump_to_next_batch()
-
-    return _button_callback
-
-
 # To display in Streamlit, use st.markdown with unsafe_allow_html=True
 with st.form("my_form"):
     cols = st.columns(batch_number)
+    checkbox_list = []
     for i in range(batch_number):
-        cols[i].checkbox("This is *correct*", key=f"selected_{i}", value=True)
-        cols[i].markdown(dd[i], unsafe_allow_html=True)
+        with cols[i]:
+            checkbox_id = uuid.uuid4()
+            checkbox_val = st.checkbox("This is *correct*", key=f"selected_{checkbox_id}", value=True)
+            checkbox_list.append(checkbox_val)
+            st.markdown(dd[i], unsafe_allow_html=True)
     css = """
 <style>
     section.main>div {
@@ -1205,8 +1205,11 @@ with st.form("my_form"):
 """
 
     st.markdown(css, unsafe_allow_html=True)
-    # st.html(final_html)
-    st.form_submit_button("Submit batch", on_click=button_callback("correct"))
+    submitted = st.form_submit_button("Submit", type="primary")
+    if submitted:
+        if write_data("correct", checkbox_list):
+            jump_to_next_batch()
+            st.rerun()
 
 
 # Modal to notify about finishing a town
