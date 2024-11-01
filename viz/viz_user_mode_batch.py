@@ -345,14 +345,13 @@ def prepare_data_for_download(selected_state: str, filters: dict = {}):
     return merged_df
 
 
-def download_file_with_progress(url):
+def download_file_with_progress(url, progress_bar, progress_text):
     response = requests.get(url, stream=True)
     total_size = int(response.headers.get("content-length", 0))
     block_size = 10 * 1024 * 1024  # 5 MB
 
-    progress_bar = st.progress(0)
-    progress_text = st.empty()
-
+    progress_bar.progress(0)
+    progress_text.text(f"Downloaded: 0 MB (Will only download once for one town)")
     data = b""
     for data_chunk in response.iter_content(block_size):
         data += data_chunk
@@ -950,17 +949,17 @@ def get_edited_pages(
                         ]
 
                         for rect in overlapping_district_rects:
-                            to_be_highlighted_district_rects.append([rect, 0.2])
+                            to_be_highlighted_district_rects.append([rect, 0.1])
                         for rect in overlapping_eval_term_rects:
-                            to_be_highlighted_eval_term_rects.append([rect, 0.2])
+                            to_be_highlighted_eval_term_rects.append([rect, 0.1])
 
-                        to_be_highlighted_llm_answer_rects.append([llm_rect, 0.4])
+                        to_be_highlighted_llm_answer_rects.append([llm_rect, 0.2])
             else:
                 to_be_highlighted_district_rects = [
-                    [rect, 0.2] for rect in district_rects
+                    [rect, 0.1] for rect in district_rects
                 ]
                 to_be_highlighted_eval_term_rects = [
-                    [rect, 0.2] for rect in eval_term_rects
+                    [rect, 0.1] for rect in eval_term_rects
                 ]
                 to_be_highlighted_llm_answer_rects = [
                     [rect, 0.2] for rect in llm_answer_rects
@@ -1016,24 +1015,27 @@ ocr_file_url = (
 )
 
 if "doc" not in st.session_state or st.session_state["doc"] is None:
-    with st.spinner("Downloading PDF for new town..."):
-        file_content = download_file_with_progress(pdf_file)
+    # with st.spinner("Downloading PDF for new town..."):
+    progress_bar = st.progress(0)
+    progress_text = st.empty()
+    file_content = download_file_with_progress(pdf_file, progress_bar, progress_text)
     st.session_state["doc"] = fitz.open(stream=file_content, filetype="pdf")
 
 if "ocr_info" not in st.session_state or not st.session_state["ocr_info"]:
-    ocr_file_url = f"https://zoning-nan.s3.us-east-2.amazonaws.com/ocr/north_carolina/{town_name}.json"
-    with st.spinner("Downloading OCR info for new town..."):
-        file_content = download_file_with_progress(ocr_file_url)
+    # progress_bar.progress = 0
+    file_content = download_file_with_progress(
+        ocr_file_url, progress_bar, progress_text
+    )
     st.session_state["ocr_info"] = json.loads(file_content)
 
 if (
     "format_ocr_result" not in st.session_state
     or st.session_state["format_ocr_result"] is None
 ):
-    with st.spinner("Downloading Format OCR info for new town..."):
-        file_content = download_file_with_progress(
-            f"{s3_prefix}/format_ocr/{town_name}.json"
-        )
+    # progress_bar.progress = 0
+    file_content = download_file_with_progress(
+        f"{s3_prefix}/format_ocr/{town_name}.json", progress_bar, progress_text
+    )
     st.session_state["format_ocr_result"] = FormatOCR.model_construct(
         **json.loads(file_content)
     )
@@ -1172,8 +1174,9 @@ with st.form("my_form", border=False):
     for i in range(batch_number):
         if (
             f"selected_{i}" in st.session_state
-            and st.session_state[f"selected_{i}"] == False
+            and not st.session_state[f"selected_{i}"]
         ):
+            del st.session_state[f"selected_{i}"]
             st.session_state[f"selected_{i}"] = True
     for i in range(batch_number):
         cols[i].checkbox("This is *correct*", key=f"selected_{i}", value=True)
