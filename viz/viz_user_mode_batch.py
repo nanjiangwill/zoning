@@ -44,34 +44,25 @@ else:
 state_experiment_map = {
     "North Carolina": "results/textract_es_claude_north_carolina_search_range_3_updated_prompt",
 }
-scrollable_cards_style = """
+cards_style = """
 <style>
-    .container {
-        display: flex;
-        overflow-x: auto;
-        gap: 20px;
-        padding: 20px;
-        scrollbar-width: thin;
-        -webkit-overflow-scrolling: touch;
-    }
-
     .card {
-        min-width: 300px;
-        max-width: 300px;
+        width: 300px;
         border: 1px solid #ccc;
         padding: 20px;
         border-radius: 8px;
         background: #fff;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        flex: 0 0 auto;
+        margin-bottom: 20px;
         color: black;
     }
-
     .title {
         font-size: 1.2em;
         margin-bottom: 15px;
         word-wrap: break-word;
         overflow-wrap: break-word;
+        white-space: normal;
+        width: 260px;  /* 300px - 2 * 20px padding */
         font-weight: bold;
         color: #1a1a1a;
     }
@@ -79,11 +70,14 @@ scrollable_cards_style = """
     .title em {
         color: #0066cc;
     }
-
     .value {
         font-size: 1.2em;
         margin-bottom: 15px;
         color: black;
+        white-space: normal;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        width: 260px; /* 300px - 2 * 20px padding */
     }
 
     .value-label {
@@ -94,8 +88,10 @@ scrollable_cards_style = """
     .rationale {
         font-size: 0.9em;
         color: black;
+        white-space: normal;
         word-wrap: break-word;
         overflow-wrap: break-word;
+        width: 260px;  /* 300px - 2 * 20px padding */
         line-height: 1.4;
     }
 
@@ -743,17 +739,18 @@ def process_batch_with_progress(batch):
         progress_text.text(f"Processing item {idx + 1} of {total_items}")
 
     final_html = f"""
-{scrollable_cards_style}
+{cards_style}
 <div class="container">
     {''.join(display_info)}
 </div>
 """
     batch_number = len(display_info)
 
-    return all_showed_pages, all_highlight_info, final_html, batch_number
+    display_info = [f"{cards_style}<div>{i}</div>" for i in display_info]
+    return all_showed_pages, all_highlight_info, final_html, batch_number, display_info
 
 
-all_showed_pages, all_highlight_info, final_html, batch_number = (
+all_showed_pages, all_highlight_info, final_html, batch_number, dd = (
     process_batch_with_progress(batch)
 )
 
@@ -1063,39 +1060,6 @@ for k in range(len(to_be_highlighted_pages) // 3 + 1):
 
 st.divider()
 
-# To display in Streamlit, use st.markdown with unsafe_allow_html=True
-with st.container(border=True):
-    cols = st.columns(batch_number)
-    for i in range(batch_number):
-        cols[i].checkbox("Selected", key=f"selected_{i}", value=True)
-    css = """
-<style>
-    section.main>div {
-        padding-bottom: 1rem;
-    }
-    [data-testid="column"] {
-        min-width: 300px !important;
-        width: 300px !important;
-        padding: 0 10px;
-    }
-    [data-testid="column"]>div>div>div>div>div {
-        overflow-y: auto;
-        # height: 70vh;
-    }
-    div[data-testid="stHorizontalBlock"] {
-        overflow-x: auto;
-        white-space: nowrap;
-        display: flex;
-        flex-wrap: nowrap;
-        gap: 1rem;
-        padding: 1rem;
-    }
-</style>
-"""
-
-    st.markdown(css, unsafe_allow_html=True)
-    st.html(final_html)
-
 
 # write data
 def write_data(human_feedback: str) -> bool:
@@ -1201,6 +1165,50 @@ def jump_to_next_batch():
         st.stop()
 
 
+def button_callback(feedback):
+    def _button_callback():
+        if write_data(feedback):
+            jump_to_next_batch()
+
+    return _button_callback
+
+
+# To display in Streamlit, use st.markdown with unsafe_allow_html=True
+with st.form("my_form"):
+    cols = st.columns(batch_number)
+    for i in range(batch_number):
+        cols[i].checkbox("This is *correct*", key=f"selected_{i}", value=True)
+        cols[i].markdown(dd[i], unsafe_allow_html=True)
+    css = """
+<style>
+    section.main>div {
+        padding-bottom: 1rem;
+    }
+    [data-testid="column"] {
+        min-width: 320px !important;
+        width: 320px !important;
+        padding: 0 10px;
+    }
+    [data-testid="column"]>div>div>div>div>div {
+        overflow-y: auto;
+        # height: 70vh;
+    }
+    div[data-testid="stHorizontalBlock"] {
+        overflow-x: auto;
+        white-space: nowrap;
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 1rem;
+        padding: 1rem;
+    }
+</style>
+"""
+
+    st.markdown(css, unsafe_allow_html=True)
+    # st.html(final_html)
+    st.form_submit_button("Submit batch", on_click=button_callback("correct"))
+
+
 # Modal to notify about finishing a town
 model_next_town = Modal("", key="finish-town", padding=20, max_width=744)
 if "finish-town-opened" not in st.session_state:
@@ -1210,43 +1218,43 @@ if st.session_state["finish-town-opened"]:
         st.header(st.session_state["model_next_town_text"])
         st.session_state["finish-town-opened"] = False  # Reset the flag
 
-# Buttons for labeling
-with st.container():
-    correct_col, not_sure_col, wrong_col = st.columns(3)
+# # Buttons for labeling
+# with st.container():
+#     correct_col, not_sure_col, wrong_col = st.columns(3)
 
-    def button_callback(feedback):
-        def _button_callback():
-            if write_data(feedback):
-                jump_to_next_batch()
+#     def button_callback(feedback):
+#         def _button_callback():
+#             if write_data(feedback):
+#                 jump_to_next_batch()
 
-        return _button_callback
+#         return _button_callback
 
-    with correct_col:
-        st.button(
-            "Verified Correct",
-            key="llm_correct",
-            type="primary",
-            use_container_width=True,
-            on_click=button_callback("correct"),
-        )
+#     with correct_col:
+#         st.button(
+#             "Verified Correct",
+#             key="llm_correct",
+#             type="primary",
+#             use_container_width=True,
+#             on_click=button_callback("correct"),
+#         )
 
-    with not_sure_col:
-        st.button(
-            "Not Enough Information",
-            key="llm_not_sure",
-            type="secondary",
-            use_container_width=True,
-            on_click=button_callback("not_sure"),
-        )
+#     with not_sure_col:
+#         st.button(
+#             "Not Enough Information",
+#             key="llm_not_sure",
+#             type="secondary",
+#             use_container_width=True,
+#             on_click=button_callback("not_sure"),
+#         )
 
-    with wrong_col:
-        st.button(
-            "Verified Incorrect",
-            key="llm_wrong",
-            type="secondary",
-            use_container_width=True,
-            on_click=button_callback("wrong"),
-        )
+#     with wrong_col:
+#         st.button(
+#             "Verified Incorrect",
+#             key="llm_wrong",
+#             type="secondary",
+#             use_container_width=True,
+#             on_click=button_callback("wrong"),
+#         )
 
 # Display the next batch preview
 # Update the labelled data
