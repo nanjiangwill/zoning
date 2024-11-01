@@ -748,11 +748,14 @@ def process_batch_with_progress(batch):
     {''.join(display_info)}
 </div>
 """
+    batch_number = len(display_info)
 
-    return all_showed_pages, all_highlight_info, final_html
+    return all_showed_pages, all_highlight_info, final_html, batch_number
 
 
-all_showed_pages, all_highlight_info, final_html = process_batch_with_progress(batch)
+all_showed_pages, all_highlight_info, final_html, batch_number = (
+    process_batch_with_progress(batch)
+)
 
 
 def get_edited_pages(
@@ -1061,7 +1064,37 @@ for k in range(len(to_be_highlighted_pages) // 3 + 1):
 st.divider()
 
 # To display in Streamlit, use st.markdown with unsafe_allow_html=True
-st.html(final_html)
+with st.container(border=True):
+    cols = st.columns(batch_number)
+    for i in range(batch_number):
+        cols[i].checkbox("Selected", key=f"selected_{i}", value=True)
+    css = """
+<style>
+    section.main>div {
+        padding-bottom: 1rem;
+    }
+    [data-testid="column"] {
+        min-width: 300px !important;
+        width: 300px !important;
+        padding: 0 10px;
+    }
+    [data-testid="column"]>div>div>div>div>div {
+        overflow-y: auto;
+        # height: 70vh;
+    }
+    div[data-testid="stHorizontalBlock"] {
+        overflow-x: auto;
+        white-space: nowrap;
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 1rem;
+        padding: 1rem;
+    }
+</style>
+"""
+
+    st.markdown(css, unsafe_allow_html=True)
+    st.html(final_html)
 
 
 # write data
