@@ -151,11 +151,8 @@ if modal_name.is_open():
             3. You will find the LLM answer and related PDF pages below to help you with the labeling decision
             3.1. Information will be downloaded automatically when you click on the "Start" button
             4. There will be highlights on the PDF page to help you with the labeling decision
-            5. After carefully reviewing the data, you need to click\n
-            • `"Verified Correct"` if the LLM answer is correct\n
-            • `"Verified Incorrect"` if the LLM answer is incorrect\n
-            • `"Not Enough Information"` if you are not sure about the answer\n
-            6. It will automatically jump to the next item
+            5. After carefully reviewing the data, you need to click the item that is correct and press "Submit Batch" button
+            6. It will automatically jump to the next batch
             7. Gather feedback to help improve the Zoning Agent!
             8. You can download the labeled data by clicking the "Download all labeled data (CSV)" button
             9. You can leave any time and resume later
