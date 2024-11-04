@@ -37,34 +37,25 @@ db = firestore.Client.from_service_account_info(
 state_experiment_map = {
     "North Carolina": "results/textract_es_claude_north_carolina_search_range_3_updated_prompt",
 }
-scrollable_cards_style = """
+cards_style = """
 <style>
-    .container {
-        display: flex;
-        overflow-x: auto;
-        gap: 20px;
-        padding: 20px;
-        scrollbar-width: thin;
-        -webkit-overflow-scrolling: touch;
-    }
-
     .card {
-        min-width: 300px;
-        max-width: 300px;
+        width: 300px;
         border: 1px solid #ccc;
         padding: 20px;
         border-radius: 8px;
         background: #fff;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        flex: 0 0 auto;
+        margin-bottom: 20px;
         color: black;
     }
-
     .title {
         font-size: 1.2em;
         margin-bottom: 15px;
         word-wrap: break-word;
         overflow-wrap: break-word;
+        white-space: normal;
+        width: 260px;  /* 300px - 2 * 20px padding */
         font-weight: bold;
         color: #1a1a1a;
     }
@@ -72,11 +63,14 @@ scrollable_cards_style = """
     .title em {
         color: #0066cc;
     }
-
     .value {
         font-size: 1.2em;
         margin-bottom: 15px;
         color: black;
+        white-space: normal;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        width: 260px; /* 300px - 2 * 20px padding */
     }
 
     .value-label {
@@ -87,8 +81,10 @@ scrollable_cards_style = """
     .rationale {
         font-size: 0.9em;
         color: black;
+        white-space: normal;
         word-wrap: break-word;
         overflow-wrap: break-word;
+        width: 260px;  /* 300px - 2 * 20px padding */
         line-height: 1.4;
     }
 
@@ -148,11 +144,8 @@ if modal_name.is_open():
             3. You will find the LLM answer and related PDF pages below to help you with the labeling decision
             3.1. Information will be downloaded automatically when you click on the "Start" button
             4. There will be highlights on the PDF page to help you with the labeling decision
-            5. After carefully reviewing the data, you need to click\n
-            • `"Verified Correct"` if the LLM answer is correct\n
-            • `"Verified Incorrect"` if the LLM answer is incorrect\n
-            • `"Not Enough Information"` if you are not sure about the answer\n
-            6. It will automatically jump to the next item
+            5. After carefully reviewing the data, you need to click the item that is correct and press "Submit Batch" button
+            6. It will automatically jump to the next batch
             7. Gather feedback to help improve the Zoning Agent!
             8. You can download the labeled data by clicking the "Download all labeled data (CSV)" button
             9. You can leave any time and resume later
@@ -342,14 +335,13 @@ def prepare_data_for_download(selected_state: str, filters: dict = {}):
     return merged_df
 
 
-def download_file_with_progress(url):
+def download_file_with_progress(url, progress_bar, progress_text):
     response = requests.get(url, stream=True)
     total_size = int(response.headers.get("content-length", 0))
     block_size = 10 * 1024 * 1024  # 5 MB
 
-    progress_bar = st.progress(0)
-    progress_text = st.empty()
-
+    progress_bar.progress(0)
+    progress_text.text(f"Downloaded: 0 MB (Will only download once for one town)")
     data = b""
     for data_chunk in response.iter_content(block_size):
         data += data_chunk
@@ -533,7 +525,7 @@ else:
     for town in all_towns:
         town_batches = build_batches_for_town(town, all_data_by_town)
         all_batches.extend(town_batches)
-    print(all_batches)
+    # print(all_batches)
 
     # Save the batched data for future runs
     json_bytes = json.dumps(all_batches)
@@ -736,16 +728,20 @@ def process_batch_with_progress(batch):
         progress_text.text(f"Processing item {idx + 1} of {total_items}")
 
     final_html = f"""
-{scrollable_cards_style}
+{cards_style}
 <div class="container">
     {''.join(display_info)}
 </div>
 """
+    batch_number = len(display_info)
 
-    return all_showed_pages, all_highlight_info, final_html
+    display_info = [f"{cards_style}<div>{i}</div>" for i in display_info]
+    return all_showed_pages, all_highlight_info, final_html, batch_number, display_info
 
 
-all_showed_pages, all_highlight_info, final_html = process_batch_with_progress(batch)
+all_showed_pages, all_highlight_info, final_html, batch_number, dd = (
+    process_batch_with_progress(batch)
+)
 
 
 def get_edited_pages(
@@ -943,17 +939,17 @@ def get_edited_pages(
                         ]
 
                         for rect in overlapping_district_rects:
-                            to_be_highlighted_district_rects.append([rect, 0.2])
+                            to_be_highlighted_district_rects.append([rect, 0.1])
                         for rect in overlapping_eval_term_rects:
-                            to_be_highlighted_eval_term_rects.append([rect, 0.2])
+                            to_be_highlighted_eval_term_rects.append([rect, 0.1])
 
-                        to_be_highlighted_llm_answer_rects.append([llm_rect, 0.4])
+                        to_be_highlighted_llm_answer_rects.append([llm_rect, 0.2])
             else:
                 to_be_highlighted_district_rects = [
-                    [rect, 0.2] for rect in district_rects
+                    [rect, 0.1] for rect in district_rects
                 ]
                 to_be_highlighted_eval_term_rects = [
-                    [rect, 0.2] for rect in eval_term_rects
+                    [rect, 0.1] for rect in eval_term_rects
                 ]
                 to_be_highlighted_llm_answer_rects = [
                     [rect, 0.2] for rect in llm_answer_rects
@@ -1009,24 +1005,27 @@ ocr_file_url = (
 )
 
 if "doc" not in st.session_state or st.session_state["doc"] is None:
-    with st.spinner("Downloading PDF for new town..."):
-        file_content = download_file_with_progress(pdf_file)
+    # with st.spinner("Downloading PDF for new town..."):
+    progress_bar = st.progress(0)
+    progress_text = st.empty()
+    file_content = download_file_with_progress(pdf_file, progress_bar, progress_text)
     st.session_state["doc"] = fitz.open(stream=file_content, filetype="pdf")
 
 if "ocr_info" not in st.session_state or not st.session_state["ocr_info"]:
-    ocr_file_url = f"https://zoning-nan.s3.us-east-2.amazonaws.com/ocr/north_carolina/{town_name}.json"
-    with st.spinner("Downloading OCR info for new town..."):
-        file_content = download_file_with_progress(ocr_file_url)
+    # progress_bar.progress = 0
+    file_content = download_file_with_progress(
+        ocr_file_url, progress_bar, progress_text
+    )
     st.session_state["ocr_info"] = json.loads(file_content)
 
 if (
     "format_ocr_result" not in st.session_state
     or st.session_state["format_ocr_result"] is None
 ):
-    with st.spinner("Downloading Format OCR info for new town..."):
-        file_content = download_file_with_progress(
-            f"{s3_prefix}/format_ocr/{town_name}.json"
-        )
+    # progress_bar.progress = 0
+    file_content = download_file_with_progress(
+        f"{s3_prefix}/format_ocr/{town_name}.json", progress_bar, progress_text
+    )
     st.session_state["format_ocr_result"] = FormatOCR.model_construct(
         **json.loads(file_content)
     )
@@ -1039,27 +1038,14 @@ to_be_highlighted_pages = get_edited_pages(
     extract_blocks,
     selected_state,
 )
-page_img_cols = st.columns(3)
-
-for k in range(len(to_be_highlighted_pages) // 3 + 1):
-    for j in range(3):
-        i = k * 3 + j
-        if i >= len(to_be_highlighted_pages):
-            continue
-        page_img_cols[j].image(
-            to_be_highlighted_pages[i],
-            use_column_width=True,
-        )
-
-st.divider()
-
-# To display in Streamlit, use st.markdown with unsafe_allow_html=True
-st.html(final_html)
 
 
 # write data
-def write_data(human_feedback: str) -> bool:
+def write_data(human_feedback: str, selected_idx: list[int]) -> bool:
     batch = st.session_state["current_batch"]
+    batch = [batch[i] for i in selected_idx]
+    if len(batch) == 0:
+        return True
     # Store and reset the timer
     if "start_time" not in st.session_state:
         elapsed_sec = -1
@@ -1161,6 +1147,75 @@ def jump_to_next_batch():
         st.stop()
 
 
+def button_callback(feedback):
+    def _button_callback():
+        selected_idx = [
+            i for i in range(batch_number) if st.session_state[f"selected_{i}"]
+        ]
+        if write_data(feedback, selected_idx):
+            jump_to_next_batch()
+
+    return _button_callback
+
+
+# To display in Streamlit, use st.markdown with unsafe_allow_html=True
+with st.form("my_form", border=False):
+    cols = st.columns(batch_number)
+    for i in range(batch_number):
+        if (
+            f"selected_{i}" in st.session_state
+            and not st.session_state[f"selected_{i}"]
+        ):
+            del st.session_state[f"selected_{i}"]
+            st.session_state[f"selected_{i}"] = True
+    for i in range(batch_number):
+        cols[i].checkbox("This is *correct*", key=f"selected_{i}", value=True)
+        cols[i].markdown(dd[i], unsafe_allow_html=True)
+
+    css = """
+<style>
+    section.main>div {
+        padding-bottom: 1rem;
+    }
+    [data-testid="column"] {
+        min-width: 320px !important;
+        width: 320px !important;
+        padding: 0 10px;
+    }
+    [data-testid="column"]>div>div>div>div>div {
+        overflow-y: auto;
+        # height: 70vh;
+    }
+    div[data-testid="stHorizontalBlock"] {
+        overflow-x: auto;
+        white-space: nowrap;
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 1rem;
+        padding: 1rem;
+    }
+</style>
+"""
+
+    st.markdown(css, unsafe_allow_html=True)
+
+    st.form_submit_button("Submit batch", on_click=button_callback("correct"))
+
+st.divider()
+
+page_img_cols = st.columns(3)
+
+for k in range(len(to_be_highlighted_pages) // 3 + 1):
+    for j in range(3):
+        i = k * 3 + j
+        if i >= len(to_be_highlighted_pages):
+            continue
+        page_img_cols[j].image(
+            to_be_highlighted_pages[i],
+            use_column_width=True,
+        )
+
+
 # Modal to notify about finishing a town
 model_next_town = Modal("", key="finish-town", padding=20, max_width=744)
 if "finish-town-opened" not in st.session_state:
@@ -1170,43 +1225,43 @@ if st.session_state["finish-town-opened"]:
         st.header(st.session_state["model_next_town_text"])
         st.session_state["finish-town-opened"] = False  # Reset the flag
 
-# Buttons for labeling
-with st.container():
-    correct_col, not_sure_col, wrong_col = st.columns(3)
+# # Buttons for labeling
+# with st.container():
+#     correct_col, not_sure_col, wrong_col = st.columns(3)
 
-    def button_callback(feedback):
-        def _button_callback():
-            if write_data(feedback):
-                jump_to_next_batch()
+#     def button_callback(feedback):
+#         def _button_callback():
+#             if write_data(feedback):
+#                 jump_to_next_batch()
 
-        return _button_callback
+#         return _button_callback
 
-    with correct_col:
-        st.button(
-            "Verified Correct",
-            key="llm_correct",
-            type="primary",
-            use_container_width=True,
-            on_click=button_callback("correct"),
-        )
+#     with correct_col:
+#         st.button(
+#             "Verified Correct",
+#             key="llm_correct",
+#             type="primary",
+#             use_container_width=True,
+#             on_click=button_callback("correct"),
+#         )
 
-    with not_sure_col:
-        st.button(
-            "Not Enough Information",
-            key="llm_not_sure",
-            type="secondary",
-            use_container_width=True,
-            on_click=button_callback("not_sure"),
-        )
+#     with not_sure_col:
+#         st.button(
+#             "Not Enough Information",
+#             key="llm_not_sure",
+#             type="secondary",
+#             use_container_width=True,
+#             on_click=button_callback("not_sure"),
+#         )
 
-    with wrong_col:
-        st.button(
-            "Verified Incorrect",
-            key="llm_wrong",
-            type="secondary",
-            use_container_width=True,
-            on_click=button_callback("wrong"),
-        )
+#     with wrong_col:
+#         st.button(
+#             "Verified Incorrect",
+#             key="llm_wrong",
+#             type="secondary",
+#             use_container_width=True,
+#             on_click=button_callback("wrong"),
+#         )
 
 # Display the next batch preview
 # Update the labelled data
