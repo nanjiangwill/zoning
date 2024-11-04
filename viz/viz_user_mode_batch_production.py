@@ -1180,11 +1180,11 @@ with st.form("my_form", border=False):
     [data-testid="column"] {
         min-width: 320px !important;
         width: 320px !important;
+        flex: 0 0 320px !important;  /* Added to prevent shrinking */
         padding: 0 10px;
     }
     [data-testid="column"]>div>div>div>div>div {
         overflow-y: auto;
-        # height: 70vh;
     }
     div[data-testid="stHorizontalBlock"] {
         overflow-x: auto;
@@ -1193,6 +1193,16 @@ with st.form("my_form", border=False):
         flex-wrap: nowrap;
         gap: 1rem;
         padding: 1rem;
+        justify-content: flex-start;  /* Added to align items to start */
+        align-items: flex-start;      /* Added to align items to top */
+        width: 100%;                  /* Added to ensure full width */
+    }
+    
+    /* Added to ensure cards don't overlap */
+    .card {
+        margin-right: 0 !important;
+        margin-left: 0 !important;
+        flex-shrink: 0;              /* Prevent card from shrinking */
     }
 </style>
 """
