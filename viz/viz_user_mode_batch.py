@@ -1175,36 +1175,45 @@ with st.form("my_form", border=False):
         ):
             del st.session_state[f"selected_{i}"]
             st.session_state[f"selected_{i}"] = True
-    for i in range(batch_number):
-        cols[i].checkbox("This is *correct*", key=f"selected_{i}", value=True)
-        cols[i].html(card_html_list[i])
+    # Create outer container
+    outer_container = st.container()
+    outer_script = """<div id="batch_cards_outer"></div>"""
+    st.markdown(outer_script, unsafe_allow_html=True)
 
-    css = """
-<style>
-    section.main>div {
-        padding-bottom: 1rem;
-    }
-    [data-testid="column"] {
-        min-width: 420px !important;
-        width: 420px !important;
-        padding: 0 10px;
-    }
-    [data-testid="column"]>div>div>div>div>div {
-        overflow-y: auto;
-        # height: 70vh;
-    }
-    div[data-testid="stHorizontalBlock"] {
-        overflow-x: auto;
-        white-space: nowrap;
-        display: flex;
-        flex-wrap: nowrap;
-        gap: 1rem;
-        padding: 1rem;
-    }
-</style>
-"""
+    # Create inner container with cards
+    with outer_container:
+        inner_script = """<div id="batch_cards_inner"></div>"""
+        st.markdown(inner_script, unsafe_allow_html=True)
+        
+        for i in range(batch_number):
+            cols[i].checkbox("This is *correct*", key=f"selected_{i}", value=True)
+            cols[i].markdown(card_html_list[i], unsafe_allow_html=True)
 
-    st.markdown(css, unsafe_allow_html=True)
+    # Apply styling
+    cards_container_style = """
+    <style>
+        div[data-testid='stVerticalBlock']:has(div#batch_cards_inner):not(:has(div#batch_cards_outer)) {
+            padding-bottom: 1rem;
+        }
+        [data-testid="column"] {
+            min-width: 320px !important;
+            width: 320px !important;
+            padding: 0 10px;
+        }
+        [data-testid="column"]>div>div>div>div>div {
+            overflow-y: auto;
+        }
+        div[data-testid="stHorizontalBlock"] {
+            overflow-x: auto;
+            white-space: nowrap;
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 1rem;
+            padding: 1rem;
+        }
+    </style>
+    """
+    st.markdown(cards_container_style, unsafe_allow_html=True)
 
     st.form_submit_button("Submit batch", on_click=button_callback("correct"))
 
