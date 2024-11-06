@@ -746,7 +746,7 @@ def process_batch_with_progress(batch):
     return all_showed_pages, all_highlight_info, final_html, batch_number, display_info
 
 
-all_showed_pages, all_highlight_info, final_html, batch_number, dd = (
+all_showed_pages, all_highlight_info, final_html, batch_number, card_html_list = (
     process_batch_with_progress(batch)
 )
 
@@ -1177,7 +1177,7 @@ with st.form("my_form", border=False):
             st.session_state[f"selected_{i}"] = True
     for i in range(batch_number):
         cols[i].checkbox("This is *correct*", key=f"selected_{i}", value=True)
-        cols[i].markdown(dd[i], unsafe_allow_html=True)
+        cols[i].html(card_html_list[i])
 
     css = """
 <style>
@@ -1185,8 +1185,8 @@ with st.form("my_form", border=False):
         padding-bottom: 1rem;
     }
     [data-testid="column"] {
-        min-width: 320px !important;
-        width: 320px !important;
+        min-width: 420px !important;
+        width: 420px !important;
         padding: 0 10px;
     }
     [data-testid="column"]>div>div>div>div>div {
