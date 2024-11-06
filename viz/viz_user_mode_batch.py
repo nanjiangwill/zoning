@@ -33,14 +33,12 @@ from zoning.utils import expand_term
 #     st.secrets["firebase"]["my_project_settings"]
 # )
 # firestore config
-# if sys.argv[1]:
-#     db = firestore.Client.from_service_account_json(sys.argv[1])
-# else:
-#     db = firestore.Client.from_service_account_info(
-#         st.secrets["firebase"]["my_project_settings"]
-#     )
-credentials_json = json.loads(os.environ["FIRESTORE_CREDENTIALS"])
-db = firestore.Client.from_service_account_info(credentials_json)
+if sys.argv[1]:
+    db = firestore.Client.from_service_account_json(sys.argv[1])
+else:
+    db = firestore.Client.from_service_account_info(
+        st.secrets["firebase"]["my_project_settings"]
+    )
 
 # Data Loading path
 state_experiment_map = {
