@@ -6,6 +6,7 @@ from elasticsearch_dsl.query import Q
 
 from zoning.class_types import SearchConfig, SearchMatch, SearchQuery, SearchResult
 from zoning.search.base_searcher import Searcher
+from zoning.utils import expand_term
 
 
 class KeywordSearcher(Searcher):
@@ -58,7 +59,7 @@ class KeywordSearcher(Searcher):
     def get_eval_term_query(
         self, eval_term: str, is_eval_term_fuzzy: bool, thesaurus_file: str
     ) -> Q:
-        expanded_eval_term = self.expand_term(thesaurus_file, eval_term)
+        expanded_eval_term = expand_term(thesaurus_file, eval_term)
         exact_term_query = Q(
             "bool",
             should=list(Q("match_phrase", Text=t) for t in expanded_eval_term),
@@ -80,7 +81,7 @@ class KeywordSearcher(Searcher):
         return term_query
 
     def get_units_query(self, eval_term: str, thesaurus_file: str) -> Q:
-        expanded_units = self.expand_term(thesaurus_file, f"{eval_term} units")
+        expanded_units = expand_term(thesaurus_file, f"{eval_term} units")
         units_query = Q(
             "bool",
             should=list(Q("match_phrase", Text=t) for t in expanded_units),
@@ -94,37 +95,37 @@ class KeywordSearcher(Searcher):
             is_district_fuzzy = self.search_config.is_district_fuzzy
             is_eval_term_fuzzy = self.search_config.is_eval_term_fuzzy
 
-            res = []
-            attempts = 0
-            max_attempts = 2
+            # res = []
+            # attempts = 0
+            # max_attempts = 1
 
-            while len(res) == 0 and attempts < max_attempts:
-                max_attempts += 1
-                district_query = self.get_district_query(
-                    search_query.place.district_full_name,
-                    search_query.place.district_short_name,
-                    is_district_fuzzy,
-                )
-                eval_term_query = self.get_eval_term_query(
-                    search_query.eval_term,
-                    is_eval_term_fuzzy,
-                    self.search_config.thesaurus_file,
-                )
-                units_query = self.get_units_query(
-                    search_query.eval_term, self.search_config.thesaurus_file
-                )
+            # while len(res) == 0 and attempts < max_attempts:
+            #     attempts += 1
+            district_query = self.get_district_query(
+                search_query.place.district_full_name,
+                search_query.place.district_short_name,
+                is_district_fuzzy,
+            )
+            eval_term_query = self.get_eval_term_query(
+                search_query.eval_term,
+                is_eval_term_fuzzy,
+                self.search_config.thesaurus_file,
+            )
+            units_query = self.get_units_query(
+                search_query.eval_term, self.search_config.thesaurus_file
+            )
 
-                s.query = district_query & eval_term_query & units_query
+            s.query = district_query & eval_term_query & units_query
 
-                s = s.extra(size=self.search_config.num_results)
+            s = s.extra(size=self.search_config.num_results)
 
-                s = s.highlight("Text")
+            s = s.highlight("Text")
 
-                res = s.execute()
-                if len(res) == 0:
-                    print(f"No results found for {target}")
-                    is_district_fuzzy = True
-                    is_eval_term_fuzzy = True
+            res = s.execute()
+            # if len(res) == 0:
+            #     print(f"No results found for {target}")
+            #     is_district_fuzzy = True
+            #     is_eval_term_fuzzy = True
 
             if len(res) == 0:
                 return SearchResult(

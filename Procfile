@@ -1,0 +1,1 @@
+web: sh setup.sh && streamlit run viz/viz_user_mode_batch.py

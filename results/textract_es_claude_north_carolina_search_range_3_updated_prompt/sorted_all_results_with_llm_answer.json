@@ -1,0 +1,5057 @@
+[
+  [
+    "alamance",
+    "min_lot_size",
+    "alamance__CO__Conservation"
+  ],
+  [
+    "alamance",
+    "max_height",
+    "alamance__H__Historic"
+  ],
+  [
+    "alamance",
+    "min_lot_size",
+    "alamance__H__Historic"
+  ],
+  [
+    "alamance",
+    "max_height",
+    "alamance__I__Industrial"
+  ],
+  [
+    "alamance",
+    "min_lot_size",
+    "alamance__I__Industrial"
+  ],
+  [
+    "alamance",
+    "max_height",
+    "alamance__MU__Mixed Use"
+  ],
+  [
+    "alamance",
+    "min_lot_size",
+    "alamance__MU__Mixed Use"
+  ],
+  [
+    "alamance",
+    "max_height",
+    "alamance__R15__Residential, Moderate Density"
+  ],
+  [
+    "alamance",
+    "min_lot_size",
+    "alamance__R15__Residential, Moderate Density"
+  ],
+  [
+    "alamance",
+    "max_height",
+    "alamance__R20__Residential, Low Density"
+  ],
+  [
+    "alamance",
+    "min_lot_size",
+    "alamance__R20__Residential, Low Density"
+  ],
+  [
+    "alamance",
+    "max_height",
+    "alamance__RA__Residential Agriculture"
+  ],
+  [
+    "alamance",
+    "min_lot_size",
+    "alamance__RA__Residential Agriculture"
+  ],
+  [
+    "alamance",
+    "min_lot_size",
+    "alamance__RM__Residential Manufactured Housing"
+  ],
+  [
+    "andrews",
+    "min_parking_spaces",
+    "andrews__GR__General Residential"
+  ],
+  [
+    "andrews",
+    "max_height",
+    "andrews__CB__Central Business"
+  ],
+  [
+    "andrews",
+    "min_lot_size",
+    "andrews__CB__Central Business"
+  ],
+  [
+    "andrews",
+    "max_height",
+    "andrews__GR__General Residential"
+  ],
+  [
+    "andrews",
+    "min_lot_size",
+    "andrews__GR__General Residential"
+  ],
+  [
+    "andrews",
+    "max_height",
+    "andrews__HB__Highway Business"
+  ],
+  [
+    "andrews",
+    "max_height",
+    "andrews__HC-I__Heavy Commercial and Industrial"
+  ],
+  [
+    "andrews",
+    "max_height",
+    "andrews__SF__Single Family Residential"
+  ],
+  [
+    "andrews",
+    "min_lot_size",
+    "andrews__SF__Single Family Residential"
+  ],
+  [
+    "andrews",
+    "min_parking_spaces",
+    "andrews__SF__Single Family Residential"
+  ],
+  [
+    "angier",
+    "max_height",
+    "angier__CB__Central Business"
+  ],
+  [
+    "angier",
+    "min_lot_size",
+    "angier__CP__Commerce Park"
+  ],
+  [
+    "angier",
+    "max_height",
+    "angier__OSR__Open Space and Recreation"
+  ],
+  [
+    "angier",
+    "min_lot_size",
+    "angier__OSR__Open Space and Recreation"
+  ],
+  [
+    "angier",
+    "min_lot_size",
+    "angier__R-10__Medium Density Residential"
+  ],
+  [
+    "angier",
+    "min_lot_size",
+    "angier__R-15__Low to Medium Density Residential"
+  ],
+  [
+    "angier",
+    "min_lot_size",
+    "angier__RA-30__Low Density Residential-Agricultural"
+  ],
+  [
+    "angier",
+    "min_lot_size",
+    "angier__WP-O__Watershed Protection Overlay"
+  ],
+  [
+    "atlantic-beach",
+    "min_lot_size",
+    "atlantic-beach__RSC__Residential Single-Family Conservation"
+  ],
+  [
+    "atlantic-beach",
+    "min_lot_size",
+    "atlantic-beach__RSW__Residential Single-Family Wide Yard"
+  ],
+  [
+    "atlantic-beach",
+    "max_height",
+    "atlantic-beach__RSN__Residential Single-Family Narrow Yard"
+  ],
+  [
+    "atlantic-beach",
+    "min_lot_size",
+    "atlantic-beach__RSN__Residential Single-Family Narrow Yard"
+  ],
+  [
+    "atlantic-beach",
+    "max_height",
+    "atlantic-beach__RSM__Residential Single-Family Manufactured"
+  ],
+  [
+    "atlantic-beach",
+    "min_lot_size",
+    "atlantic-beach__RSM__Residential Single-Family Manufactured"
+  ],
+  [
+    "atlantic-beach",
+    "max_height",
+    "atlantic-beach__RSD__Residential Single-Family and Duplex"
+  ],
+  [
+    "atlantic-beach",
+    "min_lot_size",
+    "atlantic-beach__RSD__Residential Single-Family and Duplex"
+  ],
+  [
+    "atlantic-beach",
+    "max_height",
+    "atlantic-beach__MUN__Mixed Use Neighborhood"
+  ],
+  [
+    "atlantic-beach",
+    "min_lot_size",
+    "atlantic-beach__MUN__Mixed Use Neighborhood"
+  ],
+  [
+    "atlantic-beach",
+    "max_height",
+    "atlantic-beach__MHI__Mixed Use High Intensity"
+  ],
+  [
+    "atlantic-beach",
+    "min_lot_size",
+    "atlantic-beach__CIR__Commercial Circle"
+  ],
+  [
+    "atlantic-beach",
+    "min_unit_size",
+    "atlantic-beach__CIR__Commercial Circle"
+  ],
+  [
+    "atlantic-beach",
+    "max_height",
+    "atlantic-beach__CIR__Commercial Circle"
+  ],
+  [
+    "atlantic-beach",
+    "min_parking_spaces",
+    "atlantic-beach__CIR__Commercial Circle"
+  ],
+  [
+    "atlantic-beach",
+    "max_height",
+    "atlantic-beach__CPY__Commercial Periphery"
+  ],
+  [
+    "atlantic-beach",
+    "max_lot_coverage",
+    "atlantic-beach__CPY__Commercial Periphery"
+  ],
+  [
+    "atlantic-beach",
+    "min_lot_size",
+    "atlantic-beach__CPY__Commercial Periphery"
+  ],
+  [
+    "atlantic-beach",
+    "max_height",
+    "atlantic-beach__COR__Commercial Corridor"
+  ],
+  [
+    "atlantic-beach",
+    "min_lot_size",
+    "atlantic-beach__COR__Commercial Corridor"
+  ],
+  [
+    "atlantic-beach",
+    "min_unit_size",
+    "atlantic-beach__RSN__Residential Single-Family Narrow Yard"
+  ],
+  [
+    "atlantic-beach",
+    "min_unit_size",
+    "atlantic-beach__RSD__Residential Single-Family and Duplex"
+  ],
+  [
+    "atlantic-beach",
+    "min_unit_size",
+    "atlantic-beach__RSM__Residential Single-Family Manufactured"
+  ],
+  [
+    "atlantic-beach",
+    "min_unit_size",
+    "atlantic-beach__RSW__Residential Single-Family Wide Yard"
+  ],
+  [
+    "aurora",
+    "max_height",
+    "aurora__CF__Community facilities"
+  ],
+  [
+    "aurora",
+    "max_height",
+    "aurora__DT__Downtown area development"
+  ],
+  [
+    "aurora",
+    "min_parking_spaces",
+    "aurora__RU__Rural"
+  ],
+  [
+    "ayden",
+    "max_height",
+    "ayden__B-1__Central Business"
+  ],
+  [
+    "ayden",
+    "max_height",
+    "ayden__B-2__Highway Business District"
+  ],
+  [
+    "ayden",
+    "min_lot_size",
+    "ayden__B-2__Highway Business District"
+  ],
+  [
+    "ayden",
+    "max_height",
+    "ayden__CON__Conservation District"
+  ],
+  [
+    "ayden",
+    "min_lot_size",
+    "ayden__CON__Conservation District"
+  ],
+  [
+    "ayden",
+    "max_height",
+    "ayden__HI__Heavy Industrial District"
+  ],
+  [
+    "ayden",
+    "min_lot_size",
+    "ayden__HI__Heavy Industrial District"
+  ],
+  [
+    "ayden",
+    "max_height",
+    "ayden__LI__Light Industrial District"
+  ],
+  [
+    "ayden",
+    "min_lot_size",
+    "ayden__LI__Light Industrial District"
+  ],
+  [
+    "ayden",
+    "max_height",
+    "ayden__MF__Multi-Family"
+  ],
+  [
+    "ayden",
+    "min_lot_size",
+    "ayden__MF__Multi-Family"
+  ],
+  [
+    "ayden",
+    "max_height",
+    "ayden__MH__Manufactured Housing"
+  ],
+  [
+    "ayden",
+    "min_lot_size",
+    "ayden__MH__Manufactured Housing"
+  ],
+  [
+    "ayden",
+    "max_height",
+    "ayden__NMX__Neighborhood Mixed Use"
+  ],
+  [
+    "ayden",
+    "max_height",
+    "ayden__PUD__Planned Unit Development"
+  ],
+  [
+    "ayden",
+    "max_height",
+    "ayden__R-10__Residential"
+  ],
+  [
+    "ayden",
+    "min_lot_size",
+    "ayden__R-10__Residential"
+  ],
+  [
+    "ayden",
+    "max_height",
+    "ayden__R-12__Residential"
+  ],
+  [
+    "ayden",
+    "min_lot_size",
+    "ayden__R-12__Residential"
+  ],
+  [
+    "ayden",
+    "max_height",
+    "ayden__R-6 SF__Residential"
+  ],
+  [
+    "ayden",
+    "min_lot_size",
+    "ayden__R-6 SF__Residential"
+  ],
+  [
+    "ayden",
+    "max_height",
+    "ayden__R-8__Residential"
+  ],
+  [
+    "ayden",
+    "min_lot_size",
+    "ayden__R-8__Residential"
+  ],
+  [
+    "ayden",
+    "max_height",
+    "ayden__RA-20__Residential Agricultural"
+  ],
+  [
+    "ayden",
+    "min_lot_size",
+    "ayden__RA-20__Residential Agricultural"
+  ],
+  [
+    "ayden",
+    "max_height",
+    "ayden__RMX__Residential Mixed Use"
+  ],
+  [
+    "ayden",
+    "max_height",
+    "ayden__RR__Rural Residential"
+  ],
+  [
+    "ayden",
+    "min_lot_size",
+    "ayden__RR__Rural Residential"
+  ],
+  [
+    "ayden",
+    "min_parking_spaces",
+    "ayden__B-1__Central Business"
+  ],
+  [
+    "ayden",
+    "min_parking_spaces",
+    "ayden__HI__Heavy Industrial District"
+  ],
+  [
+    "ayden",
+    "min_parking_spaces",
+    "ayden__LI__Light Industrial District"
+  ],
+  [
+    "ayden",
+    "min_parking_spaces",
+    "ayden__R-10__Residential"
+  ],
+  [
+    "ayden",
+    "min_parking_spaces",
+    "ayden__R-12__Residential"
+  ],
+  [
+    "ayden",
+    "min_parking_spaces",
+    "ayden__R-6 SF__Residential"
+  ],
+  [
+    "ayden",
+    "min_parking_spaces",
+    "ayden__R-8__Residential"
+  ],
+  [
+    "ayden",
+    "max_lot_coverage",
+    "ayden__PUD__Planned Unit Development"
+  ],
+  [
+    "bald-head-island",
+    "max_lot_coverage",
+    "bald-head-island__PD-1__Planned Development 1"
+  ],
+  [
+    "bald-head-island",
+    "max_lot_coverage",
+    "bald-head-island__PD-4__Planned Development 4"
+  ],
+  [
+    "bald-head-island",
+    "min_parking_spaces",
+    "bald-head-island__NC__Neighborhood Commercial"
+  ],
+  [
+    "bald-head-island",
+    "min_lot_size",
+    "bald-head-island__PD-1__Planned Development 1"
+  ],
+  [
+    "bald-head-island",
+    "min_lot_size",
+    "bald-head-island__PD-2__Planned Development 2"
+  ],
+  [
+    "bald-head-island",
+    "min_lot_size",
+    "bald-head-island__PD-3C-1__lighthouse-chapel overlay"
+  ],
+  [
+    "bald-head-island",
+    "min_lot_size",
+    "bald-head-island__PD-4__Planned Development 4"
+  ],
+  [
+    "bald-head-island",
+    "max_lot_coverage",
+    "bald-head-island__NC__Neighborhood Commercial"
+  ],
+  [
+    "bald-head-island",
+    "max_lot_coverage",
+    "bald-head-island__PD-2C__Planned Development 2 Commercial"
+  ],
+  [
+    "bald-head-island",
+    "max_lot_coverage",
+    "bald-head-island__PD-3C-1__lighthouse-chapel overlay"
+  ],
+  [
+    "bald-head-island",
+    "max_lot_coverage",
+    "bald-head-island__PD-3C__Planned Development 3 Commercial"
+  ],
+  [
+    "banner-elk",
+    "max_height",
+    "banner-elk__C-1P__Central Business with Parking"
+  ],
+  [
+    "banner-elk",
+    "max_height",
+    "banner-elk__C-1__Central Business"
+  ],
+  [
+    "banner-elk",
+    "min_lot_size",
+    "banner-elk__C-1__Central Business"
+  ],
+  [
+    "banner-elk",
+    "max_height",
+    "banner-elk__C-2__General Business"
+  ],
+  [
+    "banner-elk",
+    "min_lot_size",
+    "banner-elk__C-2__General Business"
+  ],
+  [
+    "banner-elk",
+    "min_lot_size",
+    "banner-elk__CZD__Civic Zoning"
+  ],
+  [
+    "banner-elk",
+    "max_height",
+    "banner-elk__HDO__Heritage District Overlay"
+  ],
+  [
+    "banner-elk",
+    "max_height",
+    "banner-elk__M-1__Industrial"
+  ],
+  [
+    "banner-elk",
+    "max_lot_coverage",
+    "banner-elk__M-1__Industrial"
+  ],
+  [
+    "banner-elk",
+    "max_height",
+    "banner-elk__M-E__Medical Educational"
+  ],
+  [
+    "banner-elk",
+    "max_lot_coverage",
+    "banner-elk__M-E__Medical Educational"
+  ],
+  [
+    "banner-elk",
+    "min_lot_size",
+    "banner-elk__M-E__Medical Educational"
+  ],
+  [
+    "banner-elk",
+    "max_height",
+    "banner-elk__M-U__Mixed Use"
+  ],
+  [
+    "banner-elk",
+    "min_lot_size",
+    "banner-elk__M-U__Mixed Use"
+  ],
+  [
+    "banner-elk",
+    "max_height",
+    "banner-elk__R-1-U__Single-Family Residential"
+  ],
+  [
+    "banner-elk",
+    "min_lot_size",
+    "banner-elk__R-1-U__Single-Family Residential"
+  ],
+  [
+    "banner-elk",
+    "max_height",
+    "banner-elk__R-1__Low-Density Residential"
+  ],
+  [
+    "banner-elk",
+    "max_height",
+    "banner-elk__CZD__Civic Zoning"
+  ],
+  [
+    "banner-elk",
+    "min_lot_size",
+    "banner-elk__M-1__Industrial"
+  ],
+  [
+    "banner-elk",
+    "min_lot_size",
+    "banner-elk__R-1__Low-Density Residential"
+  ],
+  [
+    "banner-elk",
+    "max_height",
+    "banner-elk__R-2__General Residential"
+  ],
+  [
+    "bath",
+    "max_height",
+    "bath__R-1__R-1 Low Density Residential"
+  ],
+  [
+    "bath",
+    "min_lot_size",
+    "bath__R-2__Medium Density Residential"
+  ],
+  [
+    "bath",
+    "min_lot_size",
+    "bath__B-1__Central Business"
+  ],
+  [
+    "bath",
+    "min_lot_size",
+    "bath__B-2__General Business"
+  ],
+  [
+    "bath",
+    "max_height",
+    "bath__O&I__Office and Institutional"
+  ],
+  [
+    "bath",
+    "min_lot_size",
+    "bath__O&I__Office and Institutional"
+  ],
+  [
+    "bath",
+    "min_unit_size",
+    "bath__O&I__Office and Institutional"
+  ],
+  [
+    "beaufort",
+    "max_lot_coverage",
+    "beaufort__CS-MU__Cedar Street Mixed-Use"
+  ],
+  [
+    "beaufort",
+    "max_lot_coverage",
+    "beaufort__PUD__Planned Unit Development"
+  ],
+  [
+    "beaufort",
+    "max_lot_coverage",
+    "beaufort__TR__Transitional"
+  ],
+  [
+    "beaufort",
+    "max_lot_coverage",
+    "beaufort__B-W__Business Waterfront"
+  ],
+  [
+    "beaufort",
+    "max_lot_coverage",
+    "beaufort__I-W__Industrial Warehouse"
+  ],
+  [
+    "beaufort",
+    "max_lot_coverage",
+    "beaufort__L-I__Light Industrial"
+  ],
+  [
+    "beaufort",
+    "max_lot_coverage",
+    "beaufort__EC__Entry Corridor Overlay"
+  ],
+  [
+    "beaufort",
+    "max_lot_coverage",
+    "beaufort__H-N__Historic-National"
+  ],
+  [
+    "beaufort",
+    "max_height",
+    "beaufort__R-20__Residential Single-Family"
+  ],
+  [
+    "beaufort",
+    "min_lot_size",
+    "beaufort__R-20__Residential Single-Family"
+  ],
+  [
+    "beaufort",
+    "max_height",
+    "beaufort__R-8MH__Residential Manufactured Home Park Recreational Vehicle Park"
+  ],
+  [
+    "beaufort",
+    "min_lot_size",
+    "beaufort__R-8MH__Residential Manufactured Home Park Recreational Vehicle Park"
+  ],
+  [
+    "beaufort",
+    "max_height",
+    "beaufort__R-8__Residential Medium Density"
+  ],
+  [
+    "beaufort",
+    "min_lot_size",
+    "beaufort__R-8__Residential Medium Density"
+  ],
+  [
+    "beaufort",
+    "max_height",
+    "beaufort__R-8A__Residential Single-Family Waterfront"
+  ],
+  [
+    "beaufort",
+    "min_lot_size",
+    "beaufort__R-8A__Residential Single-Family Waterfront"
+  ],
+  [
+    "beaufort",
+    "max_height",
+    "beaufort__RC-5__Residential Cluster Development"
+  ],
+  [
+    "beaufort",
+    "min_lot_size",
+    "beaufort__RC-5__Residential Cluster Development"
+  ],
+  [
+    "beaufort",
+    "min_parking_spaces",
+    "beaufort__RC-5__Residential Cluster Development"
+  ],
+  [
+    "beaufort",
+    "max_height",
+    "beaufort__TCA__Townhomes, Condominiums, Apartments"
+  ],
+  [
+    "beaufort",
+    "min_lot_size",
+    "beaufort__TCA__Townhomes, Condominiums, Apartments"
+  ],
+  [
+    "beaufort",
+    "max_height",
+    "beaufort__TR__Transitional"
+  ],
+  [
+    "beaufort",
+    "min_lot_size",
+    "beaufort__TR__Transitional"
+  ],
+  [
+    "beaufort",
+    "min_lot_size",
+    "beaufort__CS-MU__Cedar Street Mixed-Use"
+  ],
+  [
+    "beaufort",
+    "min_parking_spaces",
+    "beaufort__CS-MU__Cedar Street Mixed-Use"
+  ],
+  [
+    "beaufort",
+    "min_unit_size",
+    "beaufort__CS-MU__Cedar Street Mixed-Use"
+  ],
+  [
+    "beaufort",
+    "max_height",
+    "beaufort__CS-MU__Cedar Street Mixed-Use"
+  ],
+  [
+    "beaufort",
+    "max_height",
+    "beaufort__H-BD__Historic Business"
+  ],
+  [
+    "beaufort",
+    "min_lot_size",
+    "beaufort__H-BD__Historic Business"
+  ],
+  [
+    "beaufort",
+    "max_height",
+    "beaufort__H-WBD__Historic Waterfront Business"
+  ],
+  [
+    "beaufort",
+    "min_lot_size",
+    "beaufort__H-WBD__Historic Waterfront Business"
+  ],
+  [
+    "beaufort",
+    "min_lot_size",
+    "beaufort__B-1__General Business"
+  ],
+  [
+    "beaufort",
+    "max_height",
+    "beaufort__B-W__Business Waterfront"
+  ],
+  [
+    "beaufort",
+    "min_lot_size",
+    "beaufort__B-W__Business Waterfront"
+  ],
+  [
+    "beaufort",
+    "max_height",
+    "beaufort__L-I__Light Industrial"
+  ],
+  [
+    "beaufort",
+    "min_lot_size",
+    "beaufort__L-I__Light Industrial"
+  ],
+  [
+    "beaufort",
+    "max_height",
+    "beaufort__I-W__Industrial Warehouse"
+  ],
+  [
+    "beaufort",
+    "min_lot_size",
+    "beaufort__I-W__Industrial Warehouse"
+  ],
+  [
+    "beaufort-county",
+    "min_lot_size",
+    "beaufort-county__PUD__Planned Unit Development"
+  ],
+  [
+    "beech-mountain",
+    "min_lot_size",
+    "beech-mountain__BMR__Beech Mountain Resort"
+  ],
+  [
+    "beech-mountain",
+    "max_height",
+    "beech-mountain__CS-1__Commercial Service"
+  ],
+  [
+    "beech-mountain",
+    "max_height",
+    "beech-mountain__CS-2__Commercial Service"
+  ],
+  [
+    "beech-mountain",
+    "max_height",
+    "beech-mountain__MP__Memorial Park"
+  ],
+  [
+    "beech-mountain",
+    "min_lot_size",
+    "beech-mountain__MP__Memorial Park"
+  ],
+  [
+    "belhaven",
+    "max_height",
+    "belhaven__COD__COMMERCIAL OVERLAY"
+  ],
+  [
+    "belhaven",
+    "min_lot_size",
+    "belhaven__COD__COMMERCIAL OVERLAY"
+  ],
+  [
+    "belhaven",
+    "max_height",
+    "belhaven__GB__General Business"
+  ],
+  [
+    "belhaven",
+    "min_lot_size",
+    "belhaven__GB__General Business"
+  ],
+  [
+    "belhaven",
+    "min_lot_size",
+    "belhaven__R-5__Residential"
+  ],
+  [
+    "belhaven",
+    "min_lot_size",
+    "belhaven__R5__R-5 Residential"
+  ],
+  [
+    "belhaven",
+    "max_height",
+    "belhaven__R-5__Residential"
+  ],
+  [
+    "belhaven",
+    "max_height",
+    "belhaven__R5M__R-5M Residential Mobile Home"
+  ],
+  [
+    "belhaven",
+    "max_height",
+    "belhaven__R5__R-5 Residential"
+  ],
+  [
+    "belhaven",
+    "max_height",
+    "belhaven__MB__Marine Business"
+  ],
+  [
+    "belhaven",
+    "max_height",
+    "belhaven__HB__Highway Business"
+  ],
+  [
+    "belhaven",
+    "min_lot_size",
+    "belhaven__HB__Highway Business"
+  ],
+  [
+    "belhaven",
+    "max_height",
+    "belhaven__I__Industrial"
+  ],
+  [
+    "belhaven",
+    "min_lot_size",
+    "belhaven__I__Industrial"
+  ],
+  [
+    "belhaven",
+    "min_parking_spaces",
+    "belhaven__R-5__Residential"
+  ],
+  [
+    "belville",
+    "min_lot_size",
+    "belville__R-15__Residential"
+  ],
+  [
+    "belville",
+    "min_parking_spaces",
+    "belville__MF__Multi-Family"
+  ],
+  [
+    "belville",
+    "min_parking_spaces",
+    "belville__R-10__Residential"
+  ],
+  [
+    "belville",
+    "max_height",
+    "belville__R-10__Residential"
+  ],
+  [
+    "belville",
+    "max_height",
+    "belville__R-15__Residential"
+  ],
+  [
+    "bethel",
+    "max_height",
+    "bethel__RA-20__Residential Agricultural"
+  ],
+  [
+    "bethel",
+    "min_lot_size",
+    "bethel__RA-20__Residential Agricultural"
+  ],
+  [
+    "bethel",
+    "min_lot_size",
+    "bethel__R-15__Residential"
+  ],
+  [
+    "bethel",
+    "min_lot_size",
+    "bethel__R-75__Residential"
+  ],
+  [
+    "bethel",
+    "min_parking_spaces",
+    "bethel__MR__Multi-Family Residential"
+  ],
+  [
+    "bethel",
+    "max_height",
+    "bethel__Neighborhood Business Zone__Neighborhood Business"
+  ],
+  [
+    "bethel",
+    "max_height",
+    "bethel__Central Business Zone__Central Business"
+  ],
+  [
+    "bethel",
+    "max_height",
+    "bethel__MR__Multi-Family Residential"
+  ],
+  [
+    "bladen-county",
+    "min_lot_size",
+    "bladen-county__RA__Residential Agriculture"
+  ],
+  [
+    "bladen-county",
+    "max_height",
+    "bladen-county__RA__Residential Agriculture"
+  ],
+  [
+    "bladen-county",
+    "max_height",
+    "bladen-county__R__Residential"
+  ],
+  [
+    "bladen-county",
+    "min_lot_size",
+    "bladen-county__R__Residential"
+  ],
+  [
+    "bladen-county",
+    "max_height",
+    "bladen-county__C__Commercial"
+  ],
+  [
+    "bladen-county",
+    "min_lot_size",
+    "bladen-county__C__Commercial"
+  ],
+  [
+    "bladen-county",
+    "min_lot_size",
+    "bladen-county__CON__Conservation"
+  ],
+  [
+    "bladen-county",
+    "min_lot_size",
+    "bladen-county__Cons__Conservation"
+  ],
+  [
+    "bladen-county",
+    "max_height",
+    "bladen-county__CON__Conservation"
+  ],
+  [
+    "bladen-county",
+    "max_height",
+    "bladen-county__Cons__Conservation"
+  ],
+  [
+    "bladen-county",
+    "min_lot_size",
+    "bladen-county__I__Industrial"
+  ],
+  [
+    "bladen-county",
+    "max_height",
+    "bladen-county__I__Industrial"
+  ],
+  [
+    "bladenboro",
+    "max_height",
+    "bladenboro__R-A__Rural-Agricultural"
+  ],
+  [
+    "bladenboro",
+    "min_lot_size",
+    "bladenboro__R-A__Rural-Agricultural"
+  ],
+  [
+    "bladenboro",
+    "max_height",
+    "bladenboro__R-20__Residential"
+  ],
+  [
+    "bladenboro",
+    "min_lot_size",
+    "bladenboro__R-20__Residential"
+  ],
+  [
+    "bladenboro",
+    "max_height",
+    "bladenboro__R-12__Residential"
+  ],
+  [
+    "bladenboro",
+    "max_height",
+    "bladenboro__R-15__Residential"
+  ],
+  [
+    "bladenboro",
+    "min_lot_size",
+    "bladenboro__R-15__Residential"
+  ],
+  [
+    "bladenboro",
+    "min_lot_size",
+    "bladenboro__R-12__Residential"
+  ],
+  [
+    "bladenboro",
+    "max_height",
+    "bladenboro__R-10__Residential"
+  ],
+  [
+    "bladenboro",
+    "min_lot_size",
+    "bladenboro__R-10__Residential"
+  ],
+  [
+    "bladenboro",
+    "max_height",
+    "bladenboro__R-MF__Residential Multifamily"
+  ],
+  [
+    "bladenboro",
+    "min_lot_size",
+    "bladenboro__R-MF__Residential Multifamily"
+  ],
+  [
+    "bladenboro",
+    "max_height",
+    "bladenboro__C-B__Central Business"
+  ],
+  [
+    "bladenboro",
+    "min_lot_size",
+    "bladenboro__C-B__Central Business"
+  ],
+  [
+    "bladenboro",
+    "max_height",
+    "bladenboro__G-B__General Business"
+  ],
+  [
+    "bladenboro",
+    "min_lot_size",
+    "bladenboro__G-B__General Business"
+  ],
+  [
+    "bladenboro",
+    "max_height",
+    "bladenboro__N-B__Neighborhood Business"
+  ],
+  [
+    "bladenboro",
+    "min_lot_size",
+    "bladenboro__N-B__Neighborhood Business"
+  ],
+  [
+    "bladenboro",
+    "max_height",
+    "bladenboro__LI__Light Industrial"
+  ],
+  [
+    "bladenboro",
+    "min_lot_size",
+    "bladenboro__LI__Light Industrial"
+  ],
+  [
+    "blowing-rock",
+    "min_lot_size",
+    "blowing-rock__R-10D__Residential"
+  ],
+  [
+    "blowing-rock",
+    "min_lot_size",
+    "blowing-rock__CB__Central Business"
+  ],
+  [
+    "blowing-rock",
+    "min_lot_size",
+    "blowing-rock__GB__General Business"
+  ],
+  [
+    "blowing-rock",
+    "min_lot_size",
+    "blowing-rock__HMC__Hospital Medical Complex"
+  ],
+  [
+    "blowing-rock",
+    "min_lot_size",
+    "blowing-rock__HSG__Horse Show Grounds"
+  ],
+  [
+    "blowing-rock",
+    "min_lot_size",
+    "blowing-rock__OI__Office Institutional"
+  ],
+  [
+    "blowing-rock",
+    "min_lot_size",
+    "blowing-rock__PGS__Parks and Green Space"
+  ],
+  [
+    "blowing-rock",
+    "min_lot_size",
+    "blowing-rock__R-10M__Residential"
+  ],
+  [
+    "blowing-rock",
+    "min_lot_size",
+    "blowing-rock__R-10S__Residential"
+  ],
+  [
+    "blowing-rock",
+    "min_lot_size",
+    "blowing-rock__R-15__Residential"
+  ],
+  [
+    "blowing-rock",
+    "min_lot_size",
+    "blowing-rock__R-6M__Residential"
+  ],
+  [
+    "blowing-rock",
+    "min_lot_size",
+    "blowing-rock__R-6S__Residential"
+  ],
+  [
+    "blowing-rock",
+    "min_lot_size",
+    "blowing-rock__R-A__Residential-Agriculture"
+  ],
+  [
+    "blowing-rock",
+    "min_lot_size",
+    "blowing-rock__R-MH__Residential Mobile Home"
+  ],
+  [
+    "blowing-rock",
+    "min_lot_size",
+    "blowing-rock__TC__Town Center"
+  ],
+  [
+    "blowing-rock",
+    "max_height",
+    "blowing-rock__CB__Central Business"
+  ],
+  [
+    "blowing-rock",
+    "max_height",
+    "blowing-rock__TC__Town Center"
+  ],
+  [
+    "blowing-rock",
+    "max_height",
+    "blowing-rock__R-15__Residential"
+  ],
+  [
+    "bogue",
+    "max_height",
+    "bogue__B-1__General Business"
+  ],
+  [
+    "bogue",
+    "min_lot_size",
+    "bogue__B-1__General Business"
+  ],
+  [
+    "bogue",
+    "max_height",
+    "bogue__I-W__Industrial and Wholesale"
+  ],
+  [
+    "bogue",
+    "min_lot_size",
+    "bogue__I-W__Industrial and Wholesale"
+  ],
+  [
+    "bogue",
+    "max_height",
+    "bogue__OI__Office and Institutional"
+  ],
+  [
+    "bogue",
+    "min_lot_size",
+    "bogue__OI__Office and Institutional"
+  ],
+  [
+    "bogue",
+    "max_height",
+    "bogue__R-15M__Mobile Home Overlay"
+  ],
+  [
+    "bogue",
+    "min_lot_size",
+    "bogue__R-15M__Mobile Home Overlay"
+  ],
+  [
+    "bogue",
+    "max_height",
+    "bogue__R-15__Medium-Density Residential"
+  ],
+  [
+    "bogue",
+    "min_lot_size",
+    "bogue__R-15__Medium-Density Residential"
+  ],
+  [
+    "bogue",
+    "max_height",
+    "bogue__R-20__Low-Density Residential"
+  ],
+  [
+    "bogue",
+    "min_lot_size",
+    "bogue__R-20__Low-Density Residential"
+  ],
+  [
+    "bogue",
+    "max_height",
+    "bogue__RA__Rural Agricultural"
+  ],
+  [
+    "bogue",
+    "min_lot_size",
+    "bogue__RA__Rural Agricultural"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_lot_size",
+    "boiling-spring-lakes__R-6__Rural Residential"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_lot_size",
+    "boiling-spring-lakes__C-1A__Commercial Service"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_unit_size",
+    "boiling-spring-lakes__C-1A__Commercial Service"
+  ],
+  [
+    "boiling-spring-lakes",
+    "max_height",
+    "boiling-spring-lakes__C-1__Commercial Mixed Use"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_lot_size",
+    "boiling-spring-lakes__C-1__Commercial Mixed Use"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_unit_size",
+    "boiling-spring-lakes__C-1__Commercial Mixed Use"
+  ],
+  [
+    "boiling-spring-lakes",
+    "max_height",
+    "boiling-spring-lakes__C-C__City Center"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_lot_size",
+    "boiling-spring-lakes__C-C__City Center"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_unit_size",
+    "boiling-spring-lakes__C-C__City Center"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_lot_size",
+    "boiling-spring-lakes__CON__Conservation"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_unit_size",
+    "boiling-spring-lakes__CON__Conservation"
+  ],
+  [
+    "boiling-spring-lakes",
+    "max_height",
+    "boiling-spring-lakes__I-1__Light Industrial"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_lot_size",
+    "boiling-spring-lakes__I-1__Light Industrial"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_unit_size",
+    "boiling-spring-lakes__PRD__Planned Residential Development"
+  ],
+  [
+    "boiling-spring-lakes",
+    "max_height",
+    "boiling-spring-lakes__R-1__Single-Family Residential"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_lot_size",
+    "boiling-spring-lakes__R-1__Single-Family Residential"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_parking_spaces",
+    "boiling-spring-lakes__R-1__Single-Family Residential"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_unit_size",
+    "boiling-spring-lakes__R-1__Single-Family Residential"
+  ],
+  [
+    "boiling-spring-lakes",
+    "max_height",
+    "boiling-spring-lakes__R-2__Single-Family Residential"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_lot_size",
+    "boiling-spring-lakes__R-2__Single-Family Residential"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_parking_spaces",
+    "boiling-spring-lakes__R-2__Single-Family Residential"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_unit_size",
+    "boiling-spring-lakes__R-2__Single-Family Residential"
+  ],
+  [
+    "boiling-spring-lakes",
+    "max_height",
+    "boiling-spring-lakes__R-3A__Single-Family Residential"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_lot_size",
+    "boiling-spring-lakes__R-3A__Single-Family Residential"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_parking_spaces",
+    "boiling-spring-lakes__R-3A__Single-Family Residential"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_unit_size",
+    "boiling-spring-lakes__R-3A__Single-Family Residential"
+  ],
+  [
+    "boiling-spring-lakes",
+    "max_height",
+    "boiling-spring-lakes__R-3__Single-Family Residential"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_lot_size",
+    "boiling-spring-lakes__R-3__Single-Family Residential"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_parking_spaces",
+    "boiling-spring-lakes__R-3__Single-Family Residential"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_unit_size",
+    "boiling-spring-lakes__R-3__Single-Family Residential"
+  ],
+  [
+    "boiling-spring-lakes",
+    "max_height",
+    "boiling-spring-lakes__R-4__Single-Family Duplex Residential"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_lot_size",
+    "boiling-spring-lakes__R-4__Single-Family Duplex Residential"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_unit_size",
+    "boiling-spring-lakes__R-4__Single-Family Duplex Residential"
+  ],
+  [
+    "boiling-spring-lakes",
+    "max_height",
+    "boiling-spring-lakes__R-5__Single-Family Residential"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_lot_size",
+    "boiling-spring-lakes__R-5__Single-Family Residential"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_parking_spaces",
+    "boiling-spring-lakes__R-5__Single-Family Residential"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_unit_size",
+    "boiling-spring-lakes__R-5__Single-Family Residential"
+  ],
+  [
+    "boiling-spring-lakes",
+    "max_height",
+    "boiling-spring-lakes__R-6__Rural Residential"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_unit_size",
+    "boiling-spring-lakes__R-6__Rural Residential"
+  ],
+  [
+    "boiling-spring-lakes",
+    "max_height",
+    "boiling-spring-lakes__REC__Recreation"
+  ],
+  [
+    "boiling-spring-lakes",
+    "min_lot_size",
+    "boiling-spring-lakes__REC__Recreation"
+  ],
+  [
+    "bolivia",
+    "max_height",
+    "bolivia__OAR__Open Area Recreation"
+  ],
+  [
+    "bolivia",
+    "min_lot_size",
+    "bolivia__OAR__Open Area Recreation"
+  ],
+  [
+    "bolivia",
+    "max_height",
+    "bolivia__AF__Agriculture Forestry"
+  ],
+  [
+    "bolivia",
+    "min_lot_size",
+    "bolivia__AF__Agriculture Forestry"
+  ],
+  [
+    "bolivia",
+    "max_height",
+    "bolivia__R20__Light Density Residential"
+  ],
+  [
+    "bolivia",
+    "min_lot_size",
+    "bolivia__R20__Light Density Residential"
+  ],
+  [
+    "bolivia",
+    "max_height",
+    "bolivia__R15__Moderate Light Density Residential"
+  ],
+  [
+    "bolivia",
+    "min_lot_size",
+    "bolivia__R15__Moderate Light Density Residential"
+  ],
+  [
+    "bolivia",
+    "max_height",
+    "bolivia__R10__Moderate Density Residential"
+  ],
+  [
+    "bolivia",
+    "min_lot_size",
+    "bolivia__R10__Moderate Density Residential"
+  ],
+  [
+    "bolivia",
+    "max_height",
+    "bolivia__MFR__Multiple-Family Residential"
+  ],
+  [
+    "bolivia",
+    "min_lot_size",
+    "bolivia__MFR__Multiple-Family Residential"
+  ],
+  [
+    "bolivia",
+    "min_lot_size",
+    "bolivia__LI__Light Industrial"
+  ],
+  [
+    "bolivia",
+    "min_lot_size",
+    "bolivia__HI__Heavy Industrial"
+  ],
+  [
+    "boone",
+    "min_lot_size",
+    "boone__Viewshed Protection District__Viewshed Protection"
+  ],
+  [
+    "boone",
+    "min_lot_size",
+    "boone__R1S__Small Home Residential"
+  ],
+  [
+    "boone",
+    "max_height",
+    "boone__R1A__Single-Family Residential with Accessory Dwelling"
+  ],
+  [
+    "boone",
+    "min_lot_size",
+    "boone__RR__Residential Rehabilitation"
+  ],
+  [
+    "boone",
+    "max_height",
+    "boone__R2__Two-Family Residential"
+  ],
+  [
+    "boone",
+    "max_height",
+    "boone__RR__Residential Rehabilitation"
+  ],
+  [
+    "boone",
+    "min_lot_size",
+    "boone__R2__Two-Family Residential"
+  ],
+  [
+    "boone",
+    "max_height",
+    "boone__R3__Multiple-Family Residential"
+  ],
+  [
+    "boone",
+    "max_height",
+    "boone__R4__Two-Family Manufactured Home Residential"
+  ],
+  [
+    "boone",
+    "min_lot_size",
+    "boone__R4__Two-Family Manufactured Home Residential"
+  ],
+  [
+    "boone",
+    "min_lot_size",
+    "boone__R5__55+ Housing Residential"
+  ],
+  [
+    "boone",
+    "max_height",
+    "boone__R5__55+ Housing Residential"
+  ],
+  [
+    "boone",
+    "max_height",
+    "boone__RA__Residential Agricultural"
+  ],
+  [
+    "boone",
+    "max_height",
+    "boone__WD__Wellness"
+  ],
+  [
+    "boone",
+    "max_height",
+    "boone__U1__University"
+  ],
+  [
+    "boone",
+    "max_height",
+    "boone__E1__Educational"
+  ],
+  [
+    "boone",
+    "min_lot_size",
+    "boone__E3__Educational"
+  ],
+  [
+    "boone",
+    "min_lot_size",
+    "boone__E4__Educational Child Daycare"
+  ],
+  [
+    "boone",
+    "max_height",
+    "boone__E2__Educational"
+  ],
+  [
+    "boone",
+    "max_height",
+    "boone__E3__Educational"
+  ],
+  [
+    "boone",
+    "max_height",
+    "boone__E4__Educational Child Daycare"
+  ],
+  [
+    "boone",
+    "min_parking_spaces",
+    "boone__MH__Manufactured Home Park"
+  ],
+  [
+    "boone",
+    "max_lot_coverage",
+    "boone__M1__Manufacturing"
+  ],
+  [
+    "boone",
+    "min_parking_spaces",
+    "boone__R3__Multiple-Family Residential"
+  ],
+  [
+    "boone",
+    "min_lot_size",
+    "boone__B2__Neighborhood Business"
+  ],
+  [
+    "boone",
+    "min_lot_size",
+    "boone__B3__General Business"
+  ],
+  [
+    "boone",
+    "max_height",
+    "boone__M1__Manufacturing"
+  ],
+  [
+    "boone",
+    "min_lot_size",
+    "boone__M1__Manufacturing"
+  ],
+  [
+    "boone",
+    "max_height",
+    "boone__MH__Manufactured Home Park"
+  ],
+  [
+    "boone",
+    "min_lot_size",
+    "boone__MH__Manufactured Home Park"
+  ],
+  [
+    "boone",
+    "max_height",
+    "boone__OI__Office Institutional"
+  ],
+  [
+    "boone",
+    "min_lot_size",
+    "boone__R1A__Single-Family Residential with Accessory Dwelling"
+  ],
+  [
+    "boone",
+    "min_lot_size",
+    "boone__R1__Single-Family Residential"
+  ],
+  [
+    "boone",
+    "min_lot_size",
+    "boone__R3__Multiple-Family Residential"
+  ],
+  [
+    "boone",
+    "min_lot_size",
+    "boone__RA__Residential Agricultural"
+  ],
+  [
+    "boone",
+    "max_height",
+    "boone__B3__General Business"
+  ],
+  [
+    "boone",
+    "min_lot_size",
+    "boone__E1__Educational"
+  ],
+  [
+    "boone",
+    "min_lot_size",
+    "boone__E2__Educational"
+  ],
+  [
+    "boone",
+    "min_lot_size",
+    "boone__OI__Office Institutional"
+  ],
+  [
+    "boone",
+    "min_lot_size",
+    "boone__WD__Wellness"
+  ],
+  [
+    "boone",
+    "max_height",
+    "boone__B2__Neighborhood Business"
+  ],
+  [
+    "boone",
+    "max_height",
+    "boone__R1S__Small Home Residential"
+  ],
+  [
+    "boone",
+    "max_height",
+    "boone__R1__Single-Family Residential"
+  ],
+  [
+    "bridgeton",
+    "max_height",
+    "bridgeton__Agricultural__Agricultural"
+  ],
+  [
+    "bridgeton",
+    "min_lot_size",
+    "bridgeton__Agricultural__Agricultural"
+  ],
+  [
+    "bridgeton",
+    "max_height",
+    "bridgeton__Business-Residential__Business-Residential"
+  ],
+  [
+    "bridgeton",
+    "min_lot_size",
+    "bridgeton__Business-Residential__Business-Residential"
+  ],
+  [
+    "bridgeton",
+    "max_height",
+    "bridgeton__Highway-Commercial__Highway-Commercial"
+  ],
+  [
+    "bridgeton",
+    "min_lot_size",
+    "bridgeton__Highway-Commercial__Highway-Commercial"
+  ],
+  [
+    "bridgeton",
+    "max_height",
+    "bridgeton__Industrial__Industrial"
+  ],
+  [
+    "bridgeton",
+    "min_lot_size",
+    "bridgeton__Industrial__Industrial"
+  ],
+  [
+    "bridgeton",
+    "max_height",
+    "bridgeton__Manufactured Home Overlay__Manufactured Home Overlay"
+  ],
+  [
+    "bridgeton",
+    "min_lot_size",
+    "bridgeton__Manufactured Home Overlay__Manufactured Home Overlay"
+  ],
+  [
+    "bridgeton",
+    "max_height",
+    "bridgeton__R-5__Residential"
+  ],
+  [
+    "bridgeton",
+    "min_lot_size",
+    "bridgeton__R-5__Residential"
+  ],
+  [
+    "bridgeton",
+    "max_height",
+    "bridgeton__Waterfront-Residential__Waterfront-Residential"
+  ],
+  [
+    "bridgeton",
+    "min_lot_size",
+    "bridgeton__Waterfront-Residential__Waterfront-Residential"
+  ],
+  [
+    "brunswick-county",
+    "max_lot_coverage",
+    "brunswick-county__CP__Conservation and Protection"
+  ],
+  [
+    "brunswick-county",
+    "max_lot_coverage",
+    "brunswick-county__CZ__Conditional Zoning"
+  ],
+  [
+    "brunswick-county",
+    "max_lot_coverage",
+    "brunswick-county__ED__Economic Development"
+  ],
+  [
+    "brunswick-county",
+    "max_lot_coverage",
+    "brunswick-county__MI__Military Installation"
+  ],
+  [
+    "brunswick-county",
+    "max_lot_coverage",
+    "brunswick-county__WQP__Water Quality Protection"
+  ],
+  [
+    "brunswick-county",
+    "min_lot_size",
+    "brunswick-county__MR-3200__Multifamily Residential"
+  ],
+  [
+    "brunswick-county",
+    "min_lot_size",
+    "brunswick-county__R-6000__High Density Residential"
+  ],
+  [
+    "brunswick-county",
+    "min_lot_size",
+    "brunswick-county__R-7500__Medium Density Residential"
+  ],
+  [
+    "brunswick-county",
+    "min_lot_size",
+    "brunswick-county__RR__Rural Low Density Residential"
+  ],
+  [
+    "brunswick-county",
+    "min_lot_size",
+    "brunswick-county__SBR-6000__High Density Site Built Residential"
+  ],
+  [
+    "brunswick-county",
+    "max_height",
+    "brunswick-county__R-7500__Medium Density Residential"
+  ],
+  [
+    "burlington",
+    "max_lot_coverage",
+    "burlington__CBD__Central Business"
+  ],
+  [
+    "burlington",
+    "min_lot_size",
+    "burlington__CBD__Central Business"
+  ],
+  [
+    "burlington",
+    "max_lot_coverage",
+    "burlington__GB__General Business"
+  ],
+  [
+    "burlington",
+    "max_height",
+    "burlington__HI__Heavy Industrial"
+  ],
+  [
+    "burlington",
+    "max_lot_coverage",
+    "burlington__HI__Heavy Industrial"
+  ],
+  [
+    "burlington",
+    "min_lot_size",
+    "burlington__HI__Heavy Industrial"
+  ],
+  [
+    "burlington",
+    "min_lot_size",
+    "burlington__HDR__High Density Residential"
+  ],
+  [
+    "burlington",
+    "max_height",
+    "burlington__LI__Light Industrial"
+  ],
+  [
+    "burlington",
+    "max_lot_coverage",
+    "burlington__LI__Light Industrial"
+  ],
+  [
+    "burlington",
+    "max_height",
+    "burlington__LDR__Low Density Residential"
+  ],
+  [
+    "burlington",
+    "max_lot_coverage",
+    "burlington__LDR__Low Density Residential"
+  ],
+  [
+    "burlington",
+    "min_lot_size",
+    "burlington__LDR__Low Density Residential"
+  ],
+  [
+    "burlington",
+    "max_height",
+    "burlington__MDR__Medium Density Residential"
+  ],
+  [
+    "burlington",
+    "min_lot_size",
+    "burlington__MDR__Medium Density Residential"
+  ],
+  [
+    "burlington",
+    "max_lot_coverage",
+    "burlington__MI__Medium Industrial"
+  ],
+  [
+    "burlington",
+    "min_lot_size",
+    "burlington__MI__Medium Industrial"
+  ],
+  [
+    "burlington",
+    "max_lot_coverage",
+    "burlington__MX__Mixed Use"
+  ],
+  [
+    "burlington",
+    "min_lot_size",
+    "burlington__MX__Mixed Use"
+  ],
+  [
+    "burlington",
+    "min_lot_size",
+    "burlington__NB__Neighborhood Business"
+  ],
+  [
+    "burlington",
+    "min_lot_size",
+    "burlington__OI__Office Institutional"
+  ],
+  [
+    "burlington",
+    "max_height",
+    "burlington__PC__Parks and Conservation"
+  ],
+  [
+    "burlington",
+    "min_lot_size",
+    "burlington__PC__Parks and Conservation"
+  ],
+  [
+    "burlington",
+    "min_lot_size",
+    "burlington__RMH__Residential Manufactured Home"
+  ],
+  [
+    "burlington",
+    "min_parking_spaces",
+    "burlington__CBD__Central Business"
+  ],
+  [
+    "burlington",
+    "max_lot_coverage",
+    "burlington__LHO__Local Historic Overlay"
+  ],
+  [
+    "burnsville",
+    "min_lot_size",
+    "burnsville__C-2__General Business"
+  ],
+  [
+    "burnsville",
+    "min_lot_size",
+    "burnsville__I-1__Industrial"
+  ],
+  [
+    "burnsville",
+    "min_lot_size",
+    "burnsville__R-10__Residential"
+  ],
+  [
+    "burnsville",
+    "max_lot_coverage",
+    "burnsville__C-2__General Business"
+  ],
+  [
+    "burnsville",
+    "max_lot_coverage",
+    "burnsville__C-3__East West Main Street Business"
+  ],
+  [
+    "burnsville",
+    "max_height",
+    "burnsville__C-3__East West Main Street Business"
+  ],
+  [
+    "burnsville",
+    "max_lot_coverage",
+    "burnsville__R-10__Residential"
+  ],
+  [
+    "burnsville",
+    "min_parking_spaces",
+    "burnsville__C-1__Central Business"
+  ],
+  [
+    "burnsville",
+    "min_lot_size",
+    "burnsville__C-3__East West Main Street Business"
+  ],
+  [
+    "burnsville",
+    "max_height",
+    "burnsville__C-1__Central Business"
+  ],
+  [
+    "burnsville",
+    "min_lot_size",
+    "burnsville__C-1__Central Business"
+  ],
+  [
+    "burnsville",
+    "max_height",
+    "burnsville__C-2__General Business"
+  ],
+  [
+    "burnsville",
+    "max_height",
+    "burnsville__I-1__Industrial"
+  ],
+  [
+    "burnsville",
+    "max_height",
+    "burnsville__R-10__Residential"
+  ],
+  [
+    "butner",
+    "min_lot_size",
+    "butner__CD-PUD__Planned Unit Development"
+  ],
+  [
+    "butner",
+    "min_lot_size",
+    "butner__CX__Central Avenue Mixed-Use"
+  ],
+  [
+    "butner",
+    "min_lot_size",
+    "butner__WPO-GA__Watershed Protection Overlay-General Area"
+  ],
+  [
+    "butner",
+    "max_height",
+    "butner__CE__Central Gateway East"
+  ],
+  [
+    "butner",
+    "max_height",
+    "butner__CW__Central Gateway West"
+  ],
+  [
+    "butner",
+    "max_height",
+    "butner__CX__Central Avenue Mixed-Use"
+  ],
+  [
+    "butner",
+    "max_height",
+    "butner__NI__North Interchange Gateway"
+  ],
+  [
+    "butner",
+    "max_height",
+    "butner__SI__South Interchange Gateway"
+  ],
+  [
+    "butner",
+    "min_parking_spaces",
+    "butner__CE__Central Gateway East"
+  ],
+  [
+    "butner",
+    "min_parking_spaces",
+    "butner__SI__South Interchange Gateway"
+  ],
+  [
+    "butner",
+    "min_lot_size",
+    "butner__BCG__Butner Cove Gateway"
+  ],
+  [
+    "butner",
+    "max_height",
+    "butner__BCV__Butner Cove Village"
+  ],
+  [
+    "butner",
+    "min_lot_size",
+    "butner__BCV__Butner Cove Village"
+  ],
+  [
+    "butner",
+    "max_height",
+    "butner__EBG__East Butner Gateway"
+  ],
+  [
+    "butner",
+    "min_parking_spaces",
+    "butner__EBG__East Butner Gateway"
+  ],
+  [
+    "butner",
+    "max_height",
+    "butner__CB__Central Business"
+  ],
+  [
+    "butner",
+    "min_lot_size",
+    "butner__CB__Central Business"
+  ],
+  [
+    "butner",
+    "max_height",
+    "butner__HB__Highway Business"
+  ],
+  [
+    "butner",
+    "min_lot_size",
+    "butner__HB__Highway Business"
+  ],
+  [
+    "butner",
+    "max_height",
+    "butner__HI__Heavy Industrial"
+  ],
+  [
+    "butner",
+    "min_lot_size",
+    "butner__HI__Heavy Industrial"
+  ],
+  [
+    "butner",
+    "max_height",
+    "butner__LI__Light Industrial"
+  ],
+  [
+    "butner",
+    "min_lot_size",
+    "butner__LI__Light Industrial"
+  ],
+  [
+    "butner",
+    "max_height",
+    "butner__NB__Neighborhood Business"
+  ],
+  [
+    "butner",
+    "min_lot_size",
+    "butner__NB__Neighborhood Business"
+  ],
+  [
+    "butner",
+    "max_height",
+    "butner__OI__Office and Institutional"
+  ],
+  [
+    "butner",
+    "min_lot_size",
+    "butner__OI__Office and Institutional"
+  ],
+  [
+    "butner",
+    "max_height",
+    "butner__RMF__Multi-Family Residential"
+  ],
+  [
+    "butner",
+    "min_lot_size",
+    "butner__RMF__Multi-Family Residential"
+  ],
+  [
+    "butner",
+    "max_height",
+    "butner__RMX__Mixed Residential"
+  ],
+  [
+    "butner",
+    "min_lot_size",
+    "butner__RMX__Mixed Residential"
+  ],
+  [
+    "butner",
+    "max_height",
+    "butner__RP__Rural Preservation"
+  ],
+  [
+    "butner",
+    "min_lot_size",
+    "butner__RP__Rural Preservation"
+  ],
+  [
+    "butner",
+    "max_height",
+    "butner__RR__Rural Residential"
+  ],
+  [
+    "butner",
+    "min_lot_size",
+    "butner__RR__Rural Residential"
+  ],
+  [
+    "butner",
+    "max_height",
+    "butner__RS__Suburban Residential"
+  ],
+  [
+    "butner",
+    "min_lot_size",
+    "butner__RS__Suburban Residential"
+  ],
+  [
+    "butner",
+    "max_height",
+    "butner__RT__Town Residential"
+  ],
+  [
+    "butner",
+    "min_lot_size",
+    "butner__RT__Town Residential"
+  ],
+  [
+    "calabash",
+    "min_unit_size",
+    "calabash__AD__Agriculture"
+  ],
+  [
+    "calabash",
+    "min_lot_size",
+    "calabash__CB__Central Business"
+  ],
+  [
+    "calabash",
+    "min_unit_size",
+    "calabash__CB__Central Business"
+  ],
+  [
+    "calabash",
+    "max_height",
+    "calabash__CD__Conservation"
+  ],
+  [
+    "calabash",
+    "min_lot_size",
+    "calabash__CD__Conservation"
+  ],
+  [
+    "calabash",
+    "min_parking_spaces",
+    "calabash__CD__Conservation"
+  ],
+  [
+    "calabash",
+    "min_unit_size",
+    "calabash__CD__Conservation"
+  ],
+  [
+    "calabash",
+    "min_lot_size",
+    "calabash__HC__Highway Commercial"
+  ],
+  [
+    "calabash",
+    "min_unit_size",
+    "calabash__HC__Highway Commercial"
+  ],
+  [
+    "calabash",
+    "min_lot_size",
+    "calabash__MFH-II__Manufactured Home II"
+  ],
+  [
+    "calabash",
+    "min_unit_size",
+    "calabash__MFH-II__Manufactured Home II"
+  ],
+  [
+    "calabash",
+    "min_lot_size",
+    "calabash__O I__Office and Institutional"
+  ],
+  [
+    "calabash",
+    "max_height",
+    "calabash__PUD__Planned Unit Development"
+  ],
+  [
+    "calabash",
+    "min_lot_size",
+    "calabash__PUD__Planned Unit Development"
+  ],
+  [
+    "calabash",
+    "min_lot_size",
+    "calabash__R C__Residential Commercial"
+  ],
+  [
+    "calabash",
+    "min_lot_size",
+    "calabash__R-15__Residential"
+  ],
+  [
+    "calabash",
+    "min_lot_size",
+    "calabash__R-6__Residential"
+  ],
+  [
+    "calabash",
+    "min_lot_size",
+    "calabash__R-8__Residential"
+  ],
+  [
+    "calabash",
+    "min_unit_size",
+    "calabash__R-8__Residential"
+  ],
+  [
+    "calabash",
+    "max_height",
+    "calabash__R-6__Residential"
+  ],
+  [
+    "camden-county",
+    "max_height",
+    "camden-county__CP__Conservation & Protection"
+  ],
+  [
+    "camden-county",
+    "min_lot_size",
+    "camden-county__CP__Conservation & Protection"
+  ],
+  [
+    "camden-county",
+    "max_lot_coverage",
+    "camden-county__WL__Working Lands"
+  ],
+  [
+    "camden-county",
+    "min_lot_size",
+    "camden-county__WL__Working Lands"
+  ],
+  [
+    "camden-county",
+    "max_height",
+    "camden-county__WL__Working Lands"
+  ],
+  [
+    "camden-county",
+    "max_height",
+    "camden-county__RR__Rural Residential"
+  ],
+  [
+    "camden-county",
+    "max_lot_coverage",
+    "camden-county__RR__Rural Residential"
+  ],
+  [
+    "camden-county",
+    "min_lot_size",
+    "camden-county__RR__Rural Residential"
+  ],
+  [
+    "camden-county",
+    "max_height",
+    "camden-county__SR__Suburban Residential"
+  ],
+  [
+    "camden-county",
+    "max_lot_coverage",
+    "camden-county__SR__Suburban Residential"
+  ],
+  [
+    "camden-county",
+    "min_lot_size",
+    "camden-county__SR__Suburban Residential"
+  ],
+  [
+    "camden-county",
+    "max_height",
+    "camden-county__NR__Neighborhood Residential"
+  ],
+  [
+    "camden-county",
+    "max_lot_coverage",
+    "camden-county__NR__Neighborhood Residential"
+  ],
+  [
+    "camden-county",
+    "min_lot_size",
+    "camden-county__NR__Neighborhood Residential"
+  ],
+  [
+    "camden-county",
+    "max_height",
+    "camden-county__VR__Village Residential"
+  ],
+  [
+    "camden-county",
+    "min_lot_size",
+    "camden-county__VR__Village Residential"
+  ],
+  [
+    "camden-county",
+    "min_lot_size",
+    "camden-county__CC__Crossroads Commercial"
+  ],
+  [
+    "camden-county",
+    "max_height",
+    "camden-county__CC__Crossroads Commercial"
+  ],
+  [
+    "camden-county",
+    "max_height",
+    "camden-county__VC__Village Commercial"
+  ],
+  [
+    "camden-county",
+    "max_lot_coverage",
+    "camden-county__VC__Village Commercial"
+  ],
+  [
+    "camden-county",
+    "min_lot_size",
+    "camden-county__VC__Village Commercial"
+  ],
+  [
+    "camden-county",
+    "min_lot_size",
+    "camden-county__MX__Mixed-Use"
+  ],
+  [
+    "camden-county",
+    "max_height",
+    "camden-county__HC__Highway Commercial"
+  ],
+  [
+    "camden-county",
+    "min_lot_size",
+    "camden-county__HC__Highway Commercial"
+  ],
+  [
+    "camden-county",
+    "max_lot_coverage",
+    "camden-county__HC__Highway Commercial"
+  ],
+  [
+    "camden-county",
+    "max_height",
+    "camden-county__MC__Maritime Commercial"
+  ],
+  [
+    "camden-county",
+    "max_lot_coverage",
+    "camden-county__MC__Maritime Commercial"
+  ],
+  [
+    "camden-county",
+    "min_lot_size",
+    "camden-county__MC__Maritime Commercial"
+  ],
+  [
+    "camden-county",
+    "max_height",
+    "camden-county__LI__Light Industrial"
+  ],
+  [
+    "camden-county",
+    "min_lot_size",
+    "camden-county__LI__Light Industrial"
+  ],
+  [
+    "camden-county",
+    "max_height",
+    "camden-county__HI__Heavy Industrial"
+  ],
+  [
+    "camden-county",
+    "min_lot_size",
+    "camden-county__HI__Heavy Industrial"
+  ],
+  [
+    "camden-county",
+    "min_unit_size",
+    "camden-county__CFO__Commercial Fishing Overlay"
+  ],
+  [
+    "camden-county",
+    "min_unit_size",
+    "camden-county__LHO__Local Historic Overlay"
+  ],
+  [
+    "cape-carteret",
+    "min_parking_spaces",
+    "cape-carteret__R-10__Single-Family Residential"
+  ],
+  [
+    "cape-carteret",
+    "min_unit_size",
+    "cape-carteret__R-10__Single-Family Residential"
+  ],
+  [
+    "cape-carteret",
+    "min_lot_size",
+    "cape-carteret__R-30__single-family residential"
+  ],
+  [
+    "cape-carteret",
+    "min_parking_spaces",
+    "cape-carteret__R-10M__Multi-Family Residential"
+  ],
+  [
+    "cape-carteret",
+    "max_height",
+    "cape-carteret__B-30__light industrial"
+  ],
+  [
+    "cape-carteret",
+    "min_lot_size",
+    "cape-carteret__R-13__single family residential"
+  ],
+  [
+    "cape-carteret",
+    "max_height",
+    "cape-carteret__B-10__business and professional offices"
+  ],
+  [
+    "cape-carteret",
+    "max_height",
+    "cape-carteret__B-20__retail sales and shopping centers"
+  ],
+  [
+    "cape-carteret",
+    "min_lot_size",
+    "cape-carteret__B-10__business and professional offices"
+  ],
+  [
+    "cape-carteret",
+    "max_height",
+    "cape-carteret__R-10M__Multi-Family Residential"
+  ],
+  [
+    "cape-carteret",
+    "min_lot_size",
+    "cape-carteret__R-10M__Multi-Family Residential"
+  ],
+  [
+    "cape-carteret",
+    "min_lot_size",
+    "cape-carteret__R-10__Single-Family Residential"
+  ],
+  [
+    "cape-carteret",
+    "max_height",
+    "cape-carteret__R-13__single family residential"
+  ],
+  [
+    "cape-carteret",
+    "min_lot_size",
+    "cape-carteret__R-20__single-family residential"
+  ],
+  [
+    "cape-carteret",
+    "max_height",
+    "cape-carteret__R-30__single-family residential"
+  ],
+  [
+    "cape-carteret",
+    "min_lot_size",
+    "cape-carteret__B-20__retail sales and shopping centers"
+  ],
+  [
+    "cape-carteret",
+    "min_lot_size",
+    "cape-carteret__B-30__light industrial"
+  ],
+  [
+    "carolina-shores",
+    "min_parking_spaces",
+    "carolina-shores__ID__Industrial"
+  ],
+  [
+    "carolina-shores",
+    "max_height",
+    "carolina-shores__R-12__Residential"
+  ],
+  [
+    "carolina-shores",
+    "min_lot_size",
+    "carolina-shores__R-12__Residential"
+  ],
+  [
+    "carolina-shores",
+    "max_height",
+    "carolina-shores__R-15__Residential"
+  ],
+  [
+    "carolina-shores",
+    "min_lot_size",
+    "carolina-shores__R-6__Residential"
+  ],
+  [
+    "carolina-shores",
+    "max_height",
+    "carolina-shores__R-8__Residential"
+  ],
+  [
+    "carolina-shores",
+    "min_lot_size",
+    "carolina-shores__R-8__Residential"
+  ],
+  [
+    "carolina-shores",
+    "max_height",
+    "carolina-shores__R-6__Residential"
+  ],
+  [
+    "carolina-shores",
+    "max_height",
+    "carolina-shores__O I__Office and Institutional"
+  ],
+  [
+    "carolina-shores",
+    "max_height",
+    "carolina-shores__HC__Highway Commercial"
+  ],
+  [
+    "carolina-shores",
+    "min_lot_size",
+    "carolina-shores__HC__Highway Commercial"
+  ],
+  [
+    "carolina-shores",
+    "max_height",
+    "carolina-shores__NB__Neighborhood Business"
+  ],
+  [
+    "carolina-shores",
+    "min_parking_spaces",
+    "carolina-shores__NB__Neighborhood Business"
+  ],
+  [
+    "carolina-shores",
+    "max_height",
+    "carolina-shores__CRD__Conservation Recreation"
+  ],
+  [
+    "carolina-shores",
+    "max_height",
+    "carolina-shores__ID__Industrial"
+  ],
+  [
+    "carolina-shores",
+    "min_lot_size",
+    "carolina-shores__ID__Industrial"
+  ],
+  [
+    "carolina-shores",
+    "min_lot_size",
+    "carolina-shores__AD__Agricultural"
+  ],
+  [
+    "carrboro",
+    "min_lot_size",
+    "carrboro__O__OFFICE"
+  ],
+  [
+    "carrboro",
+    "min_lot_size",
+    "carrboro__HR-R__Historic Rogers Road-Residential"
+  ],
+  [
+    "carrboro",
+    "max_height",
+    "carrboro__RHDC__Residential High Density and Commercial Overlay"
+  ],
+  [
+    "carteret-county",
+    "max_height",
+    "carteret-county__B-1A__General Business"
+  ],
+  [
+    "carteret-county",
+    "min_lot_size",
+    "carteret-county__B-1A__General Business"
+  ],
+  [
+    "carteret-county",
+    "max_height",
+    "carteret-county__B-2__Marine Business"
+  ],
+  [
+    "carteret-county",
+    "min_lot_size",
+    "carteret-county__B-2__Marine Business"
+  ],
+  [
+    "carteret-county",
+    "max_height",
+    "carteret-county__B-3__Planned Business"
+  ],
+  [
+    "carteret-county",
+    "min_lot_size",
+    "carteret-county__B-3__Planned Business"
+  ],
+  [
+    "carteret-county",
+    "min_lot_size",
+    "carteret-county__C-C__Church Campus"
+  ],
+  [
+    "carteret-county",
+    "min_parking_spaces",
+    "carteret-county__C-C__Church Campus"
+  ],
+  [
+    "carteret-county",
+    "max_height",
+    "carteret-county__I-W__Industrial and Wholesale"
+  ],
+  [
+    "carteret-county",
+    "max_height",
+    "carteret-county__LIW__Light Industrial Wholesale"
+  ],
+  [
+    "carteret-county",
+    "max_height",
+    "carteret-county__MC__Planned Manufactured Home and Recreational Vehicle Park"
+  ],
+  [
+    "carteret-county",
+    "max_height",
+    "carteret-county__R-10__High-Density Residential"
+  ],
+  [
+    "carteret-county",
+    "min_lot_size",
+    "carteret-county__R-10__High-Density Residential"
+  ],
+  [
+    "carteret-county",
+    "min_lot_size",
+    "carteret-county__R-15M__Moderate-Density Residential"
+  ],
+  [
+    "carteret-county",
+    "max_height",
+    "carteret-county__R-15__Moderate-Density Residential"
+  ],
+  [
+    "carteret-county",
+    "min_lot_size",
+    "carteret-county__R-15__Moderate-Density Residential"
+  ],
+  [
+    "carteret-county",
+    "max_height",
+    "carteret-county__R-20__Low- to Moderate-Density Residential"
+  ],
+  [
+    "carteret-county",
+    "min_lot_size",
+    "carteret-county__R-20__Low- to Moderate-Density Residential"
+  ],
+  [
+    "carteret-county",
+    "max_height",
+    "carteret-county__R-35__Low-Density Residential"
+  ],
+  [
+    "carteret-county",
+    "min_lot_size",
+    "carteret-county__R-35__Low-Density Residential"
+  ],
+  [
+    "carteret-county",
+    "min_unit_size",
+    "carteret-county__R-35__Low-Density Residential"
+  ],
+  [
+    "carteret-county",
+    "max_height",
+    "carteret-county__R-5W__Waterfront Residential"
+  ],
+  [
+    "carteret-county",
+    "min_lot_size",
+    "carteret-county__R-5W__Waterfront Residential"
+  ],
+  [
+    "carteret-county",
+    "max_height",
+    "carteret-county__R-B__Residential Business"
+  ],
+  [
+    "carteret-county",
+    "min_lot_size",
+    "carteret-county__R-B__Residential Business"
+  ],
+  [
+    "carteret-county",
+    "max_height",
+    "carteret-county__RA__Rural Agricultural"
+  ],
+  [
+    "carteret-county",
+    "min_lot_size",
+    "carteret-county__LIW__Light Industrial Wholesale"
+  ],
+  [
+    "carteret-county",
+    "min_unit_size",
+    "carteret-county__LIW__Light Industrial Wholesale"
+  ],
+  [
+    "carteret-county",
+    "min_lot_size",
+    "carteret-county__MC__Planned Manufactured Home and Recreational Vehicle Park"
+  ],
+  [
+    "carteret-county",
+    "max_height",
+    "carteret-county__P-I__Port-Industrial"
+  ],
+  [
+    "carteret-county",
+    "min_unit_size",
+    "carteret-county__B-1A__General Business"
+  ],
+  [
+    "caswell-beach",
+    "min_lot_size",
+    "caswell-beach__NCR__Non-commercial recreation"
+  ],
+  [
+    "caswell-beach",
+    "min_parking_spaces",
+    "caswell-beach__R-12__Single-family residential"
+  ],
+  [
+    "caswell-beach",
+    "max_height",
+    "caswell-beach__R-20MF__Multi-family residential"
+  ],
+  [
+    "caswell-beach",
+    "min_lot_size",
+    "caswell-beach__R-20MF__Multi-family residential"
+  ],
+  [
+    "caswell-beach",
+    "min_parking_spaces",
+    "caswell-beach__R-20MF__Multi-family residential"
+  ],
+  [
+    "caswell-beach",
+    "min_lot_size",
+    "caswell-beach__R-20MH__Residential Manufactured Housing"
+  ],
+  [
+    "caswell-beach",
+    "max_height",
+    "caswell-beach__R-20SF__Single-family residential"
+  ],
+  [
+    "caswell-beach",
+    "min_lot_size",
+    "caswell-beach__R-20SF__Single-family residential"
+  ],
+  [
+    "caswell-beach",
+    "min_lot_size",
+    "caswell-beach__R-20__Single-family residential"
+  ],
+  [
+    "caswell-beach",
+    "max_height",
+    "caswell-beach__R-8__Single-family residential"
+  ],
+  [
+    "caswell-beach",
+    "min_lot_size",
+    "caswell-beach__R-8__Single-family residential"
+  ],
+  [
+    "caswell-beach",
+    "min_parking_spaces",
+    "caswell-beach__R-8__Single-family residential"
+  ],
+  [
+    "caswell-beach",
+    "min_parking_spaces",
+    "caswell-beach__R-20SF__Single-family residential"
+  ],
+  [
+    "caswell-beach",
+    "min_parking_spaces",
+    "caswell-beach__R-20__Single-family residential"
+  ],
+  [
+    "cedar-point",
+    "max_height",
+    "cedar-point__B-2__Marine Business"
+  ],
+  [
+    "cedar-point",
+    "min_lot_size",
+    "cedar-point__R-15__Residential"
+  ],
+  [
+    "cedar-point",
+    "max_height",
+    "cedar-point__R-20__Residential"
+  ],
+  [
+    "cedar-point",
+    "min_lot_size",
+    "cedar-point__R-20__Residential"
+  ],
+  [
+    "cedar-point",
+    "max_height",
+    "cedar-point__RA__Rural Agricultural"
+  ],
+  [
+    "cedar-point",
+    "min_lot_size",
+    "cedar-point__RA__Rural Agricultural"
+  ],
+  [
+    "cedar-point",
+    "min_lot_size",
+    "cedar-point__R-10__Residential"
+  ],
+  [
+    "cedar-point",
+    "max_height",
+    "cedar-point__R-15M__Residential"
+  ],
+  [
+    "cedar-point",
+    "min_lot_size",
+    "cedar-point__R-15M__Residential"
+  ],
+  [
+    "cedar-point",
+    "max_height",
+    "cedar-point__R-15__Residential"
+  ],
+  [
+    "cedar-point",
+    "max_height",
+    "cedar-point__R-10__Residential"
+  ],
+  [
+    "cedar-point",
+    "min_lot_size",
+    "cedar-point__B-3__Planned Business"
+  ],
+  [
+    "cedar-point",
+    "max_lot_coverage",
+    "cedar-point__B-2__Marine Business"
+  ],
+  [
+    "cedar-point",
+    "min_lot_size",
+    "cedar-point__B-2__Marine Business"
+  ],
+  [
+    "cedar-point",
+    "max_lot_coverage",
+    "cedar-point__B-1__General Business"
+  ],
+  [
+    "cedar-point",
+    "min_lot_size",
+    "cedar-point__B-1__General Business"
+  ],
+  [
+    "cedar-point",
+    "max_height",
+    "cedar-point__MC__Planned Mobile Home and RV Park"
+  ],
+  [
+    "cedar-point",
+    "min_lot_size",
+    "cedar-point__MC__Planned Mobile Home and RV Park"
+  ],
+  [
+    "cedar-point",
+    "min_lot_size",
+    "cedar-point__CBOD__Central Business Overlay"
+  ],
+  [
+    "cedar-point",
+    "max_height",
+    "cedar-point__LIW__Light Industrial and Wholesale"
+  ],
+  [
+    "cedar-point",
+    "min_lot_size",
+    "cedar-point__LIW__Light Industrial and Wholesale"
+  ],
+  [
+    "cedar-point",
+    "min_lot_size",
+    "cedar-point__I-W__Industrial and Wholesale"
+  ],
+  [
+    "cedar-point",
+    "max_height",
+    "cedar-point__IW__Industrial and Wholesale"
+  ],
+  [
+    "cedar-point",
+    "min_lot_size",
+    "cedar-point__IW__Industrial and Wholesale"
+  ],
+  [
+    "chadbourn",
+    "min_unit_size",
+    "chadbourn__MHO__Manufactured Home Overlay"
+  ],
+  [
+    "chadbourn",
+    "min_unit_size",
+    "chadbourn__TNDO__Traditional Neighborhood Development Overlay"
+  ],
+  [
+    "chadbourn",
+    "min_lot_size",
+    "chadbourn__AG__Agriculture"
+  ],
+  [
+    "chadbourn",
+    "min_lot_size",
+    "chadbourn__SFR-1__Single-Family Residential"
+  ],
+  [
+    "chadbourn",
+    "min_lot_size",
+    "chadbourn__SFR-2__Single-Family Residential"
+  ],
+  [
+    "chadbourn",
+    "min_lot_size",
+    "chadbourn__SFR-3__Single-Family Residential"
+  ],
+  [
+    "chadbourn",
+    "min_lot_size",
+    "chadbourn__RMST__Residential Main Street Transition"
+  ],
+  [
+    "chadbourn",
+    "min_lot_size",
+    "chadbourn__CIV__Civic"
+  ],
+  [
+    "chadbourn",
+    "min_lot_size",
+    "chadbourn__MU-1__Mixed Use"
+  ],
+  [
+    "chadbourn",
+    "min_lot_size",
+    "chadbourn__MU-2__Mixed Use"
+  ],
+  [
+    "chadbourn",
+    "min_lot_size",
+    "chadbourn__C-410__NC Highway 410 Commercial"
+  ],
+  [
+    "chadbourn",
+    "min_lot_size",
+    "chadbourn__VSR__Vehicle Service and Repair"
+  ],
+  [
+    "chadbourn",
+    "min_lot_size",
+    "chadbourn__IND__Industrial"
+  ],
+  [
+    "chadbourn",
+    "max_height",
+    "chadbourn__HIO__Heavy Industry Overlay"
+  ],
+  [
+    "chadbourn",
+    "min_lot_size",
+    "chadbourn__HIO__Heavy Industry Overlay"
+  ],
+  [
+    "chadbourn",
+    "min_lot_size",
+    "chadbourn__MFO__Mini Farm Overlay"
+  ],
+  [
+    "chadbourn",
+    "min_lot_size",
+    "chadbourn__MHO__Manufactured Home Overlay"
+  ],
+  [
+    "chadbourn",
+    "max_lot_coverage",
+    "chadbourn__MS__Main Street"
+  ],
+  [
+    "chapel-hill",
+    "min_lot_size",
+    "chapel-hill__Neighborhood Conservation__Neighborhood Conservation"
+  ],
+  [
+    "chapel-hill",
+    "min_parking_spaces",
+    "chapel-hill__N.C.__Neighborhood Commercial"
+  ],
+  [
+    "chapel-hill",
+    "min_lot_size",
+    "chapel-hill__CC__Community Commercial"
+  ],
+  [
+    "chapel-hill",
+    "min_unit_size",
+    "chapel-hill__CC__Community Commercial"
+  ],
+  [
+    "chapel-hill",
+    "max_height",
+    "chapel-hill__Historic__Historic"
+  ],
+  [
+    "chapel-hill",
+    "min_lot_size",
+    "chapel-hill__I__Industrial"
+  ],
+  [
+    "chapel-hill",
+    "min_lot_size",
+    "chapel-hill__MH__Materials Handling"
+  ],
+  [
+    "chapel-hill",
+    "min_parking_spaces",
+    "chapel-hill__MH__Materials Handling"
+  ],
+  [
+    "chapel-hill",
+    "min_lot_size",
+    "chapel-hill__N.C.__Neighborhood Commercial"
+  ],
+  [
+    "chapel-hill",
+    "min_unit_size",
+    "chapel-hill__N.C.__Neighborhood Commercial"
+  ],
+  [
+    "chapel-hill",
+    "max_height",
+    "chapel-hill__OI-1__Office Institutional-1"
+  ],
+  [
+    "chapel-hill",
+    "min_lot_size",
+    "chapel-hill__OI-1__Office Institutional-1"
+  ],
+  [
+    "chapel-hill",
+    "min_unit_size",
+    "chapel-hill__OI-1__Office Institutional-1"
+  ],
+  [
+    "chapel-hill",
+    "max_height",
+    "chapel-hill__OI-2__Office Institutional-2"
+  ],
+  [
+    "chapel-hill",
+    "min_lot_size",
+    "chapel-hill__OI-2__Office Institutional-2"
+  ],
+  [
+    "chapel-hill",
+    "min_unit_size",
+    "chapel-hill__OI-2__Office Institutional-2"
+  ],
+  [
+    "chapel-hill",
+    "min_lot_size",
+    "chapel-hill__OI-3__Office Institutional-3"
+  ],
+  [
+    "chapel-hill",
+    "min_lot_size",
+    "chapel-hill__OI-4__Office Institutional-4"
+  ],
+  [
+    "chapel-hill",
+    "max_height",
+    "chapel-hill__R-1A__Residential"
+  ],
+  [
+    "chapel-hill",
+    "min_lot_size",
+    "chapel-hill__R-1A__Residential"
+  ],
+  [
+    "chapel-hill",
+    "min_parking_spaces",
+    "chapel-hill__R-1A__Residential"
+  ],
+  [
+    "chapel-hill",
+    "min_lot_size",
+    "chapel-hill__R-1__Residential"
+  ],
+  [
+    "chapel-hill",
+    "min_unit_size",
+    "chapel-hill__R-1__Residential"
+  ],
+  [
+    "chapel-hill",
+    "max_height",
+    "chapel-hill__R-2A__Residential"
+  ],
+  [
+    "chapel-hill",
+    "min_lot_size",
+    "chapel-hill__R-2A__Residential"
+  ],
+  [
+    "chapel-hill",
+    "min_parking_spaces",
+    "chapel-hill__R-2A__Residential"
+  ],
+  [
+    "chapel-hill",
+    "min_lot_size",
+    "chapel-hill__R-2__Residential"
+  ],
+  [
+    "chapel-hill",
+    "min_parking_spaces",
+    "chapel-hill__R-2__Residential"
+  ],
+  [
+    "chapel-hill",
+    "min_lot_size",
+    "chapel-hill__R-3__Residential"
+  ],
+  [
+    "chapel-hill",
+    "min_parking_spaces",
+    "chapel-hill__R-3__Residential"
+  ],
+  [
+    "chapel-hill",
+    "min_lot_size",
+    "chapel-hill__R-44__Residential"
+  ],
+  [
+    "chapel-hill",
+    "min_lot_size",
+    "chapel-hill__R-6__Residential"
+  ],
+  [
+    "chapel-hill",
+    "min_parking_spaces",
+    "chapel-hill__R-6__Residential"
+  ],
+  [
+    "chapel-hill",
+    "max_height",
+    "chapel-hill__R-CP-CZD__Residential-Community Priority-Conditional Zoning"
+  ],
+  [
+    "chapel-hill",
+    "min_lot_size",
+    "chapel-hill__R-CP-CZD__Residential-Community Priority-Conditional Zoning"
+  ],
+  [
+    "chapel-hill",
+    "max_height",
+    "chapel-hill__R-LD1__Residential"
+  ],
+  [
+    "chapel-hill",
+    "min_lot_size",
+    "chapel-hill__R-LD1__Residential"
+  ],
+  [
+    "chapel-hill",
+    "min_parking_spaces",
+    "chapel-hill__R-LD1__Residential"
+  ],
+  [
+    "chapel-hill",
+    "max_height",
+    "chapel-hill__R-LD5__Residential"
+  ],
+  [
+    "chapel-hill",
+    "min_parking_spaces",
+    "chapel-hill__R-LD5__Residential"
+  ],
+  [
+    "chapel-hill",
+    "max_height",
+    "chapel-hill__R-SS-CZD__Residential-Special Standards-Conditional Use"
+  ],
+  [
+    "chapel-hill",
+    "min_lot_size",
+    "chapel-hill__R-SS-CZD__Residential-Special Standards-Conditional Use"
+  ],
+  [
+    "chapel-hill",
+    "min_parking_spaces",
+    "chapel-hill__R-SS-CZD__Residential-Special Standards-Conditional Use"
+  ],
+  [
+    "chapel-hill",
+    "min_lot_size",
+    "chapel-hill__RT__Rural Transition"
+  ],
+  [
+    "chapel-hill",
+    "min_parking_spaces",
+    "chapel-hill__RT__Rural Transition"
+  ],
+  [
+    "chapel-hill",
+    "max_height",
+    "chapel-hill__TC-1__Town Center"
+  ],
+  [
+    "chapel-hill",
+    "min_lot_size",
+    "chapel-hill__TC-1__Town Center"
+  ],
+  [
+    "chapel-hill",
+    "min_parking_spaces",
+    "chapel-hill__TC-1__Town Center"
+  ],
+  [
+    "chapel-hill",
+    "max_height",
+    "chapel-hill__TC-2__Town Center"
+  ],
+  [
+    "chapel-hill",
+    "min_lot_size",
+    "chapel-hill__TC-2__Town Center"
+  ],
+  [
+    "chapel-hill",
+    "min_parking_spaces",
+    "chapel-hill__TC-2__Town Center"
+  ],
+  [
+    "chapel-hill",
+    "max_height",
+    "chapel-hill__TC-3__Town Center"
+  ],
+  [
+    "chapel-hill",
+    "min_parking_spaces",
+    "chapel-hill__TC-3__Town Center"
+  ],
+  [
+    "chapel-hill",
+    "min_lot_size",
+    "chapel-hill__Historic__Historic"
+  ],
+  [
+    "chapel-hill",
+    "max_height",
+    "chapel-hill__MU-V-CZD__Mixed Use Village Conditional Zoning"
+  ],
+  [
+    "chapel-hill",
+    "min_lot_size",
+    "chapel-hill__TC-3__Town Center"
+  ],
+  [
+    "chapel-hill",
+    "min_lot_size",
+    "chapel-hill__MU-V-CZD__Mixed Use Village Conditional Zoning"
+  ],
+  [
+    "chapel-hill",
+    "max_height",
+    "chapel-hill__R-3__Residential"
+  ],
+  [
+    "chapel-hill",
+    "max_height",
+    "chapel-hill__R-5__Residential"
+  ],
+  [
+    "chapel-hill",
+    "max_height",
+    "chapel-hill__R-6__Residential"
+  ],
+  [
+    "charlotte",
+    "max_height",
+    "charlotte__R-17MF__Residential Multi-Family"
+  ],
+  [
+    "charlotte",
+    "max_height",
+    "charlotte__R-22MF__Residential Multi-Family"
+  ],
+  [
+    "charlotte",
+    "max_lot_coverage",
+    "charlotte__R-3__Single Family"
+  ],
+  [
+    "charlotte",
+    "max_lot_coverage",
+    "charlotte__R-4__Single Family"
+  ],
+  [
+    "charlotte",
+    "min_lot_size",
+    "charlotte__R-12MF__Residential Multi-Family"
+  ],
+  [
+    "charlotte",
+    "min_lot_size",
+    "charlotte__R-17MF__Residential Multi-Family"
+  ],
+  [
+    "charlotte",
+    "min_lot_size",
+    "charlotte__R-22MF__Residential Multi-Family"
+  ],
+  [
+    "charlotte",
+    "min_lot_size",
+    "charlotte__R-43MF__Residential Multi-Family"
+  ],
+  [
+    "charlotte",
+    "min_lot_size",
+    "charlotte__R-8MF__Residential Multi-Family"
+  ],
+  [
+    "charlotte",
+    "max_lot_coverage",
+    "charlotte__R-12MF__Residential Multi-Family"
+  ],
+  [
+    "charlotte",
+    "max_lot_coverage",
+    "charlotte__R-17MF__Residential Multi-Family"
+  ],
+  [
+    "charlotte",
+    "max_lot_coverage",
+    "charlotte__R-22MF__Residential Multi-Family"
+  ],
+  [
+    "charlotte",
+    "max_lot_coverage",
+    "charlotte__R-43MF__Residential Multi-Family"
+  ],
+  [
+    "charlotte",
+    "max_lot_coverage",
+    "charlotte__R-5__Single Family"
+  ],
+  [
+    "charlotte",
+    "max_lot_coverage",
+    "charlotte__R-6__Single Family"
+  ],
+  [
+    "charlotte",
+    "max_height",
+    "charlotte__R-8MF__Residential Multi-Family"
+  ],
+  [
+    "charlotte",
+    "max_lot_coverage",
+    "charlotte__R-8MF__Residential Multi-Family"
+  ],
+  [
+    "charlotte",
+    "max_lot_coverage",
+    "charlotte__R-8__Single Family"
+  ],
+  [
+    "charlotte",
+    "min_lot_size",
+    "charlotte__UR-1__Urban Residential"
+  ],
+  [
+    "charlotte",
+    "max_height",
+    "charlotte__UR-1__Urban Residential"
+  ],
+  [
+    "charlotte",
+    "max_height",
+    "charlotte__UR-2__Urban Residential"
+  ],
+  [
+    "charlotte",
+    "max_height",
+    "charlotte__UR-3__Urban Residential"
+  ],
+  [
+    "charlotte",
+    "max_height",
+    "charlotte__UR-C__Urban Residential-Commercial"
+  ],
+  [
+    "charlotte",
+    "min_lot_size",
+    "charlotte__UR-C__Urban Residential-Commercial"
+  ],
+  [
+    "charlotte",
+    "max_height",
+    "charlotte__INST__Institutional"
+  ],
+  [
+    "charlotte",
+    "max_height",
+    "charlotte__RE-1__Research"
+  ],
+  [
+    "charlotte",
+    "min_lot_size",
+    "charlotte__O-1__Office"
+  ],
+  [
+    "charlotte",
+    "min_lot_size",
+    "charlotte__O-2__Office"
+  ],
+  [
+    "charlotte",
+    "min_lot_size",
+    "charlotte__O-3__Office"
+  ],
+  [
+    "charlotte",
+    "max_height",
+    "charlotte__UMUD__Uptown Mixed Use District"
+  ],
+  [
+    "charlotte",
+    "min_parking_spaces",
+    "charlotte__UMUD__Uptown Mixed Use District"
+  ],
+  [
+    "charlotte",
+    "min_lot_size",
+    "charlotte__U-I__Urban Industrial"
+  ],
+  [
+    "charlotte",
+    "max_height",
+    "charlotte__Airport Noise Disclosure Overlay__Airport Noise Disclosure Overlay"
+  ],
+  [
+    "charlotte",
+    "max_height",
+    "charlotte__HD-O__Historic"
+  ],
+  [
+    "charlotte",
+    "max_height",
+    "charlotte__Pedestrian Overlay__Pedestrian Overlay"
+  ],
+  [
+    "charlotte",
+    "min_parking_spaces",
+    "charlotte__Transit Supportive Overlay__Transit Supportive Overlay"
+  ],
+  [
+    "charlotte",
+    "max_height",
+    "charlotte__HW__Hazardous Waste"
+  ],
+  [
+    "charlotte",
+    "max_height",
+    "charlotte__NS__Neighborhood Services"
+  ],
+  [
+    "charlotte",
+    "min_parking_spaces",
+    "charlotte__TOD-NC__Transit-Oriented Development - Neighborhood Center"
+  ],
+  [
+    "charlotte",
+    "min_parking_spaces",
+    "charlotte__TOD-TR__Transit-Oriented Development - Transit"
+  ],
+  [
+    "charlotte",
+    "max_height",
+    "charlotte__CC__Commercial Center"
+  ],
+  [
+    "charlotte",
+    "max_height",
+    "charlotte__TOD-CC__Transit-Oriented Development - Community Center"
+  ],
+  [
+    "charlotte",
+    "max_height",
+    "charlotte__TOD-NC__Transit-Oriented Development - Neighborhood Center"
+  ],
+  [
+    "charlotte",
+    "max_height",
+    "charlotte__TOD-TR__Transit-Oriented Development - Transit"
+  ],
+  [
+    "charlotte",
+    "max_height",
+    "charlotte__TOD-UC__Transit-Oriented Development - Urban Center"
+  ],
+  [
+    "charlotte",
+    "max_height",
+    "charlotte__MH-O__Manufactured Home Overlay"
+  ],
+  [
+    "china-grove",
+    "min_lot_size",
+    "china-grove__C-P__C-P Corporate Park"
+  ],
+  [
+    "china-grove",
+    "min_unit_size",
+    "china-grove__R-MH__Manufactured Home Residential"
+  ],
+  [
+    "china-grove",
+    "min_parking_spaces",
+    "china-grove__C-B__C-B Central Business"
+  ],
+  [
+    "china-grove",
+    "min_parking_spaces",
+    "china-grove__N-C__Neighborhood Center"
+  ],
+  [
+    "chocowinity",
+    "min_lot_size",
+    "chocowinity__R-1__Low Density Residential"
+  ],
+  [
+    "chocowinity",
+    "min_lot_size",
+    "chocowinity__R-1A__LOW DENSITY RESIDENTIAL"
+  ],
+  [
+    "chocowinity",
+    "max_height",
+    "chocowinity__MH__Manufactured Home Residential"
+  ],
+  [
+    "chocowinity",
+    "max_lot_coverage",
+    "chocowinity__R-1__Low Density Residential"
+  ],
+  [
+    "chocowinity",
+    "max_lot_coverage",
+    "chocowinity__R-2__Limited Low Density Residential"
+  ],
+  [
+    "chocowinity",
+    "min_lot_size",
+    "chocowinity__R-2__Limited Low Density Residential"
+  ],
+  [
+    "chocowinity",
+    "max_lot_coverage",
+    "chocowinity__R-3__Medium Density Residential"
+  ],
+  [
+    "chocowinity",
+    "max_lot_coverage",
+    "chocowinity__MH__Manufactured Home Residential"
+  ],
+  [
+    "chocowinity",
+    "min_lot_size",
+    "chocowinity__MH__Manufactured Home Residential"
+  ],
+  [
+    "chocowinity",
+    "max_height",
+    "chocowinity__R-1__Low Density Residential"
+  ],
+  [
+    "chocowinity",
+    "max_height",
+    "chocowinity__R-3__Medium Density Residential"
+  ],
+  [
+    "chocowinity",
+    "min_lot_size",
+    "chocowinity__R-3__Medium Density Residential"
+  ],
+  [
+    "chocowinity",
+    "min_lot_size",
+    "chocowinity__B-2__Highway Commercial"
+  ],
+  [
+    "chocowinity",
+    "max_height",
+    "chocowinity__L1__Light Industrial"
+  ],
+  [
+    "chocowinity",
+    "max_lot_coverage",
+    "chocowinity__L1__Light Industrial"
+  ],
+  [
+    "chocowinity",
+    "min_lot_size",
+    "chocowinity__L1__Light Industrial"
+  ],
+  [
+    "chocowinity",
+    "max_height",
+    "chocowinity__OI__Office and Institutional"
+  ],
+  [
+    "chocowinity",
+    "max_lot_coverage",
+    "chocowinity__OI__Office and Institutional"
+  ],
+  [
+    "chocowinity",
+    "min_lot_size",
+    "chocowinity__OI__Office and Institutional"
+  ],
+  [
+    "chowan-county",
+    "min_lot_size",
+    "chowan-county__RMH-25 CD__Residential Conditional"
+  ],
+  [
+    "chowan-county",
+    "min_lot_size",
+    "chowan-county__A-1__Agricultural"
+  ],
+  [
+    "chowan-county",
+    "max_height",
+    "chowan-county__B-2__Highway Commercial"
+  ],
+  [
+    "chowan-county",
+    "min_lot_size",
+    "chowan-county__R-15__Residential"
+  ],
+  [
+    "chowan-county",
+    "min_lot_size",
+    "chowan-county__R-25__Residential"
+  ],
+  [
+    "chowan-county",
+    "max_height",
+    "chowan-county__R-5__Residential"
+  ],
+  [
+    "chowan-county",
+    "min_lot_size",
+    "chowan-county__R-5__Residential"
+  ],
+  [
+    "chowan-county",
+    "max_height",
+    "chowan-county__RMH-25__Residential Mobile Home"
+  ],
+  [
+    "chowan-county",
+    "max_lot_coverage",
+    "chowan-county__B-3__Neighborhood Commercial"
+  ],
+  [
+    "chowan-county",
+    "max_lot_coverage",
+    "chowan-county__R-40__Rural Residential"
+  ],
+  [
+    "chowan-county",
+    "max_lot_coverage",
+    "chowan-county__B-1__General Business"
+  ],
+  [
+    "chowan-county",
+    "max_lot_coverage",
+    "chowan-county__B-2__Highway Commercial"
+  ],
+  [
+    "chowan-county",
+    "max_lot_coverage",
+    "chowan-county__R-5__Residential"
+  ],
+  [
+    "chowan-county",
+    "max_lot_coverage",
+    "chowan-county__R-25__Residential"
+  ],
+  [
+    "chowan-county",
+    "max_height",
+    "chowan-county__B-1__General Business"
+  ],
+  [
+    "chowan-county",
+    "max_height",
+    "chowan-county__B-3__Neighborhood Commercial"
+  ],
+  [
+    "chowan-county",
+    "min_parking_spaces",
+    "chowan-county__R-15__Residential"
+  ],
+  [
+    "cleveland",
+    "min_parking_spaces",
+    "cleveland__CBD__Central Business"
+  ],
+  [
+    "cleveland",
+    "min_parking_spaces",
+    "cleveland__R-20__Single-Family Residential"
+  ],
+  [
+    "cleveland",
+    "max_height",
+    "cleveland__A-1__Agricultural"
+  ],
+  [
+    "cleveland",
+    "min_lot_size",
+    "cleveland__A-1__Agricultural"
+  ],
+  [
+    "cleveland",
+    "min_lot_size",
+    "cleveland__CBD__Central Business"
+  ],
+  [
+    "cleveland",
+    "max_height",
+    "cleveland__R-15__General Residential"
+  ],
+  [
+    "cleveland",
+    "min_lot_size",
+    "cleveland__R-15__General Residential"
+  ],
+  [
+    "cleveland",
+    "max_height",
+    "cleveland__R-20__Single-Family Residential"
+  ],
+  [
+    "cleveland",
+    "min_lot_size",
+    "cleveland__R-20__Single-Family Residential"
+  ],
+  [
+    "cleveland",
+    "max_lot_coverage",
+    "cleveland__M-1__Light Industrial"
+  ],
+  [
+    "coats",
+    "min_unit_size",
+    "coats__MHO__Manufactured Home Overlay"
+  ],
+  [
+    "coats",
+    "min_lot_size",
+    "coats__SFR-1__Single-Family Residential"
+  ],
+  [
+    "coats",
+    "min_lot_size",
+    "coats__SFR-2__Single-Family Residential"
+  ],
+  [
+    "coats",
+    "min_lot_size",
+    "coats__SFR-3__Single-Family Residential"
+  ],
+  [
+    "coats",
+    "min_lot_size",
+    "coats__RMST__Residential Main Street Transition"
+  ],
+  [
+    "coats",
+    "min_lot_size",
+    "coats__MS__Main Street"
+  ],
+  [
+    "coats",
+    "min_lot_size",
+    "coats__CIV__Civic"
+  ],
+  [
+    "coats",
+    "min_lot_size",
+    "coats__MU-1__Mixed Use"
+  ],
+  [
+    "coats",
+    "min_lot_size",
+    "coats__MU-2__Mixed Use"
+  ],
+  [
+    "coats",
+    "min_lot_size",
+    "coats__GC__General Commercial"
+  ],
+  [
+    "coats",
+    "min_lot_size",
+    "coats__VSR__Vehicle Service and Repair"
+  ],
+  [
+    "coats",
+    "min_lot_size",
+    "coats__IND__Industrial"
+  ],
+  [
+    "coats",
+    "max_height",
+    "coats__HIO__Heavy Industry Overlay"
+  ],
+  [
+    "coats",
+    "min_lot_size",
+    "coats__MFO__Mini Farm Overlay"
+  ],
+  [
+    "columbus",
+    "max_height",
+    "columbus__CBD__Central Business"
+  ],
+  [
+    "columbus",
+    "min_lot_size",
+    "columbus__CBD__Central Business"
+  ],
+  [
+    "columbus",
+    "min_parking_spaces",
+    "columbus__CBD__Central Business"
+  ],
+  [
+    "columbus",
+    "min_lot_size",
+    "columbus__HC__Highway Commercial"
+  ],
+  [
+    "columbus",
+    "min_lot_size",
+    "columbus__IND__Industrial"
+  ],
+  [
+    "columbus",
+    "min_lot_size",
+    "columbus__R-1__Low Density Residential"
+  ],
+  [
+    "columbus",
+    "max_height",
+    "columbus__R-2__Community Residential-Medium Density Residential"
+  ],
+  [
+    "columbus",
+    "min_lot_size",
+    "columbus__R-2__Community Residential-Medium Density Residential"
+  ],
+  [
+    "columbus",
+    "max_height",
+    "columbus__RE__Residential Estate"
+  ],
+  [
+    "columbus",
+    "min_lot_size",
+    "columbus__RE__Residential Estate"
+  ],
+  [
+    "columbus",
+    "max_height",
+    "columbus__PS__Public Service"
+  ],
+  [
+    "columbus-county",
+    "min_lot_size",
+    "columbus-county__RA-20__Residential Agricultural"
+  ],
+  [
+    "cornelius",
+    "min_lot_size",
+    "cornelius__LN-O__Lake Norman Overlay"
+  ],
+  [
+    "cornelius",
+    "min_lot_size",
+    "cornelius__MIL-O__Mountain Island Lake Overlay"
+  ],
+  [
+    "cornelius",
+    "max_height",
+    "cornelius__BC__Business Campus"
+  ],
+  [
+    "cornelius",
+    "max_height",
+    "cornelius__CO__Corporate Office"
+  ],
+  [
+    "cornelius",
+    "min_lot_size",
+    "cornelius__CO__Corporate Office"
+  ],
+  [
+    "cornelius",
+    "max_height",
+    "cornelius__GR__General Residential"
+  ],
+  [
+    "cornelius",
+    "min_lot_size",
+    "cornelius__GR__General Residential"
+  ],
+  [
+    "cornelius",
+    "max_height",
+    "cornelius__NMX__Neighborhood Mixed Use"
+  ],
+  [
+    "cornelius",
+    "min_lot_size",
+    "cornelius__NMX__Neighborhood Mixed Use"
+  ],
+  [
+    "cornelius",
+    "max_height",
+    "cornelius__NR__Neighborhood Residential"
+  ],
+  [
+    "cornelius",
+    "min_lot_size",
+    "cornelius__NR__Neighborhood Residential"
+  ],
+  [
+    "cornelius",
+    "max_height",
+    "cornelius__RP__Rural Preservation"
+  ],
+  [
+    "cornelius",
+    "min_lot_size",
+    "cornelius__RP__Rural Preservation"
+  ],
+  [
+    "cornelius",
+    "max_height",
+    "cornelius__TC__Town Center"
+  ],
+  [
+    "cornelius",
+    "max_height",
+    "cornelius__VC__Village Center"
+  ],
+  [
+    "cornelius",
+    "max_height",
+    "cornelius__WMX__Waterfront Mixed Use"
+  ],
+  [
+    "cornelius",
+    "min_lot_size",
+    "cornelius__WMX__Waterfront Mixed Use"
+  ],
+  [
+    "cornelius",
+    "min_lot_size",
+    "cornelius__BC__Business Campus"
+  ],
+  [
+    "creedmoor",
+    "min_lot_size",
+    "creedmoor__AG__Agriculture"
+  ],
+  [
+    "creedmoor",
+    "min_lot_size",
+    "creedmoor__R MST__Residential Main Street Transitional"
+  ],
+  [
+    "creedmoor",
+    "min_lot_size",
+    "creedmoor__SFR__Single Family Residential"
+  ],
+  [
+    "creedmoor",
+    "min_lot_size",
+    "creedmoor__MSP__Main Street Periphery"
+  ],
+  [
+    "creedmoor",
+    "min_lot_size",
+    "creedmoor__MS__Main Street"
+  ],
+  [
+    "creedmoor",
+    "min_lot_size",
+    "creedmoor__C 56__NC 56 Commercial"
+  ],
+  [
+    "creedmoor",
+    "min_lot_size",
+    "creedmoor__C-56__NC 56 COMMERCIAL"
+  ],
+  [
+    "creedmoor",
+    "min_lot_size",
+    "creedmoor__C 15__US 15 Commercial"
+  ],
+  [
+    "creedmoor",
+    "min_lot_size",
+    "creedmoor__IND__Industrial"
+  ],
+  [
+    "creedmoor",
+    "min_lot_size",
+    "creedmoor__OSP__Open Space Preserve"
+  ],
+  [
+    "creedmoor",
+    "min_lot_size",
+    "creedmoor__SCO__Scenic Corridor Overlay"
+  ],
+  [
+    "cumberland-county",
+    "min_lot_size",
+    "cumberland-county__A1A__Agricultural"
+  ],
+  [
+    "cumberland-county",
+    "min_lot_size",
+    "cumberland-county__CD__Conservancy"
+  ],
+  [
+    "cumberland-county",
+    "min_lot_size",
+    "cumberland-county__R15__Residential"
+  ],
+  [
+    "cumberland-county",
+    "min_lot_size",
+    "cumberland-county__C(P)__Planned Commercial"
+  ],
+  [
+    "cumberland-county",
+    "min_lot_size",
+    "cumberland-county__C1(P)__Planned Local Business"
+  ],
+  [
+    "cumberland-county",
+    "min_lot_size",
+    "cumberland-county__C2(P)__Planned Service and Retail"
+  ],
+  [
+    "cumberland-county",
+    "min_lot_size",
+    "cumberland-county__O&I(P)__Planned Office and Institutional"
+  ],
+  [
+    "cumberland-county",
+    "min_lot_size",
+    "cumberland-county__R5A__Residential"
+  ],
+  [
+    "cumberland-county",
+    "min_lot_size",
+    "cumberland-county__R6A__Residential"
+  ],
+  [
+    "cumberland-county",
+    "min_lot_size",
+    "cumberland-county__M(P)__Planned Industrial"
+  ],
+  [
+    "cumberland-county",
+    "min_lot_size",
+    "cumberland-county__MXD CZ__Mixed Use Development-Conditional Zoning"
+  ],
+  [
+    "cumberland-county",
+    "min_lot_size",
+    "cumberland-county__A1__Agricultural"
+  ],
+  [
+    "cumberland-county",
+    "min_lot_size",
+    "cumberland-county__M1 (P)__Planned Light Industrial"
+  ],
+  [
+    "cumberland-county",
+    "min_lot_size",
+    "cumberland-county__M1(P)__Planned Light Industrial"
+  ],
+  [
+    "cumberland-county",
+    "max_height",
+    "cumberland-county__R15__Residential"
+  ],
+  [
+    "cumberland-county",
+    "max_height",
+    "cumberland-county__R20A__Residential"
+  ],
+  [
+    "cumberland-county",
+    "min_lot_size",
+    "cumberland-county__R20A__Residential"
+  ],
+  [
+    "cumberland-county",
+    "max_height",
+    "cumberland-county__R20__Residential"
+  ],
+  [
+    "cumberland-county",
+    "min_lot_size",
+    "cumberland-county__R20__Residential"
+  ],
+  [
+    "cumberland-county",
+    "max_height",
+    "cumberland-county__R30A__Residential"
+  ],
+  [
+    "cumberland-county",
+    "min_lot_size",
+    "cumberland-county__R30A__Residential"
+  ],
+  [
+    "cumberland-county",
+    "max_height",
+    "cumberland-county__R30__Residential"
+  ],
+  [
+    "cumberland-county",
+    "min_lot_size",
+    "cumberland-county__R30__Residential"
+  ],
+  [
+    "cumberland-county",
+    "max_height",
+    "cumberland-county__R40A__Residential"
+  ],
+  [
+    "cumberland-county",
+    "min_lot_size",
+    "cumberland-county__R40A__Residential"
+  ],
+  [
+    "cumberland-county",
+    "max_height",
+    "cumberland-county__R40__Residential"
+  ],
+  [
+    "cumberland-county",
+    "max_height",
+    "cumberland-county__R6__Residential"
+  ],
+  [
+    "cumberland-county",
+    "min_lot_size",
+    "cumberland-county__R6__Residential"
+  ],
+  [
+    "cumberland-county",
+    "max_height",
+    "cumberland-county__R7.5__Residential"
+  ],
+  [
+    "cumberland-county",
+    "min_lot_size",
+    "cumberland-county__R7.5__Residential"
+  ],
+  [
+    "cumberland-county",
+    "max_height",
+    "cumberland-county__RR__Rural Residential"
+  ],
+  [
+    "cumberland-county",
+    "min_lot_size",
+    "cumberland-county__RR__Rural Residential"
+  ],
+  [
+    "cumberland-county",
+    "max_height",
+    "cumberland-county__O&I(P)__Planned Office and Institutional"
+  ],
+  [
+    "cumberland-county",
+    "min_unit_size",
+    "cumberland-county__R15__Residential"
+  ],
+  [
+    "cumberland-county",
+    "min_unit_size",
+    "cumberland-county__R20A__Residential"
+  ],
+  [
+    "cumberland-county",
+    "min_unit_size",
+    "cumberland-county__R20__Residential"
+  ],
+  [
+    "cumberland-county",
+    "min_unit_size",
+    "cumberland-county__R30A__Residential"
+  ],
+  [
+    "cumberland-county",
+    "min_unit_size",
+    "cumberland-county__R30__Residential"
+  ],
+  [
+    "cumberland-county",
+    "min_unit_size",
+    "cumberland-county__R40A__Residential"
+  ],
+  [
+    "cumberland-county",
+    "min_unit_size",
+    "cumberland-county__R40__Residential"
+  ],
+  [
+    "cumberland-county",
+    "min_unit_size",
+    "cumberland-county__R5A__Residential"
+  ],
+  [
+    "cumberland-county",
+    "min_unit_size",
+    "cumberland-county__R5__Residential"
+  ],
+  [
+    "cumberland-county",
+    "min_unit_size",
+    "cumberland-county__R6A__Residential"
+  ],
+  [
+    "cumberland-county",
+    "min_unit_size",
+    "cumberland-county__R6__Residential"
+  ],
+  [
+    "cumberland-county",
+    "min_unit_size",
+    "cumberland-county__R7.5__Residential"
+  ],
+  [
+    "cumberland-county",
+    "max_height",
+    "cumberland-county__C1(P)__Planned Local Business"
+  ],
+  [
+    "davidson",
+    "max_height",
+    "davidson__VH-O__Village Height"
+  ],
+  [
+    "dobson",
+    "min_lot_size",
+    "dobson__B-2-C__Highway Business"
+  ],
+  [
+    "dobson",
+    "max_height",
+    "dobson__B-2__Highway Business"
+  ],
+  [
+    "dobson",
+    "min_lot_size",
+    "dobson__H-1__Heavy Industrial"
+  ],
+  [
+    "dobson",
+    "max_height",
+    "dobson__L-I__Light Industrial"
+  ],
+  [
+    "dobson",
+    "min_lot_size",
+    "dobson__L-I__Light Industrial"
+  ],
+  [
+    "dobson",
+    "min_lot_size",
+    "dobson__O-I-C__Office-Institutional"
+  ],
+  [
+    "dobson",
+    "max_height",
+    "dobson__R-8A__Multifamily Residential"
+  ],
+  [
+    "dobson",
+    "min_lot_size",
+    "dobson__R-8A__Multifamily Residential"
+  ],
+  [
+    "dobson",
+    "min_lot_size",
+    "dobson__R-A-C__Residential-Agricultural"
+  ],
+  [
+    "dobson",
+    "min_lot_size",
+    "dobson__R-MH-C__Manufactured Home Residential"
+  ],
+  [
+    "dobson",
+    "max_height",
+    "dobson__R-MH__Manufactured Home Residential"
+  ],
+  [
+    "dobson",
+    "min_lot_size",
+    "dobson__R-MH__Manufactured Home Residential"
+  ],
+  [
+    "dobson",
+    "max_height",
+    "dobson__R-S__Residential Suburban"
+  ],
+  [
+    "dobson",
+    "min_lot_size",
+    "dobson__R-S__Residential Suburban"
+  ],
+  [
+    "dobson",
+    "min_lot_size",
+    "dobson__H-I-C__Heavy Industrial"
+  ],
+  [
+    "dobson",
+    "max_height",
+    "dobson__H-I__Heavy Industrial"
+  ],
+  [
+    "dobson",
+    "min_lot_size",
+    "dobson__H-I__Heavy Industrial"
+  ],
+  [
+    "dobson",
+    "min_parking_spaces",
+    "dobson__R-15-C__Residential"
+  ],
+  [
+    "dobson",
+    "min_unit_size",
+    "dobson__R-15-C__Residential"
+  ],
+  [
+    "dobson",
+    "min_parking_spaces",
+    "dobson__R-15__Residential"
+  ],
+  [
+    "dobson",
+    "min_unit_size",
+    "dobson__R-15__Residential"
+  ],
+  [
+    "dunn",
+    "max_height",
+    "dunn__no abbreviation provided__Interstate Highway Sign User Overlay"
+  ],
+  [
+    "dunn",
+    "min_lot_size",
+    "dunn__no abbreviation provided__Interstate Highway Sign User Overlay"
+  ],
+  [
+    "dunn",
+    "max_height",
+    "dunn__C-1__Central Commercial"
+  ],
+  [
+    "dunn",
+    "min_lot_size",
+    "dunn__C-1__Central Commercial"
+  ],
+  [
+    "dunn",
+    "min_lot_size",
+    "dunn__C-3__Highway Commercial"
+  ],
+  [
+    "dunn",
+    "max_height",
+    "dunn__C-4__Neighborhood Business"
+  ],
+  [
+    "dunn",
+    "max_height",
+    "dunn__I-100__Industrial"
+  ],
+  [
+    "dunn",
+    "min_lot_size",
+    "dunn__I-100__Industrial"
+  ],
+  [
+    "dunn",
+    "max_height",
+    "dunn__I-10__Restricted Industrial"
+  ],
+  [
+    "dunn",
+    "min_lot_size",
+    "dunn__I-10__Restricted Industrial"
+  ],
+  [
+    "dunn",
+    "min_lot_size",
+    "dunn__I__Industrial"
+  ],
+  [
+    "dunn",
+    "min_lot_size",
+    "dunn__MXU__Mixed-Use"
+  ],
+  [
+    "dunn",
+    "max_height",
+    "dunn__O&I__Office & Institutional"
+  ],
+  [
+    "dunn",
+    "min_lot_size",
+    "dunn__O&I__Office & Institutional"
+  ],
+  [
+    "dunn",
+    "max_height",
+    "dunn__R-10__Residential"
+  ],
+  [
+    "dunn",
+    "min_lot_size",
+    "dunn__R-10__Residential"
+  ],
+  [
+    "dunn",
+    "max_height",
+    "dunn__R-20__Residential"
+  ],
+  [
+    "dunn",
+    "min_lot_size",
+    "dunn__R-20__Residential"
+  ],
+  [
+    "dunn",
+    "min_lot_size",
+    "dunn__R-5__Residential"
+  ],
+  [
+    "dunn",
+    "max_height",
+    "dunn__R-7__Residential"
+  ],
+  [
+    "dunn",
+    "min_lot_size",
+    "dunn__R-7__Residential"
+  ],
+  [
+    "dunn",
+    "min_lot_size",
+    "dunn__R-M__Residential Multi-Family"
+  ],
+  [
+    "dunn",
+    "min_lot_size",
+    "dunn__RA-40__Residential-Agricultural"
+  ],
+  [
+    "dunn",
+    "max_height",
+    "dunn__MXU__Mixed-Use"
+  ],
+  [
+    "dunn",
+    "min_unit_size",
+    "dunn__RA-40__Residential-Agricultural"
+  ],
+  [
+    "dunn",
+    "min_parking_spaces",
+    "dunn__CZ__Conditional"
+  ],
+  [
+    "dunn",
+    "min_parking_spaces",
+    "dunn__R-10__Residential"
+  ],
+  [
+    "dunn",
+    "min_parking_spaces",
+    "dunn__R-20__Residential"
+  ],
+  [
+    "dunn",
+    "min_parking_spaces",
+    "dunn__R-5__Residential"
+  ],
+  [
+    "dunn",
+    "min_parking_spaces",
+    "dunn__R-7__Residential"
+  ],
+  [
+    "dunn",
+    "min_parking_spaces",
+    "dunn__I__Industrial"
+  ],
+  [
+    "dunn",
+    "min_parking_spaces",
+    "dunn__C-1__Central Commercial"
+  ],
+  [
+    "dunn",
+    "max_lot_coverage",
+    "dunn__C-1__Central Commercial"
+  ],
+  [
+    "east-spencer",
+    "min_lot_size",
+    "east-spencer__R-3__Single Family Residential"
+  ],
+  [
+    "east-spencer",
+    "min_lot_size",
+    "east-spencer__1-2__Heavy Industrial"
+  ],
+  [
+    "east-spencer",
+    "min_lot_size",
+    "east-spencer__85-ED__85-ED economic development"
+  ],
+  [
+    "east-spencer",
+    "min_unit_size",
+    "east-spencer__85-ED__85-ED economic development"
+  ],
+  [
+    "east-spencer",
+    "min_lot_size",
+    "east-spencer__C-1__Neighborhood Business"
+  ],
+  [
+    "east-spencer",
+    "max_height",
+    "east-spencer__GB__General Business"
+  ],
+  [
+    "east-spencer",
+    "min_lot_size",
+    "east-spencer__GB__General Business"
+  ],
+  [
+    "east-spencer",
+    "min_unit_size",
+    "east-spencer__GB__General Business"
+  ],
+  [
+    "east-spencer",
+    "max_height",
+    "east-spencer__HB__Highway Business"
+  ],
+  [
+    "east-spencer",
+    "min_lot_size",
+    "east-spencer__HB__Highway Business"
+  ],
+  [
+    "east-spencer",
+    "max_height",
+    "east-spencer__O&I__Office and Institutional"
+  ],
+  [
+    "east-spencer",
+    "min_lot_size",
+    "east-spencer__O&I__Office and Institutional"
+  ],
+  [
+    "east-spencer",
+    "min_lot_size",
+    "east-spencer__R-1__Single-Family Residential"
+  ],
+  [
+    "east-spencer",
+    "max_height",
+    "east-spencer__R-3__Single Family Residential"
+  ],
+  [
+    "east-spencer",
+    "min_unit_size",
+    "east-spencer__R-3__Single Family Residential"
+  ],
+  [
+    "east-spencer",
+    "min_lot_size",
+    "east-spencer__RM-10__Residential Multi-Family"
+  ],
+  [
+    "east-spencer",
+    "min_unit_size",
+    "east-spencer__RM-10__Residential Multi-Family"
+  ],
+  [
+    "east-spencer",
+    "min_lot_size",
+    "east-spencer__RM-18__Residential Multi-Family"
+  ],
+  [
+    "east-spencer",
+    "min_unit_size",
+    "east-spencer__RM-18__Residential Multi-Family"
+  ],
+  [
+    "east-spencer",
+    "max_height",
+    "east-spencer__85-ED__85-ED economic development"
+  ],
+  [
+    "east-spencer",
+    "min_parking_spaces",
+    "east-spencer__85-ED__85-ED economic development"
+  ],
+  [
+    "east-spencer",
+    "max_lot_coverage",
+    "east-spencer__85-ED__85-ED economic development"
+  ],
+  [
+    "east-spencer",
+    "max_height",
+    "east-spencer__C-1__Neighborhood Business"
+  ],
+  [
+    "edenton",
+    "min_lot_size",
+    "edenton__CZD__Conditional"
+  ],
+  [
+    "edgecombe-county",
+    "min_lot_size",
+    "edgecombe-county__B-2__General Business"
+  ],
+  [
+    "edgecombe-county",
+    "max_height",
+    "edgecombe-county__B-2__General Business"
+  ],
+  [
+    "edgecombe-county",
+    "max_height",
+    "edgecombe-county__M-2__General Industrial"
+  ],
+  [
+    "edgecombe-county",
+    "min_lot_size",
+    "edgecombe-county__M-2__General Industrial"
+  ],
+  [
+    "edgecombe-county",
+    "min_lot_size",
+    "edgecombe-county__B-1__Light Business"
+  ],
+  [
+    "edgecombe-county",
+    "max_height",
+    "edgecombe-county__M-1__Light Industrial"
+  ],
+  [
+    "edgecombe-county",
+    "min_lot_size",
+    "edgecombe-county__M-1__Light Industrial"
+  ],
+  [
+    "edgecombe-county",
+    "min_lot_size",
+    "edgecombe-county__R-20__Mixed Residential"
+  ],
+  [
+    "edgecombe-county",
+    "max_height",
+    "edgecombe-county__R-20__Mixed Residential"
+  ],
+  [
+    "edgecombe-county",
+    "min_lot_size",
+    "edgecombe-county__R-10__Multi-Family Residential"
+  ],
+  [
+    "edgecombe-county",
+    "max_height",
+    "edgecombe-county__R-10__Multi-Family Residential"
+  ],
+  [
+    "edgecombe-county",
+    "min_unit_size",
+    "edgecombe-county__R-10__Multi-Family Residential"
+  ],
+  [
+    "edgecombe-county",
+    "min_unit_size",
+    "edgecombe-county__WPO__Watershed Protection Overlay"
+  ],
+  [
+    "edgecombe-county",
+    "max_lot_coverage",
+    "edgecombe-county__OI__Office and Institutional"
+  ],
+  [
+    "edgecombe-county",
+    "min_lot_size",
+    "edgecombe-county__OI__Office and Institutional"
+  ],
+  [
+    "edgecombe-county",
+    "max_height",
+    "edgecombe-county__OI__Office and Institutional"
+  ],
+  [
+    "edgecombe-county",
+    "min_lot_size",
+    "edgecombe-county__WPO__Watershed Protection Overlay"
+  ],
+  [
+    "edgecombe-county",
+    "max_height",
+    "edgecombe-county__AR-30__Rural Residential"
+  ],
+  [
+    "edgecombe-county",
+    "min_lot_size",
+    "edgecombe-county__AR-30__Rural Residential"
+  ],
+  [
+    "edgecombe-county",
+    "min_lot_size",
+    "edgecombe-county__R-30__Single-Family Residential"
+  ],
+  [
+    "edgecombe-county",
+    "max_height",
+    "edgecombe-county__R-30__Single-Family Residential"
+  ],
+  [
+    "edgecombe-county",
+    "max_lot_coverage",
+    "edgecombe-county__B-1__Light Business"
+  ],
+  [
+    "edgecombe-county",
+    "max_lot_coverage",
+    "edgecombe-county__B-2__General Business"
+  ],
+  [
+    "edgecombe-county",
+    "max_lot_coverage",
+    "edgecombe-county__M-1__Light Industrial"
+  ],
+  [
+    "edgecombe-county",
+    "max_lot_coverage",
+    "edgecombe-county__M-2__General Industrial"
+  ],
+  [
+    "edgecombe-county",
+    "max_lot_coverage",
+    "edgecombe-county__R-20__Mixed Residential"
+  ]
+]

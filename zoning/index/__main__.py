@@ -23,9 +23,9 @@ def main(config: ZoningConfig):
         None
     """
     # Parse the config
-    config = OmegaConf.to_object(config)
-    global_config = ZoningConfig(config=config).global_config
-    index_config = ZoningConfig(config=config).index_config
+    config = ZoningConfig(config=OmegaConf.to_object(config))
+    global_config = config.global_config
+    index_config = config.index_config
 
     # Load the indexer
     match index_config.method:

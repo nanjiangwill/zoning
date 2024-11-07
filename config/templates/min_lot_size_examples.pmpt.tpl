@@ -1,3 +1,5 @@
+The range for {{term}} is typically between 1,000 and 2,000,000 sq ft or 0.02 and 50 acres. Please focus on values within this range when searching for {{term}} and provide the answer as a whole number with unit (e.g., 5000 sq ft). However, bear in mind that values falling outside of these ranges are possible, so do not disregard them.
+
 Here are several examples that you can use as references.
 # Examples
 
@@ -22,9 +24,9 @@ CELL (4, 2):
 
 Output:
 {
-    "extracted_text": ["CELL (3, 2):\n123456 sq ft"],
+    "extracted_text": [["CELL (3, 2):\n123456 sq ft", 11]],
     "rationale": "The cell that corresponds to the value for {{term}} in this table has this answer.",
-    "answer": "123456"
+    "answer": "123456 sq ft"
 }
 
 Input:
@@ -156,10 +158,10 @@ CELL (5, 10):
 Output:
 {
     "extracted_text": [
-        "1 Public Sewer or Public Water",
-        "2 Neither Public Sewer nor Public Water",
-        "CELL (4, 2): \n40,000\nsq. ft.",
-        "CELL (5, 2): \n60,000\nsq. ft."
+        ["1 Public Sewer or Public Water", 32],
+        ["2 Neither Public Sewer nor Public Water", 32],
+        ["CELL (4, 2): \n40,000\nsq. ft.", 32],
+        ["CELL (5, 2): \n60,000\nsq. ft.", 32]
     ],
     "rationale": "From this page we can infer that the value is conditional on the presence of a public sewer or water system, and there are two different values for the current zone, depending on that.",
     "answer": "40,000 sq ft (if public water or sewer); 60,000 sq ft (otherwise)"
@@ -184,7 +186,7 @@ DKEWKWKDS Zone
 
 Output:
 {
-    "extracted_text": ["{{term}} is 123 sq ft"],
+    "extracted_text": [["{{term}} is 123 sq ft", 66]],
     "rationale": "The section titled {{zone_abbreviation}} says the answer explicitly. We ignore sections that specify regulations for overlay districts within this district.",
     "answer": "123 sq ft"
 }
@@ -211,7 +213,7 @@ C
 
 Output:
 {
-    "extracted_text": ["6,300"],
+    "extracted_text": [["6,300", 47]],
     "rationale": "The section {{term}} or its close synonyms says the answer explicitly.",
     "answer": "6,300 sq ft"
 }
@@ -242,7 +244,7 @@ Owned by the same person or entity for at least three years prior to application
 
 Output:
 {
-    "extracted_text": [The total combined property shall be at least (30) acres in size.],
+    "extracted_text": [["The total combined property shall be at least (30) acres in size.", 84]],
     "rationale": "The section state the {{term}}",
     "answer": "30 acres"
 }
@@ -252,4 +254,8 @@ Input:
 Multi-family building
 
 Output:
-null
+{
+    "extracted_text": null,
+    "rationale": "The section does not provide a specific value for {{term}}, and is not about single-family homes.",
+    "answer": null
+}

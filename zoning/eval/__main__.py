@@ -10,67 +10,73 @@ from zoning.utils import process
 
 
 def eval_fn(d: NormalizedLLMInferenceResult, gt, experiment_dir, target) -> EvalResult:
-    gt_info = list(
-        filter(
-            lambda x: x["town"] == d.place.town
-            and x["district"] == d.place.district_full_name
-            and x["district_abb"] == d.place.district_short_name,
-            gt,
+    if gt is None:
+        gt_info = None
+    else:
+        gt_info = list(
+            filter(
+                lambda x: x["town"] == d.place.town
+                and x["district"] == d.place.district_full_name
+                and x["district_abb"] == d.place.district_short_name,
+                gt,
+            )
         )
-    )
     if gt_info is None or len(gt_info) == 0:
         ground_truth = None
         ground_truth_orig = None
         ground_truth_page = None
-        answer_correct = None
-        page_in_range = None
     else:
         # there show be only one matching for each evaluation data
         gt_info = gt_info[0]
         ground_truth = gt_info[f"{d.eval_term}_gt"]
         ground_truth_orig = gt_info[f"{d.eval_term}_gt_orig"]
         ground_truth_page = gt_info[f"{d.eval_term}_page_gt"]
-        if ground_truth_page is not None:
-            ground_truth_page_int = (
-                [int(ground_truth_page)]
-                if "," not in ground_truth_page
-                else [int(x) for x in ground_truth_page.split(",")]
-            )
-        else:
-            ground_truth_page_int = []
 
-        search_file = glob.glob(
-            f"{experiment_dir}/search/*{d.eval_term}__{d.place}.json"
+    if ground_truth_page is not None:
+        ground_truth_page_int = (
+            [int(ground_truth_page)]
+            if "," not in ground_truth_page
+            else [int(x) for x in ground_truth_page.split(",")]
         )
-        assert len(search_file) == 1
-        search_result = json.load(open(search_file[0]))
-        search_ranges = [search_result["entire_search_page_range"]]
-        page_in_range = []
+    else:
+        ground_truth_page_int = []
 
-        if len(ground_truth_page_int) == 0:
-            page_in_range = [False for _ in search_ranges]
+    search_file = glob.glob(f"{experiment_dir}/search/*{d.eval_term}__{d.place}.json")
+    assert len(search_file) == 1
+    search_result = json.load(open(search_file[0]))
+    search_ranges = search_result["entire_search_page_range"]
+
+    page_in_range = None
+
+    if len(ground_truth_page_int) == 0:
+        page_in_range = False
+    else:
+        if any(i in search_ranges for i in ground_truth_page_int):
+            page_in_range = True
         else:
-            for sr in search_ranges:
-                if any(i in sr for i in ground_truth_page_int):
-                    page_in_range.append(True)
-                else:
-                    page_in_range.append(False)
+            page_in_range = False
 
-        answer_correct = []
+    answer_correct = None
 
-        for o in d.normalized_llm_outputs:
-            if ground_truth is None and ground_truth_orig is None:
-                if o.normalized_answer is None:
-                    answer_correct.append(True)
-                    continue
+    assert not d.normalized_llm_outputs or len(d.normalized_llm_outputs) == 1
+
+    o = d.normalized_llm_outputs[0] if d.normalized_llm_outputs else None
+    if o:
+        if ground_truth is None and ground_truth_orig is None:
+            if o.normalized_answer is None:
+                answer_correct = True
             else:
-                if o.normalized_answer and (
-                    ground_truth in o.normalized_answer
-                    or ground_truth_orig in o.normalized_answer
-                ):
-                    answer_correct.append(True)
-                    continue
-            answer_correct.append(False)
+                answer_correct = False
+        else:
+            if o.normalized_answer and (
+                ground_truth in o.normalized_answer
+                or ground_truth_orig in o.normalized_answer
+            ):
+                answer_correct = True
+            else:
+                answer_correct = False
+    else:
+        answer_correct = None
 
     return EvalResult(
         place=d.place,
@@ -101,9 +107,9 @@ def main(config: ZoningConfig):
         config.eval_dir
     """
     # Parse the config
-    config = OmegaConf.to_object(config)
-    global_config = ZoningConfig(config=config).global_config
-    # eval_config = ZoningConfig(config=config).eval_config
+    config = ZoningConfig(config=OmegaConf.to_object(config))
+    global_config = config.global_config
+    # eval_config = config.eval_config
 
     process(
         global_config.target_eval_file,
@@ -111,7 +117,11 @@ def main(config: ZoningConfig):
         global_config.eval_dir,
         fn=lambda x, y: eval_fn(
             x,
-            json.load(open(global_config.ground_truth_file)),
+            (
+                json.load(open(global_config.ground_truth_file))
+                if os.path.exists(global_config.ground_truth_file)
+                else None
+            ),
             global_config.experiment_dir,
             y,
         ),
@@ -131,29 +141,27 @@ def main(config: ZoningConfig):
 
         all_accuracy_results = [d.answer_correct for d in eval_term_data]
 
-        best_accuracy = sum([1 for d in all_accuracy_results if any(d)]) / len(
-            all_accuracy_results
-        )
-        avg_accuracy = sum(
-            [sum([1 for d in a if d]) for a in all_accuracy_results]
-        ) / sum([len(a) for a in all_accuracy_results])
+        if len(all_accuracy_results) == 0:
+            accuracy = 0
+        else:
+            accuracy = sum([1 for d in all_accuracy_results if d]) / len(
+                all_accuracy_results
+            )
 
         all_page_results = [d.page_in_range for d in eval_term_data]
 
-        best_page_in_range = sum([1 for d in all_page_results if any(d)]) / len(
-            all_page_results
-        )
-        avg_page_in_range = sum(
-            [sum([1 for d in a if d]) for a in all_page_results]
-        ) / sum([len(a) for a in all_page_results])
+        if len(all_page_results) == 0:
+            page_in_range = 0
+        else:
+            page_in_range = sum([1 for d in all_page_results if d]) / len(
+                all_page_results
+            )
 
         print("=============================================")
         print(f"Evaluated term: {term}")
-        print(f"Best Accuracy: {best_accuracy}")
-        print(f"Avg Accuracy: {avg_accuracy}")
+        print(f"Accuracy: {accuracy}")
         print("\n")
-        print(f"Best Page Accuracy: {best_page_in_range}")
-        print(f"Avg Page Accuracy: {avg_page_in_range}")
+        print(f"Page Accuracy: {page_in_range}")
         print("=============================================")
         print("\n")
 

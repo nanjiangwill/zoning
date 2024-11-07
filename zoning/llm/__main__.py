@@ -36,9 +36,9 @@ def main(config_name: str = typer.Argument("base")):
         ):
             config = compose(config_name=config_name)
 
-        config = OmegaConf.to_object(config)
-        global_config = ZoningConfig(config=config).global_config
-        llm_config = ZoningConfig(config=config).llm_config
+        config = ZoningConfig(config=OmegaConf.to_object(config))
+        global_config = config.global_config
+        llm_config = config.llm_config
 
         # Load the searcher
         llm = LLM(llm_config)

@@ -80,6 +80,8 @@ class PromptGenerator(ABC):
         merged_text = page_coverage_text(
             [ms.text for ms in search_result.search_matches]
         )
+        # print(merged_text)
+        # adsf
 
         all_prompts = [
             Prompt(

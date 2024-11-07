@@ -3,29 +3,43 @@
   "min": ["min", "minimum", "min.", "Min", "Minimum", "Min."],
   "max": ["max", "maximum", "max.", "Max", "Maximum", "Max."],
   "min_lot_size": [
-    "min lot size",
-    "min lot coverage",
-    "min parcel size",
-    "min lot and building",
     "area and bulk",
-    "min dimensional",
-    "min lot area",
-    "lot area",
-    "min area",
-    "min lot area",
-    "min lot and area",
-    "min lot",
-    "min lot requirements",
-    "min parcel area",
-    "lot size",
-    "lot and building",
-    "dimensional",
-    "min lot",
-    "lot requirements",
-    "lot and building requirements",
-    "area requirements",
     "area and bulk requirements",
-    "dimensional requirements"
+    "area requirements",
+    "dimensional",
+    "dimensional requirements",
+    "lot",
+    "lot and building",
+    "lot and building requirements",
+    "lot area",
+    "lot requirements",
+    "lot size",
+    "min area",
+    "min dimensional",
+    "min lot",
+    "min lot and area",
+    "min lot and building",
+    "min lot area",
+    "min lot coverage",
+    "min lot requirements",
+    "min lot size",
+    "min parcel area",
+    "min parcel size"
+  ],
+  "min_lot_size units": [
+    "acre",
+    "acres",
+    "Acre",
+    "Acres",
+    "square feet",
+    "sq ft",
+    "sf",
+    "s.f.",
+    "sq. ft.",
+    "SF",
+    "sq. ft",
+    "sqft",
+    "sq.ft."
   ],
   "min_unit_size": [
     "min unit size",
@@ -46,31 +60,6 @@
     "min gross floor area",
     "min ground floor area"
   ],
-  "floor_to_area_ratio_gt": [
-    "floor to area",
-    "floor area",
-    "FAR",
-    "floor area ratio",
-    "F.A.R.",
-    "Floor to area",
-    "Floor-to-area",
-    "Floor-area ratio"
-  ],
-  "min_lot_size units": [
-    "acre",
-    "acres",
-    "Acre",
-    "Acres",
-    "square feet",
-    "sq ft",
-    "sf",
-    "s.f.",
-    "sq. ft.",
-    "SF",
-    "sq. ft",
-    "sqft",
-    "sq.ft."
-  ],
   "min_unit_size units": [
     "square feet",
     "sq ft",
@@ -83,13 +72,13 @@
     "sq.ft."
   ],
   "max_height": [
+    "area and bulk requirements",
+    "area requirements",
+    "dimensional requirements",
+    "height",
+    "lot and building requirements",
     "max building height",
     "max height",
-    "area and bulk requirements",
-    "dimensional requirements",
-    "lot and building requirements",
-    "area requirements",
-    "height",
     "stories",
     "story"
   ],
@@ -99,13 +88,12 @@
     "ft."
   ],
   "max_lot_coverage": [
-    "max lot coverage",
     "building coverage",
-    "lot coverage",
-    "pervious surface",
     "building area as % of lot",
     "coverage",
-    "maximum lot coverage"
+    "lot coverage",
+    "max lot coverage",
+    "pervious surface"
   ],
   "max_lot_coverage units": [
     "percent",
@@ -114,18 +102,53 @@
     "ratio"
   ],
   "max_lot_coverage_pavement": [
+    "coverage",
+    "impervious surface",
     "lot coverage by impervious surfaces",
     "lot coverage",
-    "impervious surface",
-    "coverage",
-    "maximum imperv. coverage",
-    "maximum impervious coverage"
+    "max imperv. coverage",
+    "max impervious coverage"
   ],
   "max_lot_coverage_pavement units": [
     "percent",
     "%",
     "per cent",
     "ratio"
+  ],
+  "max_density": [
+    "density per acre",
+    "density per gross acre",
+    "density/acre",
+    "dwellings per acre",
+    "dwellings/acre",
+    "max density",
+    "units per acre",
+    "units/acre"
+  ],
+  "max_density units": [
+  ],
+  "floor_to_area_ratio": [
+    "f.a.r.",
+    "far",
+    "floor area ratio",
+    "floor to area",
+    "floor-area ratio",
+    "floor-to-area"
+  ],
+  "floor_to_area_ratio units": [
+  ],
+  "max_units":[
+    "max number of units",
+    "max units"
+  ],
+  "max_units units": [
+  ],
+  "max_bedrooms":[
+    "bedroom",
+    "max bedroom",
+    "max number of bedrooms"
+  ],
+  "max_bedrooms units": [
   ],
   "min_parking_spaces": [
     "min parking spaces",
@@ -134,11 +157,11 @@
     "parking requirements",
     "parking and loading requirements",
     "parking spaces required",
-    "single family residence",
-    "single family",
-    "single-family",
     "per dwelling",
     "per family dwelling unit",
-    "for each dwelling unit"
+    "for each dwelling unit",
+    "parking space for each"
+  ],
+  "min_parking_spaces units": [
   ]
 }

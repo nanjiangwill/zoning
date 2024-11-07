@@ -1,4 +1,3 @@
-import json
 import os
 from abc import ABC
 from typing import Dict, List, Tuple
@@ -7,11 +6,10 @@ import diskcache as dc
 from anthropic import AsyncAnthropic
 from dotenv import find_dotenv, load_dotenv
 from openai import AsyncOpenAI
-from pydantic import ValidationError
 from tenacity import retry, wait_random_exponential
 
 from zoning.class_types import LLMConfig, LLMInferenceResult, LLMOutput, PromptResult
-from zoning.utils import cached, limit_global_concurrency
+from zoning.utils import cached, limit_global_concurrency, post_processing_llm_output
 
 # dotenv will not override the env var if it's already set
 load_dotenv(find_dotenv())
@@ -140,24 +138,6 @@ class LLM(ABC):
         else:
             return input_prompt, model_response
 
-    def parse_llm_output(self, model_response: str | None) -> dict | None:
-        if model_response is None or model_response == "null":
-            return None
-        try:
-            # TODO: this is something that came with new gpt update. This is a bandaid solution that i'll look into later
-            if model_response[:7] == "```json":
-                model_response = model_response[7:-4]
-            json_body = json.loads(model_response)
-            if json_body is None:
-                # The model is allowed to return null if it cannot find the answer,
-                # so just pass this onwards.
-                return None
-            return json_body
-        except (ValidationError, TypeError, json.JSONDecodeError) as exc:
-            print("Error parsing response from model during extraction:", exc)
-            print(f"Response: {model_response}")
-            return None
-
     async def query(
         self, prompt_result: PromptResult, target: str
     ) -> LLMInferenceResult:
@@ -166,12 +146,13 @@ class LLM(ABC):
         for ip_idx in range(len(prompt_result.input_prompts)):
             system_prompt = prompt_result.input_prompts[ip_idx].system_prompt
             user_prompt = prompt_result.input_prompts[ip_idx].user_prompt
-
+            if user_prompt == "Input: \n\n \n\n Output:":
+                continue
             # we query the llm
             input_prompt, raw_model_response = await self.call_llm(
                 self.get_prompt(system_prompt, user_prompt)
             )
-            parsed_model_response = self.parse_llm_output(raw_model_response)
+            parsed_model_response = post_processing_llm_output(raw_model_response)
             llm_output = LLMOutput(
                 place=prompt_result.place,
                 eval_term=prompt_result.eval_term,

@@ -58,9 +58,9 @@ def main(config: ZoningConfig):
         config.normalization_dir
     """
     # Parse the config
-    config = OmegaConf.to_object(config)
-    global_config = ZoningConfig(config=config).global_config
-    # normalization_config = ZoningConfig(config=config).normalization_config
+    config = ZoningConfig(config=OmegaConf.to_object(config))
+    global_config = config.global_config
+    # normalization_config = config.normalization_config
 
     process(
         global_config.target_eval_file,
