@@ -819,7 +819,10 @@ def get_edited_pages(
         page_rect = page.rect
         # for zoom in
         page_info = [i for i in format_ocr_result.pages if i["page"] == str(show_page)]
-        assert len(page_info) == 1
+        # assert len(page_info) == 1
+        if len(page_info) != 1:
+            continue
+
         page_info = page_info[0]
 
         # Decide whether to load OCR for this page
