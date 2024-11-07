@@ -1048,11 +1048,11 @@ to_be_highlighted_pages = get_edited_pages(
 
 
 # write data
-def write_data(human_feedback: str, selected_idx: list[int]) -> bool:
+def write_data(human_feedback: str, selected_idx: list[int], total_idx: list[int]) -> bool:
+    if len(selected_idx) == 0:
+        return write_data("wrong", total_idx, total_idx)
     batch = st.session_state["current_batch"]
     batch = [batch[i] for i in selected_idx]
-    if len(batch) == 0:
-        return True
     # Store and reset the timer
     if "start_time" not in st.session_state:
         elapsed_sec = -1
@@ -1159,7 +1159,8 @@ def button_callback(feedback):
         selected_idx = [
             i for i in range(batch_number) if st.session_state[f"selected_{i}"]
         ]
-        if write_data(feedback, selected_idx):
+        total_idx = [i for i in range(batch_number)]
+        if write_data(feedback, selected_idx, total_idx):
             jump_to_next_batch()
 
     return _button_callback
